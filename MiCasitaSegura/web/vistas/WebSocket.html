@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Escanear Código QR</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      width: 95%;
+      max-width: 700px;
+      background: rgba(0,0,0,0.75);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 15px;
+      color: #00e5ff;
+    }
+
+    #reader {
+      border: 4px solid #00e5ff;
+      border-radius: 15px;
+      overflow: hidden;
+      margin: 20px auto;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: inset 0 0 20px rgba(0,229,255,0.4);
+      background: #111;
+    }
+
+    .status {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .status.loading {
+      background-color: rgba(0, 229, 255, 0.1);
+      color: #00e5ff;
+      border: 1px solid #00e5ff;
+    }
+
+    .status.success {
+      background-color: rgba(76, 175, 80, 0.15);
+      color: #4caf50;
+      border: 1px solid #4caf50;
+    }
+
+    .status.error {
+      background-color: rgba(244, 67, 54, 0.15);
+      color: #f44336;
+      border: 1px solid #f44336;
+    }
+
+    .controls button {
+      background-color: #00e5ff;
+      color: #000;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 15px;
+      margin: 8px;
+      box-shadow: 0 5px 12px rgba(0,229,255,0.4);
+      transition: all 0.3s ease;
+    }
+
+    .controls button:hover {
+      background-color: #00bcd4;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0,188,212,0.6);
+    }
+
+    .controls button:disabled {
+      background-color: #555;
+      color: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    #results {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📷 Escanear Código QR</h1>
+    
+    <div id="status" class="status loading">
+      Iniciando cámara...
+    </div>
+    
+    <div id="reader"></div>
+    
+    <div class="controls">
+      <button id="startBtn" onclick="startScanner()" disabled>▶ Reiniciar Escáner</button>
+      <button id="stopBtn" onclick="stopScanner()" disabled>⏹ Detener Escáner</button>
+    </div>
+    
+    <div id="results"></div>
+  </div>
+
+  <script>
+    let html5QrCode = null;
+    let ws = null;
+    let isScanning = false;
+
+    const statusDiv = document.getElementById('status');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const resultsDiv = document.getElementById('results');
+
+    function updateStatus(message, type = 'loading') {
+      statusDiv.textContent = message;
+      statusDiv.className = `status ${type}`;
+    }
+
+    function connectWebSocket() {
+      try {
+        if (ws && ws.readyState === WebSocket.OPEN) return;
+        ws = new WebSocket("ws://localhost:8090/MiCasitaSegura/garita");
+        
+        ws.onopen = function() {
+          updateStatus("WebSocket conectado - Cámara lista", 'success');
+        };
+        
+        ws.onmessage = function(event) {
+          resultsDiv.innerHTML = `<p><strong>Respuesta del servidor:</strong> ${event.data}</p>`;
+        };
+        
+        ws.onclose = function() {
+          updateStatus("WebSocket desconectado", 'error');
+          setTimeout(connectWebSocket, 5000);
+        };
+        
+        ws.onerror = function() {
+          updateStatus("Error de conexión WebSocket", 'error');
+        };
+      } catch {
+        updateStatus("Sin conexión WebSocket", 'error');
+      }
+    }
+
+    async function startScanner() {
+      try {
+        if (isScanning) return;
+        updateStatus("Iniciando cámara...", 'loading');
+        
+        html5QrCode = new Html5Qrcode("reader");
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          let cameraId = devices[0].id;
+          for (let device of devices) {
+            if (device.label.toLowerCase().includes('back') || 
+                device.label.toLowerCase().includes('rear')) {
+              cameraId = device.id;
+              break;
+            }
+          }
+          const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+          await html5QrCode.start(cameraId, config, onScanSuccess, onScanFailure);
+          isScanning = true;
+          updateStatus("Escaneando - Apunta al código QR", 'success');
+          startBtn.disabled = false;
+          stopBtn.disabled = false;
+        } else {
+          throw new Error("No se encontraron cámaras");
+        }
+      } catch (err) {
+        updateStatus(`Error: ${err.message}`, 'error');
+      }
+    }
+
+    async function stopScanner() {
+      if (html5QrCode && isScanning) {
+        try {
+          await html5QrCode.stop();
+          html5QrCode.clear();
+          html5QrCode = null;
+          isScanning = false;
+          updateStatus("Escáner detenido", 'loading');
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+        } catch (err) {
+          console.error("Error al detener el escáner:", err);
+        }
+      }
+    }
+
+    function onScanSuccess(decodedText) {
+      resultsDiv.innerHTML = `
+        <div class="status success">
+          <strong>QR Escaneado:</strong> ${decodedText}
+        </div>`;
+      sendMessageToWebSocket(decodedText);
+
+      // 🔹 Pausar 5 seg y reiniciar
+      if (html5QrCode && isScanning) {
+        html5QrCode.stop().then(() => {
+          isScanning = false;
+          setTimeout(() => startScanner(), 5000);
+        });
+      }
+    }
+
+    function onScanFailure(error) { }
+
+    function sendMessageToWebSocket(message) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(message);
+      }
+    }
+
+    window.addEventListener('load', function() {
+      connectWebSocket();
+      // 🔹 Cámara inicia automáticamente
+      setTimeout(() => startScanner(), 1000);
+    });
+  </script>
+</body>
+</html>

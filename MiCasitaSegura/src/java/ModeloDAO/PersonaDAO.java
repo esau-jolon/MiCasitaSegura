@@ -3,18 +3,19 @@ package ModeloDAO;
 
 import Config.Conexion;
 import Intefaces.CRUD;
-import Modelo.Persona;
+//import Modelo.Persona;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
 public class PersonaDAO implements CRUD{
     Conexion cn=new Conexion();
     Connection con;
     PreparedStatement ps;
     ResultSet rs;
+    
     Persona p=new Persona();
     
     @Override
@@ -92,3 +93,4 @@ public class PersonaDAO implements CRUD{
     }
     
 }
+*/

@@ -1,8 +1,8 @@
 
 package Controlador;
 
-import Modelo.Persona;
-import ModeloDAO.PersonaDAO;
+//import Modelo.Persona;
+/*import ModeloDAO.PersonaDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.RequestDispatcher;
@@ -17,14 +17,14 @@ public class Controlador extends HttpServlet {
     String listar="vistas/listar.jsp";
     String add="vistas/add.jsp";
     String edit="vistas/edit.jsp";
-    Persona p=new Persona();
+   // Persona p=new Persona();
     PersonaDAO dao=new PersonaDAO();
     int id;
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
+ 
             out.println("<!DOCTYPE html>");
             out.println("<html>");
             out.println("<head>");
@@ -51,9 +51,9 @@ public class Controlador extends HttpServlet {
         else if(action.equalsIgnoreCase("Agregar")){
             String dpi=request.getParameter("txtDpi");
             String nom=request.getParameter("txtNom");
-            p.setDpi(dpi);
-            p.setNom(nom);
-            dao.add(p);
+          //  p.setDpi(dpi);
+           // p.setNom(nom);
+           // dao.add(p);
             acceso=listar;
         }
         else if(action.equalsIgnoreCase("editar")){
@@ -64,15 +64,15 @@ public class Controlador extends HttpServlet {
             id=Integer.parseInt(request.getParameter("txtid"));
             String dni=request.getParameter("txtDpi");
             String nom=request.getParameter("txtNom");
-            p.setId(id);
-            p.setDpi(dni);
-            p.setNom(nom);
-            dao.edit(p);
+            //p.setId(id);
+            //p.setDpi(dni);
+            //p.setNom(nom);
+            //dao.edit(p);
             acceso=listar;
         }
         else if(action.equalsIgnoreCase("eliminar")){
             id=Integer.parseInt(request.getParameter("id"));
-            p.setId(id);
+            //p.setId(id);
             dao.eliminar(id);
             acceso=listar;
         }
@@ -93,3 +93,4 @@ public class Controlador extends HttpServlet {
     }// </editor-fold>
 
 }
+*/
