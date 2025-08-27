@@ -520,10 +520,11 @@
                 </div>
 
                 <!-- Add New User Button -->
-                <a href="Controlador?accion=add" class="btn-add">
+                <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=add" class="btn-add">
                     <i class="fas fa-plus"></i>
                     Nuevo Usuario
                 </a>
+
 
                 <!-- Table Container -->
                 <div class="table-container">
