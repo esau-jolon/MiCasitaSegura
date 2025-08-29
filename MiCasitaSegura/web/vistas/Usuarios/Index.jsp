@@ -565,12 +565,13 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
-                                        <a href="Controlador?accion=edit&id=<%= u.getIdUsuario()%>" 
+                                        <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=edit&id=<%= u.getIdUsuario()%>" 
                                            class="btn-action btn-edit"
                                            title="Editar usuario">
                                             <i class="fas fa-edit"></i>
                                             Editar
                                         </a>
+
                                         <a href="Controlador?accion=delete&id=<%= u.getIdUsuario()%>" 
                                            class="btn-action btn-delete"
                                            onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?\\n\\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\\nCorreo: <%= u.getCorreo()%>\\n\\nEsta acción no se puede deshacer.');"

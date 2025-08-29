@@ -5,7 +5,6 @@ import ModeloDAO.CasaDAO;
 import ModeloDAO.LoteDAO;
 import ModeloDAO.UsuarioDAO;
 import ModeloDAO.RoleDAO;
-import Modelo.Roles;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,16 +19,18 @@ import javax.servlet.annotation.WebServlet;
 @WebServlet("/ControladorUsuario")
 public class ControladorUsuario extends HttpServlet {
 
-    String listar = "vistas/listarUsuarios.jsp";
+    String listar = "vistas/Usuarios/Index.jsp";
     String addEdit = "vistas/Usuarios/addEdit.jsp";
 
-    Usuarios u = new Usuarios();
     UsuarioDAO dao = new UsuarioDAO();
     int id;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
 
         String acceso = "";
         String action = request.getParameter("accion");
@@ -38,27 +39,33 @@ public class ControladorUsuario extends HttpServlet {
         LoteDAO lotesDao = new LoteDAO();
         RoleDAO roleDao = new RoleDAO();
 
-        if (action.equalsIgnoreCase("listar")) {
+        if ("listar".equalsIgnoreCase(action)) {
+            List<Usuarios> listaUsuarios = dao.listar();
+            request.setAttribute("usuarios", listaUsuarios);
             acceso = listar;
 
-        } else if (action.equalsIgnoreCase("add")) {
+        } else if ("add".equalsIgnoreCase(action)) {
             request.setAttribute("usuario", null);
             request.setAttribute("catalogoCasas", casasDao.listar());
             request.setAttribute("catalogoLotes", lotesDao.listar());
-            request.setAttribute("catalogoRoles", roleDao.listar()); // ← Nuevo
+            request.setAttribute("catalogoRoles", roleDao.listar());
             acceso = addEdit;
 
-        } else if (action.equalsIgnoreCase("edit")) {
+        } else if ("edit".equalsIgnoreCase(action)) {
             id = Integer.parseInt(request.getParameter("id"));
             Usuarios usuario = dao.listarId(id);
             request.setAttribute("usuario", usuario);
             request.setAttribute("catalogoCasas", casasDao.listar());
             request.setAttribute("catalogoLotes", lotesDao.listar());
-            request.setAttribute("catalogoRoles", roleDao.listar()); // ← Nuevo
+            request.setAttribute("catalogoRoles", roleDao.listar());
             acceso = addEdit;
-        } else if (action.equalsIgnoreCase("delete")) {
+
+        } else if ("delete".equalsIgnoreCase(action)) {
             id = Integer.parseInt(request.getParameter("id"));
             dao.delete(id);
+            // 🔹 Recargar lista después de borrar
+            List<Usuarios> listaUsuarios = dao.listar();
+            request.setAttribute("usuarios", listaUsuarios);
             acceso = listar;
         }
 
@@ -70,9 +77,12 @@ public class ControladorUsuario extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
         String action = request.getParameter("accion");
 
-        if (action.equalsIgnoreCase("add")) {
+        if ("add".equalsIgnoreCase(action)) {
             // Crear usuario
             String dpi = request.getParameter("dpi");
             String nombre = request.getParameter("nombre");
@@ -84,10 +94,10 @@ public class ControladorUsuario extends HttpServlet {
             Integer loteId = request.getParameter("loteId").isEmpty() ? null : Integer.parseInt(request.getParameter("loteId"));
             boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
 
-            u = new Usuarios(dpi, nombre, apellidos, correo, contrasena, rolId, numeroCasaId, loteId, estado);
+            Usuarios u = new Usuarios(dpi, nombre, apellidos, correo, contrasena, rolId, numeroCasaId, loteId, estado);
             dao.add(u);
 
-        } else if (action.equalsIgnoreCase("edit")) {
+        } else if ("edit".equalsIgnoreCase(action)) {
             // Actualizar usuario
             int idUsuario = Integer.parseInt(request.getParameter("idUsuario"));
             String dpi = request.getParameter("dpi");
@@ -100,6 +110,7 @@ public class ControladorUsuario extends HttpServlet {
             Integer loteId = request.getParameter("loteId").isEmpty() ? null : Integer.parseInt(request.getParameter("loteId"));
             boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
 
+            Usuarios u = new Usuarios();
             u.setIdUsuario(idUsuario);
             u.setDpi(dpi);
             u.setNombre(nombre);
@@ -114,7 +125,7 @@ public class ControladorUsuario extends HttpServlet {
             dao.edit(u);
         }
 
-        // Siempre redirige al listado después de POST
+        // 🔹 Redirige siempre al listado después del POST
         response.sendRedirect("ControladorUsuario?accion=listar");
     }
 }
