@@ -1,5 +1,6 @@
 package WebSocket;
 
+import ModeloDAO.UsuarioDAO;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
 import com.fazecast.jSerialComm.SerialPort;
@@ -70,40 +71,27 @@ public class WebSocketServer {
     }
 
     @OnMessage
-    public void onMessage(String message, Session session) {
-        System.out.println("📨 Mensaje recibido: '" + message + "' de sesión: " + session.getId());
-
+    public void onMessage(Session session, String message) throws IOException {
+        System.out.println("📥 Mensaje recibido del cliente: " + message);
+        String commandToArduino = null;
         try {
-            String commandToArduino = null;
+            int idUsuario = Integer.parseInt(message.trim()); // el QR trae el id_usuario
 
-            // Validar entrada
-            if (message.equalsIgnoreCase("true") || message.equalsIgnoreCase("false")) {
-                // Mensaje ya es booleano
-                commandToArduino = message.toLowerCase();
+            UsuarioDAO usuarioDAO = new UsuarioDAO();
+            boolean puedeAbrir = usuarioDAO.puedeAbrirTalanquera(idUsuario);
 
-            } else if (message.equals("22")) {
-                // Si el QR devuelve "22", lo interpretamos como true
-                commandToArduino = "true";
-                System.out.println("🔄 Mensaje '22' convertido a TRUE");
-
+            if (puedeAbrir) {
+                commandToArduino = "entrada";  // abrir garita si estaba fuera
             } else {
-                // Mensaje no reconocido
-                System.out.println("ℹ️ Mensaje no reconocido: " + message);
-                session.getBasicRemote().sendText("Mensaje recibido: " + message
-                        + " (esperado: 'true', 'false' o '22')");
-                return; // Salimos sin mandar nada al Arduino
+                commandToArduino = "salida";   // abrir garita si estaba dentro
             }
 
-            // Enviar al Arduino
-            sendToArduino(commandToArduino);
+            sendToArduino(commandToArduino); // 🔹 enviar al Arduino
+            session.getBasicRemote().sendText("Comando enviado: " + commandToArduino);
 
-            // Responder al cliente
-            String response = "Comando '" + commandToArduino + "' enviado al Arduino";
-            session.getBasicRemote().sendText(response);
-            System.out.println("✓ " + response);
-
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error procesando mensaje: " + e.getMessage(), e);
+        } catch (NumberFormatException e) {
+            System.out.println("⚠️ El mensaje no es un ID válido: " + message);
+            session.getBasicRemote().sendText("ID inválido");
         }
     }
 

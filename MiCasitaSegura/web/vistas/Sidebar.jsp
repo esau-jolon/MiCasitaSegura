@@ -135,11 +135,11 @@
 
                 <li><a href="home.jsp" target="contentFrame"><i class="bi bi-house"></i><span> Home</span></a></li>
                 <li>
-                    <a href="<%=request.getContextPath()%>/vistas/Usuarios/Index.jsp" target="contentFrame">
+                    <a href="<%=request.getContextPath()%>/ControladorUsuario?accion=listar" target="contentFrame">
                         <i class="bi bi-people"></i><span> Usuarios</span>
                     </a>
-
                 </li>
+
                 <li><a href="usuarios.jsp" target="contentFrame"><i class="bi bi-people"></i><span> Usuarios</span></a></li>
                 <li><a href="reportes.jsp" target="contentFrame"><i class="bi bi-bar-chart"></i><span> Reportes</span></a></li>
             </ul>

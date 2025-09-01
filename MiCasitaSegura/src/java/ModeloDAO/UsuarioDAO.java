@@ -7,6 +7,7 @@ import java.sql.*;
 import java.util.*;
 
 public class UsuarioDAO implements UsuarioCrud {
+
     Conexion cn = new Conexion();
     Connection con;
     PreparedStatement ps;
@@ -27,7 +28,7 @@ public class UsuarioDAO implements UsuarioCrud {
                 u.setNombre(rs.getString("nombre"));
                 u.setApellidos(rs.getString("apellidos"));
                 u.setCorreo(rs.getString("correo"));
-                u.setContrasena(rs.getString("contraseña"));
+                u.setContrasena(rs.getString("contrasena"));
                 u.setRolId(rs.getInt("rol_id"));
                 u.setNumeroCasaId(rs.getInt("numero_casa_id"));
                 u.setLoteId(rs.getInt("lote_id"));
@@ -55,7 +56,7 @@ public class UsuarioDAO implements UsuarioCrud {
                 u.setNombre(rs.getString("nombre"));
                 u.setApellidos(rs.getString("apellidos"));
                 u.setCorreo(rs.getString("correo"));
-                u.setContrasena(rs.getString("contraseña"));
+                u.setContrasena(rs.getString("contrasena"));
                 u.setRolId(rs.getInt("rol_id"));
                 u.setNumeroCasaId(rs.getInt("numero_casa_id"));
                 u.setLoteId(rs.getInt("lote_id"));
@@ -69,7 +70,7 @@ public class UsuarioDAO implements UsuarioCrud {
 
     @Override
     public boolean add(Usuarios u) {
-        String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contraseña,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
         try {
             con = cn.getConnection();
             ps = con.prepareStatement(sql);
@@ -92,7 +93,7 @@ public class UsuarioDAO implements UsuarioCrud {
 
     @Override
     public boolean edit(Usuarios u) {
-        String sql = "UPDATE Usuarios SET dpi=?,nombre=?,apellidos=?,correo=?,contraseña=?,rol_id=?,numero_casa_id=?,lote_id=?,estado=? WHERE id_usuario=?";
+        String sql = "UPDATE Usuarios SET dpi=?,nombre=?,apellidos=?,correo=?,contrasena=?,rol_id=?,numero_casa_id=?,lote_id=?,estado=? WHERE id_usuario=?";
         try {
             con = cn.getConnection();
             ps = con.prepareStatement(sql);
@@ -128,4 +129,61 @@ public class UsuarioDAO implements UsuarioCrud {
         }
         return false;
     }
+
+    public boolean puedeAbrirTalanquera(int idUsuario) {
+        String sql = "SELECT estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            con = cn.getConnection(); // 👈 Igual que en add()
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, idUsuario);
+            rs = ps.executeQuery();
+
+            if (rs.next()) {
+                boolean estado = rs.getBoolean("estado");
+                // Si estado = false (0) -> puede abrir
+                return !estado;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+        return false; // por defecto no abre
+    }
+
+    public boolean existeUsuario(String dpi, String correo) {
+        String sql = "SELECT COUNT(*) FROM Usuarios WHERE dpi=? OR correo=?";
+        try (Connection con = cn.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, dpi);
+            ps.setString(2, correo);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+
 }

@@ -37,4 +37,25 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
     
+        <dependency>
+        <groupId>javax.websocket</groupId>
+        <artifactId>javax.websocket-api</artifactId>
+        <version>1.1</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Si usas Tomcat -->
+    <dependency>
+        <groupId>org.apache.tomcat</groupId>
+        <artifactId>tomcat-websocket</artifactId>
+        <version>9.0.65</version>
+        <scope>provided</scope>
+    </dependency>
+
+    <!-- Para jSerialComm (Arduino) -->
+    <dependency>
+        <groupId>com.fazecast</groupId>
+        <artifactId>jSerialComm</artifactId>
+        <version>2.9.3</version>
+    </dependency>
 </web-app>
