@@ -130,6 +130,7 @@ public class UsuarioDAO implements UsuarioCrud {
         return false;
     }
 
+    /*
     public boolean puedeAbrirTalanquera(int idUsuario) {
         String sql = "SELECT estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
         Connection con = null;
@@ -166,6 +167,64 @@ public class UsuarioDAO implements UsuarioCrud {
         }
         return false; // por defecto no abre
     }
+     */
+    public boolean puedeAbrirTalanquera(int idUsuario) {
+        String selectSql = "SELECT id_qr, estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
+        String updateSql = "UPDATE Codigos_QR SET estado = ? WHERE id_qr = ?";
+
+        Connection con = null;
+        PreparedStatement psSelect = null;
+        PreparedStatement psUpdate = null;
+        ResultSet rs = null;
+
+        try {
+            con = cn.getConnection();
+
+            // Consulta el último estado
+            psSelect = con.prepareStatement(selectSql);
+            psSelect.setInt(1, idUsuario);
+            rs = psSelect.executeQuery();
+
+            if (rs.next()) {
+                int idQr = rs.getInt("id_qr");
+                boolean estadoActual = rs.getBoolean("estado");
+
+                boolean nuevoEstado = !estadoActual; // Alternar: si estaba 0 → 1, si estaba 1 → 0
+
+                // Actualizar el estado
+                psUpdate = con.prepareStatement(updateSql);
+                psUpdate.setBoolean(1, nuevoEstado);
+                psUpdate.setInt(2, idQr);
+                psUpdate.executeUpdate();
+
+                // Si el estado actual era 0, el usuario estaba "afuera", entonces ahora entra (estado 1)
+                // Devuelve true si el usuario puede pasar (cuando estaba fuera, o sea estado 0)
+                return !estadoActual;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (psSelect != null) {
+                    psSelect.close();
+                }
+                if (psUpdate != null) {
+                    psUpdate.close();
+                }
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return false; // por defecto, no puede abrir
+    }
 
     public boolean existeUsuario(String dpi, String correo) {
         String sql = "SELECT COUNT(*) FROM Usuarios WHERE dpi=? OR correo=?";
@@ -183,7 +242,5 @@ public class UsuarioDAO implements UsuarioCrud {
         }
         return false;
     }
-
-
 
 }
