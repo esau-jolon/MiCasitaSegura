@@ -572,13 +572,17 @@
                                             Editar
                                         </a>
 
-                                        <a href="Controlador?accion=delete&id=<%= u.getIdUsuario()%>" 
+                                        <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=delete&id=<%= u.getIdUsuario()%>" 
                                            class="btn-action btn-delete"
-                                           onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?\\n\\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\\nCorreo: <%= u.getCorreo()%>\\n\\nEsta acción no se puede deshacer.');"
+                                           onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\nCorreo: <%= u.getCorreo()%>\n\nEsta acción no se puede deshacer.');"
                                            title="Eliminar usuario">
                                             <i class="fas fa-trash"></i>
                                             Eliminar
                                         </a>
+
+
+
+
                                     </div>
                                 </td>
                             </tr>
