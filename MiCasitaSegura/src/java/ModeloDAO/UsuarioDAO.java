@@ -1,6 +1,8 @@
 package ModeloDAO;
 
 import Config.Conexion;
+import Controlador.EmailSender;
+import Controlador.QRGenerator;
 import Intefaces.UsuarioCrud;
 import Modelo.Usuarios;
 import java.sql.*;
@@ -68,6 +70,7 @@ public class UsuarioDAO implements UsuarioCrud {
         return u;
     }
 
+    /*
     @Override
     public boolean add(Usuarios u) {
         String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
@@ -84,6 +87,49 @@ public class UsuarioDAO implements UsuarioCrud {
             ps.setObject(8, u.getLoteId());
             ps.setBoolean(9, u.isEstado());
             ps.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+     */
+    @Override
+    public boolean add(Usuarios u) {
+        String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
+        try {
+            con = cn.getConnection();
+            ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, u.getDpi());
+            ps.setString(2, u.getNombre());
+            ps.setString(3, u.getApellidos());
+            ps.setString(4, u.getCorreo());
+            ps.setString(5, u.getContrasena());
+            ps.setInt(6, u.getRolId());
+            ps.setObject(7, u.getNumeroCasaId());
+            ps.setObject(8, u.getLoteId());
+            ps.setBoolean(9, u.isEstado());
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                int idUsuario = rs.getInt(1);
+
+                // Generar QR con el ID o DPI
+                String codigo = "USER-" + idUsuario + "-" + u.getDpi();
+                byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
+
+                // Guardar en Codigos_QR
+                String sqlQR = "INSERT INTO Codigos_QR(codigo, tipo, fecha_inicio, id_usuario, estado) VALUES(?, 'permanente', NOW(), ?, 1)";
+                PreparedStatement psQR = con.prepareStatement(sqlQR);
+                psQR.setString(1, codigo);
+                psQR.setInt(2, idUsuario);
+                psQR.executeUpdate();
+
+                // Enviar correo con el QR
+                EmailSender.enviarConAdjunto(u.getCorreo(), "Tu Código QR", "Bienvenido, aquí está tu QR", qrBytes);
+            }
             return true;
         } catch (Exception e) {
             e.printStackTrace();
