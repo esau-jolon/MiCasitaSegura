@@ -70,6 +70,7 @@ public class WebSocketServer {
         }
     }
 
+    /*
     @OnMessage
     public void onMessage(Session session, String message) throws IOException {
         System.out.println("📥 Mensaje recibido del cliente: " + message);
@@ -92,6 +93,47 @@ public class WebSocketServer {
         } catch (NumberFormatException e) {
             System.out.println("⚠️ El mensaje no es un ID válido: " + message);
             session.getBasicRemote().sendText("ID inválido");
+        }
+    }
+
+     */
+    @OnMessage
+    public void onMessage(Session session, String message) throws IOException {
+        System.out.println("📥 Mensaje recibido del cliente: " + message);
+        String commandToArduino = null;
+
+        try {
+            UsuarioDAO usuarioDAO = new UsuarioDAO();
+            boolean puedeAbrir = false;
+
+            if (message.startsWith("USR-")) {
+                // 🔹 Código de residente
+                int idUsuario = Integer.parseInt(message.replace("USR-", "").trim());
+                puedeAbrir = usuarioDAO.puedeAbrirUsuario(idUsuario);
+
+            } else if (message.startsWith("VIS-")) {
+                // 🔹 Código de visita
+                int idVisita = Integer.parseInt(message.replace("VIS-", "").trim());
+                puedeAbrir = usuarioDAO.puedeAbrirVisita(idVisita);
+
+            } else {
+                session.getBasicRemote().sendText("⚠️ Código QR inválido: " + message);
+                return;
+            }
+
+            if (puedeAbrir) {
+                commandToArduino = "entrada";  // abrir garita si estaba fuera
+            } else {
+                commandToArduino = "salida";   // abrir garita si estaba dentro
+            }
+
+            sendToArduino(commandToArduino);
+            session.getBasicRemote().sendText("Comando enviado: " + commandToArduino);
+
+        } catch (Exception e) {
+            System.out.println("⚠️ Error procesando QR: " + message);
+            e.printStackTrace();
+            session.getBasicRemote().sendText("Error al procesar QR");
         }
     }
 

@@ -70,6 +70,7 @@ public class UsuarioDAO implements UsuarioCrud {
         return u;
     }
 
+    /*
     @Override
     public boolean add(Usuarios u) {
         String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
@@ -131,6 +132,69 @@ public class UsuarioDAO implements UsuarioCrud {
         return false;
     }
 
+     */
+    @Override
+    public boolean add(Usuarios u) {
+        String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
+        try {
+            con = cn.getConnection();
+            ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps.setString(1, u.getDpi());
+            ps.setString(2, u.getNombre());
+            ps.setString(3, u.getApellidos());
+            ps.setString(4, u.getCorreo());
+            ps.setString(5, u.getContrasena());
+            ps.setInt(6, u.getRolId());
+            ps.setObject(7, u.getNumeroCasaId());
+            ps.setObject(8, u.getLoteId());
+            ps.setBoolean(9, u.isEstado());
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                int idUsuario = rs.getInt(1);
+
+                // Prefijo para usuarios residentes
+                String codigo = "USR-" + idUsuario;
+
+                // Generar QR con el código ya con prefijo
+                byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
+
+                // Guardar en Codigos_QR
+                String sqlQR = "INSERT INTO Codigos_QR(codigo, tipo, fecha_inicio, id_usuario, estado) "
+                        + "VALUES(?, 'permanente', NOW(), ?, 1)";
+                PreparedStatement psQR = con.prepareStatement(sqlQR);
+                psQR.setString(1, codigo);
+                psQR.setInt(2, idUsuario);
+                psQR.executeUpdate();
+
+                // Construir el cuerpo del mensaje
+                String mensaje = "Estimado(a) " + u.getNombre() + " " + u.getApellidos() + ",\n\n"
+                        + "Le damos la bienvenida al sistema *Mi Casita Segura* como nuevo residente.\n\n"
+                        + "Adjunto encontrará su código QR personal, el cual le permitirá acceder a las instalaciones de forma rápida y segura.\n\n"
+                        + "⚠️ Importante:\n"
+                        + "- Este código QR es de uso personal e intransferible.\n"
+                        + "- No lo comparta con nadie.\n"
+                        + "- Guárdelo en un lugar seguro.\n\n"
+                        + "Gracias por confiar en Mi Casita Segura.\n\n"
+                        + "Atentamente,\n"
+                        + "Administración - Mi Casita Segura";
+
+                // Enviar correo con mensaje personalizado y QR adjunto
+                EmailSender.enviarConAdjunto(
+                        u.getCorreo(),
+                        "Bienvenido a Mi Casita Segura",
+                        mensaje,
+                        qrBytes
+                );
+            }
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     @Override
     public boolean edit(Usuarios u) {
         String sql = "UPDATE Usuarios SET dpi=?,nombre=?,apellidos=?,correo=?,contrasena=?,rol_id=?,numero_casa_id=?,lote_id=?,estado=? WHERE id_usuario=?";
@@ -170,6 +234,7 @@ public class UsuarioDAO implements UsuarioCrud {
         return false;
     }
 
+    /*
     public boolean puedeAbrirTalanquera(int idUsuario) {
         String selectSql = "SELECT id_qr, estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
         String updateSql = "UPDATE Codigos_QR SET estado = ? WHERE id_qr = ?";
@@ -269,20 +334,72 @@ public class UsuarioDAO implements UsuarioCrud {
         return false; // por defecto, no puede abrir
     }
 
-    /*
-    public boolean puedeAbrirTalanquera(int idUsuario) {
+     */
+    public boolean puedeAbrirVisita(int idVisita) {
+        String selectSql = "SELECT id_qr, estado, fecha_fin, intentos_disponibles "
+                + "FROM Codigos_QR WHERE id_visita = ? ORDER BY id_qr DESC LIMIT 1";
+        String updateSql = "UPDATE Codigos_QR SET estado = ?, intentos_disponibles = ? WHERE id_qr = ?";
+
+        try (Connection con = cn.getConnection();
+                PreparedStatement psSelect = con.prepareStatement(selectSql)) {
+
+            psSelect.setInt(1, idVisita);
+            ResultSet rs = psSelect.executeQuery();
+
+            if (rs.next()) {
+                int idQr = rs.getInt("id_qr");
+                boolean estadoActual = rs.getBoolean("estado");
+                java.sql.Timestamp fechaFin = rs.getTimestamp("fecha_fin");
+                int intentos = rs.getInt("intentos_disponibles");
+
+                // 🔹 Validar fecha
+                if (fechaFin != null && fechaFin.before(new java.util.Date())) {
+                    return false; // QR expirado
+                }
+
+                // 🔹 Validar intentos
+                if (intentos <= 0) {
+                    return false; // Sin intentos disponibles
+                }
+
+                // Alternar estado
+                boolean nuevoEstado = !estadoActual;
+
+                // Reducir intentos si entra/sale
+                int nuevosIntentos = intentos - 1;
+
+                try (PreparedStatement psUpdate = con.prepareStatement(updateSql)) {
+                    psUpdate.setBoolean(1, nuevoEstado);
+                    psUpdate.setInt(2, nuevosIntentos);
+                    psUpdate.setInt(3, idQr);
+                    psUpdate.executeUpdate();
+                }
+
+                return true;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean puedeAbrirUsuario(int idUsuario) {
         String selectSql = "SELECT id_qr, estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
         String updateSql = "UPDATE Codigos_QR SET estado = ? WHERE id_qr = ?";
+        String selectUserSql = "SELECT nombre, apellidos, correo FROM Usuarios WHERE id_usuario = ?";
 
         Connection con = null;
         PreparedStatement psSelect = null;
         PreparedStatement psUpdate = null;
+        PreparedStatement psUser = null;
         ResultSet rs = null;
+        ResultSet rsUser = null;
 
         try {
             con = cn.getConnection();
 
-            // Consulta el último estado
+            // 📌 Consultar el último QR del usuario
             psSelect = con.prepareStatement(selectSql);
             psSelect.setInt(1, idUsuario);
             rs = psSelect.executeQuery();
@@ -291,16 +408,48 @@ public class UsuarioDAO implements UsuarioCrud {
                 int idQr = rs.getInt("id_qr");
                 boolean estadoActual = rs.getBoolean("estado");
 
-                boolean nuevoEstado = !estadoActual; // Alternar: si estaba 0 → 1, si estaba 1 → 0
+                // Alternar estado: si estaba fuera → entra, si estaba dentro → sale
+                boolean nuevoEstado = !estadoActual;
 
-                // Actualizar el estado
+                // 📌 Actualizar el estado en Codigos_QR
                 psUpdate = con.prepareStatement(updateSql);
                 psUpdate.setBoolean(1, nuevoEstado);
                 psUpdate.setInt(2, idQr);
                 psUpdate.executeUpdate();
 
-                // Si el estado actual era 0, el usuario estaba "afuera", entonces ahora entra (estado 1)
-                // Devuelve true si el usuario puede pasar (cuando estaba fuera, o sea estado 0)
+                // 📌 Obtener datos del usuario
+                psUser = con.prepareStatement(selectUserSql);
+                psUser.setInt(1, idUsuario);
+                rsUser = psUser.executeQuery();
+
+                if (rsUser.next()) {
+                    String nombre = rsUser.getString("nombre");
+                    String apellidos = rsUser.getString("apellidos");
+                    String correo = rsUser.getString("correo");
+
+                    String tipoAcceso = nuevoEstado ? "Entrada" : "Salida";
+                    String fechaHora = new java.util.Date().toString();
+
+                    // 📌 Construir mensaje de notificación
+                    String mensaje = "Estimado(a) " + nombre + " " + apellidos + ",\n\n"
+                            + "Se ha registrado el uso de su código QR en el sistema Mi Casita Segura.\n\n"
+                            + "Detalles del acceso:\n"
+                            + "- Tipo: " + tipoAcceso + "\n"
+                            + "- Fecha y hora: " + fechaHora + "\n\n"
+                            + "⚠️ Recuerde que este QR es personal e intransferible.\n\n"
+                            + "Atentamente,\n"
+                            + "Administración - Mi Casita Segura";
+
+                    // 📧 Enviar correo sin adjunto (solo aviso)
+                    EmailSender.enviarConAdjunto(
+                            correo,
+                            "Notificación de acceso - Mi Casita Segura",
+                            mensaje,
+                            null
+                    );
+                }
+
+                // 🔹 Si estaba afuera (estado = false), ahora entra → puede pasar
                 return !estadoActual;
             }
 
@@ -317,6 +466,12 @@ public class UsuarioDAO implements UsuarioCrud {
                 if (psUpdate != null) {
                     psUpdate.close();
                 }
+                if (rsUser != null) {
+                    rsUser.close();
+                }
+                if (psUser != null) {
+                    psUser.close();
+                }
                 if (con != null) {
                     con.close();
                 }
@@ -325,10 +480,9 @@ public class UsuarioDAO implements UsuarioCrud {
             }
         }
 
-        return false; // por defecto, no puede abrir
+        return false; // ❌ Por defecto, no puede abrir
     }
 
-     */
     public boolean existeUsuario(String dpi, String correo) {
         String sql = "SELECT COUNT(*) FROM Usuarios WHERE dpi=? OR correo=?";
         try (Connection con = cn.getConnection();
