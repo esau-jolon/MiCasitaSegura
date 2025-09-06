@@ -73,6 +73,7 @@ public class ControladorUsuario extends HttpServlet {
         vista.forward(request, response);
     }
 
+    /* ESTE SE ESTABA USANDO
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -128,4 +129,99 @@ public class ControladorUsuario extends HttpServlet {
         // 🔹 Redirige siempre al listado después del POST
         response.sendRedirect("ControladorUsuario?accion=listar");
     }
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+
+        String action = request.getParameter("accion");
+
+        try {
+            if ("add".equalsIgnoreCase(action)) {
+                // === Datos comunes ===
+                String dpi = request.getParameter("dpi");
+                String nombre = request.getParameter("nombre");
+                String apellidos = request.getParameter("apellidos");
+                String correo = request.getParameter("correo");
+                String contrasena = request.getParameter("contrasena");
+
+                int rolId = Integer.parseInt(request.getParameter("rolId"));
+
+                // --- Lee casa/lote protegiendo null ---
+                String casaParam = request.getParameter("numeroCasaId");
+                Integer numeroCasaId = (casaParam == null || casaParam.isEmpty())
+                        ? null : Integer.parseInt(casaParam);
+
+                String loteParam = request.getParameter("loteId");
+                Integer loteId = (loteParam == null || loteParam.isEmpty())
+                        ? null : Integer.parseInt(loteParam);
+
+                boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
+
+                // --- Si rol es guardia, forzar null ---
+                final int ID_ROL_GUARDIA = 3; // <-- usa el id real de guardia
+                if (rolId == ID_ROL_GUARDIA) {
+                    numeroCasaId = null;
+                    loteId = null;
+                }
+
+                Usuarios u = new Usuarios(dpi, nombre, apellidos, correo, contrasena,
+                        rolId, numeroCasaId, loteId, estado);
+                dao.add(u);
+
+            } else if ("edit".equalsIgnoreCase(action)) {
+
+                int idUsuario = Integer.parseInt(request.getParameter("idUsuario"));
+                String dpi = request.getParameter("dpi");
+                String nombre = request.getParameter("nombre");
+                String apellidos = request.getParameter("apellidos");
+                String correo = request.getParameter("correo");
+                String contrasena = request.getParameter("contrasena");
+
+                int rolId = Integer.parseInt(request.getParameter("rolId"));
+
+                String casaParam = request.getParameter("numeroCasaId");
+                Integer numeroCasaId = (casaParam == null || casaParam.isEmpty())
+                        ? null : Integer.parseInt(casaParam);
+
+                String loteParam = request.getParameter("loteId");
+                Integer loteId = (loteParam == null || loteParam.isEmpty())
+                        ? null : Integer.parseInt(loteParam);
+
+                boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
+
+                // --- Si rol es guardia, forzar null ---
+                final int ID_ROL_GUARDIA = 3; // <-- usa el id real de guardia
+                if (rolId == ID_ROL_GUARDIA) {
+                    numeroCasaId = null;
+                    loteId = null;
+                }
+
+                Usuarios u = new Usuarios();
+                u.setIdUsuario(idUsuario);
+                u.setDpi(dpi);
+                u.setNombre(nombre);
+                u.setApellidos(apellidos);
+                u.setCorreo(correo);
+                u.setContrasena(contrasena);
+                u.setRolId(rolId);
+                u.setNumeroCasaId(numeroCasaId);
+                u.setLoteId(loteId);
+                u.setEstado(estado);
+
+                dao.edit(u);
+            }
+
+            // Redirigir siempre al listado después del POST
+            response.sendRedirect("ControladorUsuario?accion=listar");
+
+        } catch (NumberFormatException ex) {
+            // Manejo básico: log, mensaje de error, etc.
+            throw new ServletException("Formato numérico inválido en los parámetros.", ex);
+        }
+    }
+
 }
