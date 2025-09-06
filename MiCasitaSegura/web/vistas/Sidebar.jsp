@@ -140,7 +140,13 @@
                     </a>
                 </li>
 
-                <li><a href="usuarios.jsp" target="contentFrame"><i class="bi bi-people"></i><span> Usuarios</span></a></li>
+                <li>
+                    <a href="<%=request.getContextPath()%>/ControladorVisita?accion=listar" target="contentFrame">
+                        <i class="bi bi-door-open"></i><span> Visitas</span>
+                    </a>
+                </li>
+
+
                 <li><a href="reportes.jsp" target="contentFrame"><i class="bi bi-bar-chart"></i><span> Reportes</span></a></li>
             </ul>
         </div>

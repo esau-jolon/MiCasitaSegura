@@ -28,5 +28,77 @@ public class Visitas {
         this.estado = estado;
     }
 
-    // Getters y Setters ...
+    public int getIdVisita() {
+        return idVisita;
+    }
+
+    public void setIdVisita(int idVisita) {
+        this.idVisita = idVisita;
+    }
+
+    public String getNombreVisitante() {
+        return nombreVisitante;
+    }
+
+    public void setNombreVisitante(String nombreVisitante) {
+        this.nombreVisitante = nombreVisitante;
+    }
+
+    public String getDpiVisitante() {
+        return dpiVisitante;
+    }
+
+    public void setDpiVisitante(String dpiVisitante) {
+        this.dpiVisitante = dpiVisitante;
+    }
+
+    public String getCorreoVisitante() {
+        return correoVisitante;
+    }
+
+    public void setCorreoVisitante(String correoVisitante) {
+        this.correoVisitante = correoVisitante;
+    }
+
+    public int getIdResidente() {
+        return idResidente;
+    }
+
+    public void setIdResidente(int idResidente) {
+        this.idResidente = idResidente;
+    }
+
+    public String getTipoVisita() {
+        return tipoVisita;
+    }
+
+    public void setTipoVisita(String tipoVisita) {
+        this.tipoVisita = tipoVisita;
+    }
+
+    public Date getFechaVisita() {
+        return fechaVisita;
+    }
+
+    public void setFechaVisita(Date fechaVisita) {
+        this.fechaVisita = fechaVisita;
+    }
+
+    public Integer getIntentosPermitidos() {
+        return intentosPermitidos;
+    }
+
+    public void setIntentosPermitidos(Integer intentosPermitidos) {
+        this.intentosPermitidos = intentosPermitidos;
+    }
+
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
+    }
+
+   
 }
