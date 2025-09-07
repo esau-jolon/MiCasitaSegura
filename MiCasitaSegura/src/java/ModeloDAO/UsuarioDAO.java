@@ -70,6 +70,7 @@ public class UsuarioDAO implements UsuarioCrud {
         return u;
     }
 
+
     @Override
     public boolean add(Usuarios u) {
         String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
@@ -91,13 +92,10 @@ public class UsuarioDAO implements UsuarioCrud {
             if (rs.next()) {
                 int idUsuario = rs.getInt(1);
 
-                // Prefijo para usuarios residentes
+                // Código único con prefijo
                 String codigo = "USR-" + idUsuario;
 
-                // Generar QR con el código ya con prefijo
-                byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
-
-                // Guardar en Codigos_QR
+                // Guardar en Codigos_QR (solo datos básicos por ahora)
                 String sqlQR = "INSERT INTO Codigos_QR(codigo, tipo, fecha_inicio, id_usuario, estado) "
                         + "VALUES(?, 'permanente', NOW(), ?, 0)";
                 PreparedStatement psQR = con.prepareStatement(sqlQR);
@@ -105,25 +103,36 @@ public class UsuarioDAO implements UsuarioCrud {
                 psQR.setInt(2, idUsuario);
                 psQR.executeUpdate();
 
-                // Construir el cuerpo del mensaje
-                String mensaje = "Estimado(a) " + u.getNombre() + " " + u.getApellidos() + ",\n\n"
-                        + "Le damos la bienvenida al sistema *Mi Casita Segura* como nuevo residente.\n\n"
-                        + "Adjunto encontrará su código QR personal, el cual le permitirá acceder a las instalaciones de forma rápida y segura.\n\n"
-                        + "⚠️ Importante:\n"
-                        + "- Este código QR es de uso personal e intransferible.\n"
-                        + "- No lo comparta con nadie.\n"
-                        + "- Guárdelo en un lugar seguro.\n\n"
-                        + "Gracias por confiar en Mi Casita Segura.\n\n"
-                        + "Atentamente,\n"
-                        + "Administración - Mi Casita Segura";
+                // --- Lanzar en segundo plano la generación de QR y envío del correo ---
+                new Thread(() -> {
+                    try {
+                        // Generar QR
+                        byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
 
-                // Enviar correo con mensaje personalizado y QR adjunto
-                EmailSender.enviarConAdjunto(
-                        u.getCorreo(),
-                        "Bienvenido a Mi Casita Segura",
-                        mensaje,
-                        qrBytes
-                );
+                        // Construir mensaje
+                        String mensaje = "Estimado(a) " + u.getNombre() + " " + u.getApellidos() + ",\n\n"
+                                + "Le damos la bienvenida al sistema *Mi Casita Segura* como nuevo residente.\n\n"
+                                + "Adjunto encontrará su código QR personal, el cual le permitirá acceder a las instalaciones.\n\n"
+                                + "⚠️ Importante:\n"
+                                + "- Uso personal e intransferible.\n"
+                                + "- No lo comparta.\n"
+                                + "- Guárdelo en un lugar seguro.\n\n"
+                                + "Gracias por confiar en Mi Casita Segura.\n\n"
+                                + "Atentamente,\n"
+                                + "Administración - Mi Casita Segura";
+
+                        // Enviar correo
+                        EmailSender.enviarConAdjunto(
+                                u.getCorreo(),
+                                "Bienvenido a Mi Casita Segura",
+                                mensaje,
+                                qrBytes
+                        );
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }).start(); // se ejecuta en paralelo
+
             }
             return true;
         } catch (Exception e) {
