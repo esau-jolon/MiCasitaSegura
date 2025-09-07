@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package Controlador;
 
 import Modelo.Usuarios;
@@ -17,15 +12,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-/**
- *
- * @author esauj
- */
 @WebServlet(name = "ControladorDirectorio", urlPatterns = {"/ControladorDirectorio"})
 public class ControladorDirectorio extends HttpServlet {
 
-    UsuarioDAO dao = new UsuarioDAO();
-
+    UsuarioDAO usuarioDAO = new UsuarioDAO();
     CasaDAO casaDAO = new CasaDAO();
     LoteDAO loteDAO = new LoteDAO();
 
@@ -35,39 +25,57 @@ public class ControladorDirectorio extends HttpServlet {
 
         String accion = request.getParameter("accion");
 
+        // Cargamos siempre los catálogos
+        request.setAttribute("casas", casaDAO.listar());
+        request.setAttribute("lotes", loteDAO.listar());
+
         if ("listar".equals(accion)) {
-            List<Usuarios> lista = dao.listar();
-            request.setAttribute("usuarios", lista);
-
-            // Agregamos los catálogos
-            request.setAttribute("casas", casaDAO.listar());
-            request.setAttribute("lotes", loteDAO.listar());
-
+            request.setAttribute("usuarios", usuarioDAO.listar());
             request.getRequestDispatcher("vistas/Directorio/Index.jsp").forward(request, response);
 
         } else if ("buscar".equals(accion)) {
             String nombre = request.getParameter("nombre");
             String apellidos = request.getParameter("apellidos");
-            String lote = request.getParameter("lote");
-            String casa = request.getParameter("numeroCasa");
+            String loteStr = request.getParameter("lote");
+            String casaStr = request.getParameter("numeroCasa");
 
-            Integer loteId = (lote != null && !lote.isEmpty()) ? Integer.parseInt(lote) : null;
-            Integer casaId = (casa != null && !casa.isEmpty()) ? Integer.parseInt(casa) : null;
+            // Validación: al menos nombre o apellido
+            if ((nombre == null || nombre.isEmpty()) && (apellidos == null || apellidos.isEmpty())) {
+                request.setAttribute("mensaje", "Debe ingresar al menos Nombre o Apellido para buscar.");
+                request.getRequestDispatcher("vistas/Directorio/Index.jsp").forward(request, response);
+                return;
+            }
 
-            List<Usuarios> lista = dao.buscar(nombre, apellidos, loteId, casaId);
+            // Validación FA3 combinada: lote y casa
+            boolean loteSeleccionado = loteStr != null && !loteStr.isEmpty();
+            boolean casaSeleccionada = casaStr != null && !casaStr.isEmpty();
 
-            if (lista.isEmpty()) {
+            if ((loteSeleccionado && !casaSeleccionada) || (casaSeleccionada && !loteSeleccionado)) {
+                request.setAttribute("mensaje", "Si selecciona un lote debe seleccionar un número de casa, y viceversa.");
+                request.getRequestDispatcher("vistas/Directorio/Index.jsp").forward(request, response);
+                return;
+            }
+
+            Integer loteId = loteSeleccionado ? Integer.parseInt(loteStr) : null;
+            Integer casaId = casaSeleccionada ? Integer.parseInt(casaStr) : null;
+
+            List<Usuarios> lista = usuarioDAO.buscar(nombre, apellidos, loteId, casaId);
+
+            if (lista == null || lista.isEmpty()) {
                 request.setAttribute("mensaje", "No se encontró ningún usuario con los datos ingresados.");
             }
 
             request.setAttribute("usuarios", lista);
-
-            // También enviamos los catálogos al JSP
-            request.setAttribute("casas", casaDAO.listar());
-            request.setAttribute("lotes", loteDAO.listar());
-
             request.getRequestDispatcher("vistas/Directorio/Index.jsp").forward(request, response);
+
+        } else {
+            response.sendRedirect("ControladorDirectorio?accion=listar");
         }
     }
 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        doGet(request, response);
+    }
 }

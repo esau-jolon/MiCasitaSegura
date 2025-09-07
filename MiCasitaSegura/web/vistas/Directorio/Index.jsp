@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="java.util.List" %>
 <%@ page import="Modelo.Usuarios" %>
 <%@ page import="Modelo.Casas" %>
@@ -8,43 +8,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Directorio Residencial</title>
-    <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css" type="text/css"/>
+    <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css"/>
     <script src="<%=request.getContextPath()%>/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body {
-            background: #f5f6fa;
-            font-family: Arial, sans-serif;
-        }
-        .page-title {
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            color: #2f3640;
-        }
-        .search-card {
-            background: #ffffff;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.05);
-            margin-bottom: 2rem;
-        }
-        .table thead th {
-            background-color: #2f3640;
-            color: white;
-        }
-        .table tbody tr:hover {
-            background-color: #dcdde1;
-        }
-    </style>
 </head>
 <body>
 <div class="container mt-4">
 
-    <h2 class="page-title">📖 Directorio Residencial</h2>
+    <h2 class="text-center mb-4">📖 Directorio Residencial</h2>
 
     <!-- Formulario de búsqueda -->
-    <div class="search-card">
-        <form action="ControladorDirectorio" method="get" class="row g-3">
+    <div class="card p-4 mb-4 shadow-sm">
+        <form action="ControladorDirectorio" method="get" class="row g-3" id="formBusqueda">
             <input type="hidden" name="accion" value="buscar"/>
 
             <div class="col-md-3">
@@ -54,7 +28,7 @@
                 <input type="text" name="apellidos" class="form-control" placeholder="Apellidos">
             </div>
             <div class="col-md-2">
-                <select name="lote" class="form-select">
+                <select name="lote" class="form-select" id="loteSelect">
                     <option value="">-- Seleccione Lote --</option>
                     <%
                         List<Lotes> lotes = (List<Lotes>) request.getAttribute("lotes");
@@ -69,7 +43,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <select name="numeroCasa" class="form-select">
+                <select name="numeroCasa" class="form-select" id="casaSelect">
                     <option value="">-- Seleccione Casa --</option>
                     <%
                         List<Casas> casas = (List<Casas>) request.getAttribute("casas");
@@ -90,7 +64,7 @@
         </form>
     </div>
 
-    <!-- Mensaje si no hay resultados -->
+    <!-- Mensaje -->
     <%
         String mensaje = (String) request.getAttribute("mensaje");
         if (mensaje != null) {
@@ -102,8 +76,8 @@
 
     <!-- Tabla de resultados -->
     <div class="table-responsive">
-        <table class="table table-bordered table-hover mt-3">
-            <thead class="text-center">
+        <table class="table table-bordered table-hover mt-3 text-center">
+            <thead class="table-dark">
                 <tr>
                     <th>Nombre Completo</th>
                     <th>Lote</th>
@@ -119,8 +93,8 @@
             %>
                 <tr>
                     <td><%= u.getNombre() %> <%= u.getApellidos() %></td>
-                    <td class="text-center"><%= u.getLoteId() %></td>
-                    <td class="text-center"><%= u.getNumeroCasaId() %></td>
+                    <td><%= u.getLoteId() %></td>
+                    <td><%= u.getNumeroCasaId() %></td>
                     <td><%= u.getCorreo() %></td>
                 </tr>
             <%
@@ -128,7 +102,7 @@
                 } else {
             %>
                 <tr>
-                    <td colspan="4" class="text-center text-muted">No hay registros para mostrar</td>
+                    <td colspan="4" class="text-muted">No hay registros para mostrar</td>
                 </tr>
             <%
                 }
@@ -137,5 +111,30 @@
         </table>
     </div>
 </div>
+
+<script>
+const form = document.getElementById('formBusqueda');
+const loteSelect = document.getElementById('loteSelect');
+const casaSelect = document.getElementById('casaSelect');
+const nombreInput = form.nombre;
+const apellidoInput = form.apellidos;
+
+form.addEventListener('submit', function(e) {
+    // Validar al menos nombre o apellido
+    if (!nombreInput.value.trim() && !apellidoInput.value.trim()) {
+        alert('Debe ingresar al menos Nombre o Apellido.');
+        e.preventDefault();
+        return;
+    }
+
+    // Validar lote/casa combinados
+    if ((loteSelect.value && !casaSelect.value) || (casaSelect.value && !loteSelect.value)) {
+        alert('Si selecciona un lote debe seleccionar un número de casa, y viceversa.');
+        e.preventDefault();
+        return;
+    }
+});
+</script>
+
 </body>
 </html>
