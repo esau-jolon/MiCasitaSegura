@@ -61,17 +61,17 @@
                                 <input type="hidden" name="idUsuario" value="<%= (u != null ? u.getIdUsuario() : "")%>"/>
 
                                 <div class="mb-3">
-                                    <label class="form-label">DPI</label>
+                                    <label class="form-label">DPI Usuario</label>
                                     <input type="text" class="form-control" name="dpi" value="<%= (u != null ? u.getDpi() : "")%>" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Nombre</label>
+                                    <label class="form-label">Nombre del Usuario</label>
                                     <input type="text" class="form-control" name="nombre" value="<%= (u != null ? u.getNombre() : "")%>" required>
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">Apellidos</label>
+                                    <label class="form-label">Apellidos del Usuario</label>
                                     <input type="text" class="form-control" name="apellidos" value="<%= (u != null ? u.getApellidos() : "")%>" required>
                                 </div>
 

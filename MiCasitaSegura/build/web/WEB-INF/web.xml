@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" 
          xmlns="http://xmlns.jcp.org/xml/ns/javaee" 
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
@@ -16,15 +17,25 @@
 
     <!-- Configuración de sesión -->
     <session-config>
-        <session-timeout>30</session-timeout>
+        <session-timeout>60</session-timeout> <!-- Aumenta el timeout de la sesión a 60 minutos -->
     </session-config>
     
     <!-- Configuración para WebSockets (si usas Tomcat 8+) -->
     <context-param>
         <param-name>org.apache.tomcat.websocket.textBufferSize</param-name>
-        <param-value>8192</param-value>
+        <param-value>8192</param-value> <!-- Tamaño del buffer de texto -->
     </context-param>
     
+    <context-param>
+        <param-name>org.apache.tomcat.websocket.closeTimeout</param-name>
+        <param-value>5000</param-value> <!-- Timeout de cierre de WebSocket (5 segundos) -->
+    </context-param>
+    
+    <context-param>
+        <param-name>org.apache.tomcat.websocket.readTimeout</param-name>
+        <param-value>60000</param-value> <!-- Timeout de lectura de WebSocket (60 segundos) -->
+    </context-param>
+
     <!-- Configuración MIME types -->
     <mime-mapping>
         <extension>html</extension>
@@ -36,15 +47,16 @@
         <welcome-file>index.html</welcome-file>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-    
-        <dependency>
+
+    <!-- Dependencias para WebSocket -->
+    <dependency>
         <groupId>javax.websocket</groupId>
         <artifactId>javax.websocket-api</artifactId>
         <version>1.1</version>
         <scope>provided</scope>
     </dependency>
 
-    <!-- Si usas Tomcat -->
+    <!-- Dependencia para Tomcat WebSocket -->
     <dependency>
         <groupId>org.apache.tomcat</groupId>
         <artifactId>tomcat-websocket</artifactId>
@@ -52,10 +64,11 @@
         <scope>provided</scope>
     </dependency>
 
-    <!-- Para jSerialComm (Arduino) -->
+    <!-- Dependencia para jSerialComm (Arduino) -->
     <dependency>
         <groupId>com.fazecast</groupId>
         <artifactId>jSerialComm</artifactId>
         <version>2.9.3</version>
     </dependency>
+
 </web-app>

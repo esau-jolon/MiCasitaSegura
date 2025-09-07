@@ -99,7 +99,7 @@ public class UsuarioDAO implements UsuarioCrud {
 
                 // Guardar en Codigos_QR
                 String sqlQR = "INSERT INTO Codigos_QR(codigo, tipo, fecha_inicio, id_usuario, estado) "
-                        + "VALUES(?, 'permanente', NOW(), ?, 1)";
+                        + "VALUES(?, 'permanente', NOW(), ?, 0)";
                 PreparedStatement psQR = con.prepareStatement(sqlQR);
                 psQR.setString(1, codigo);
                 psQR.setInt(2, idUsuario);
@@ -220,107 +220,6 @@ public class UsuarioDAO implements UsuarioCrud {
         return false;
     }
 
-    /*
-    public boolean puedeAbrirUsuario(int idUsuario) {
-        String selectSql = "SELECT id_qr, estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
-        String updateSql = "UPDATE Codigos_QR SET estado = ? WHERE id_qr = ?";
-        String selectUserSql = "SELECT nombre, apellidos, correo FROM Usuarios WHERE id_usuario = ?";
-
-        Connection con = null;
-        PreparedStatement psSelect = null;
-        PreparedStatement psUpdate = null;
-        PreparedStatement psUser = null;
-        ResultSet rs = null;
-        ResultSet rsUser = null;
-
-        try {
-            con = cn.getConnection();
-
-            // 📌 Consultar el último QR del usuario
-            psSelect = con.prepareStatement(selectSql);
-            psSelect.setInt(1, idUsuario);
-            rs = psSelect.executeQuery();
-
-            if (rs.next()) {
-                int idQr = rs.getInt("id_qr");
-                boolean estadoActual = rs.getBoolean("estado");
-
-                // Alternar estado: si estaba fuera → entra, si estaba dentro → sale
-                boolean nuevoEstado = !estadoActual;
-
-                // 📌 Actualizar el estado en Codigos_QR
-                psUpdate = con.prepareStatement(updateSql);
-                psUpdate.setBoolean(1, nuevoEstado);
-                psUpdate.setInt(2, idQr);
-                psUpdate.executeUpdate();
-
-                // 📌 Obtener datos del usuario
-                psUser = con.prepareStatement(selectUserSql);
-                psUser.setInt(1, idUsuario);
-                rsUser = psUser.executeQuery();
-
-                if (rsUser.next()) {
-                    String nombre = rsUser.getString("nombre");
-                    String apellidos = rsUser.getString("apellidos");
-                    String correo = rsUser.getString("correo");
-
-                    String tipoAcceso = nuevoEstado ? "Entrada" : "Salida";
-                    String fechaHora = new java.util.Date().toString();
-
-                    // 📌 Construir mensaje de notificación
-                    String mensaje = "Estimado(a) " + nombre + " " + apellidos + ",\n\n"
-                            + "Se ha registrado el uso de su código QR en el sistema Mi Casita Segura.\n\n"
-                            + "Detalles del acceso:\n"
-                            + "- Tipo: " + tipoAcceso + "\n"
-                            + "- Fecha y hora: " + fechaHora + "\n\n"
-                            + "⚠️ Recuerde que este QR es personal e intransferible.\n\n"
-                            + "Atentamente,\n"
-                            + "Administración - Mi Casita Segura";
-
-                    // 📧 Enviar correo sin adjunto (solo aviso)
-                    EmailSender.enviarConAdjunto(
-                            correo,
-                            "Notificación de acceso - Mi Casita Segura",
-                            mensaje,
-                            null
-                    );
-                }
-
-                // 🔹 Si estaba afuera (estado = false), ahora entra → puede pasar
-                return !estadoActual;
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (psSelect != null) {
-                    psSelect.close();
-                }
-                if (psUpdate != null) {
-                    psUpdate.close();
-                }
-                if (rsUser != null) {
-                    rsUser.close();
-                }
-                if (psUser != null) {
-                    psUser.close();
-                }
-                if (con != null) {
-                    con.close();
-                }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        return false; // ❌ Por defecto, no puede abrir
-    }
-
-     */
     public boolean puedeAbrirUsuario(int idUsuario) {
         String selectSql = "SELECT id_qr, estado FROM Codigos_QR WHERE id_usuario = ? ORDER BY id_qr DESC LIMIT 1";
         String updateSql = "UPDATE Codigos_QR SET estado = ? WHERE id_qr = ?";

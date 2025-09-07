@@ -136,7 +136,7 @@
                 <li><a href="home.jsp" target="contentFrame"><i class="bi bi-house"></i><span> Home</span></a></li>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorUsuario?accion=listar" target="contentFrame">
-                        <i class="bi bi-people"></i><span> Usuarios</span>
+                        <i class="bi bi-people"></i><span> Mantenimiento de Usuarios</span>
                     </a>
                 </li>
 

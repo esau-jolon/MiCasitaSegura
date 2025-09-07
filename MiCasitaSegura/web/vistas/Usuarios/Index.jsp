@@ -522,7 +522,7 @@
                 <!-- Add New User Button -->
                 <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=add" class="btn-add">
                     <i class="fas fa-plus"></i>
-                    Nuevo Usuario
+                    Crear Usuario
                 </a>
 
 

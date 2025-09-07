@@ -73,63 +73,7 @@ public class ControladorUsuario extends HttpServlet {
         vista.forward(request, response);
     }
 
-    /* ESTE SE ESTABA USANDO
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
-
-        String action = request.getParameter("accion");
-
-        if ("add".equalsIgnoreCase(action)) {
-            // Crear usuario
-            String dpi = request.getParameter("dpi");
-            String nombre = request.getParameter("nombre");
-            String apellidos = request.getParameter("apellidos");
-            String correo = request.getParameter("correo");
-            String contrasena = request.getParameter("contrasena");
-            int rolId = Integer.parseInt(request.getParameter("rolId"));
-            Integer numeroCasaId = request.getParameter("numeroCasaId").isEmpty() ? null : Integer.parseInt(request.getParameter("numeroCasaId"));
-            Integer loteId = request.getParameter("loteId").isEmpty() ? null : Integer.parseInt(request.getParameter("loteId"));
-            boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
-
-            Usuarios u = new Usuarios(dpi, nombre, apellidos, correo, contrasena, rolId, numeroCasaId, loteId, estado);
-            dao.add(u);
-
-        } else if ("edit".equalsIgnoreCase(action)) {
-            // Actualizar usuario
-            int idUsuario = Integer.parseInt(request.getParameter("idUsuario"));
-            String dpi = request.getParameter("dpi");
-            String nombre = request.getParameter("nombre");
-            String apellidos = request.getParameter("apellidos");
-            String correo = request.getParameter("correo");
-            String contrasena = request.getParameter("contrasena");
-            int rolId = Integer.parseInt(request.getParameter("rolId"));
-            Integer numeroCasaId = request.getParameter("numeroCasaId").isEmpty() ? null : Integer.parseInt(request.getParameter("numeroCasaId"));
-            Integer loteId = request.getParameter("loteId").isEmpty() ? null : Integer.parseInt(request.getParameter("loteId"));
-            boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
-
-            Usuarios u = new Usuarios();
-            u.setIdUsuario(idUsuario);
-            u.setDpi(dpi);
-            u.setNombre(nombre);
-            u.setApellidos(apellidos);
-            u.setCorreo(correo);
-            u.setContrasena(contrasena);
-            u.setRolId(rolId);
-            u.setNumeroCasaId(numeroCasaId);
-            u.setLoteId(loteId);
-            u.setEstado(estado);
-
-            dao.edit(u);
-        }
-
-        // 🔹 Redirige siempre al listado después del POST
-        response.sendRedirect("ControladorUsuario?accion=listar");
-    }
-     */
+   
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -194,7 +138,7 @@ public class ControladorUsuario extends HttpServlet {
                 boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
 
                 // --- Si rol es guardia, forzar null ---
-                final int ID_ROL_GUARDIA = 3; // <-- usa el id real de guardia
+                final int ID_ROL_GUARDIA = 3; 
                 if (rolId == ID_ROL_GUARDIA) {
                     numeroCasaId = null;
                     loteId = null;
