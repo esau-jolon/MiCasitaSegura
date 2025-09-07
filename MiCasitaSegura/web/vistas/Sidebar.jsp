@@ -133,7 +133,11 @@
             </div>
             <ul>
 
-                <li><a href="home.jsp" target="contentFrame"><i class="bi bi-house"></i><span> Home</span></a></li>
+                <li>
+                    <a href="<%=request.getContextPath()%>/ControladorDirectorio?accion=listar" target="contentFrame">
+                        <i class="bi bi-journal-bookmark"></i><span> Directorio</span>
+                    </a>
+                </li>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorUsuario?accion=listar" target="contentFrame">
                         <i class="bi bi-people"></i><span> Mantenimiento de Usuarios</span>

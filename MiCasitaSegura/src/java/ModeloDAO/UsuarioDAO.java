@@ -70,7 +70,6 @@ public class UsuarioDAO implements UsuarioCrud {
         return u;
     }
 
-
     @Override
     public boolean add(Usuarios u) {
         String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
@@ -355,6 +354,56 @@ public class UsuarioDAO implements UsuarioCrud {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<Usuarios> buscar(String nombre, String apellidos, Integer loteId, Integer numeroCasaId) {
+        List<Usuarios> lista = new ArrayList<>();
+        StringBuilder sql = new StringBuilder("SELECT * FROM Usuarios WHERE 1=1 ");
+
+        if (nombre != null && !nombre.trim().isEmpty()) {
+            sql.append(" AND nombre LIKE ? ");
+        }
+        if (apellidos != null && !apellidos.trim().isEmpty()) {
+            sql.append(" AND apellidos LIKE ? ");
+        }
+        if (loteId != null && numeroCasaId != null) {
+            sql.append(" AND lote_id = ? AND numero_casa_id = ? ");
+        } else if ((loteId != null && numeroCasaId == null) || (loteId == null && numeroCasaId != null)) {
+            // FA3 → número de casa incompleto
+            return Collections.emptyList();
+        }
+
+        try {
+            con = cn.getConnection();
+            ps = con.prepareStatement(sql.toString());
+
+            int index = 1;
+            if (nombre != null && !nombre.trim().isEmpty()) {
+                ps.setString(index++, "%" + nombre + "%");
+            }
+            if (apellidos != null && !apellidos.trim().isEmpty()) {
+                ps.setString(index++, "%" + apellidos + "%");
+            }
+            if (loteId != null && numeroCasaId != null) {
+                ps.setInt(index++, loteId);
+                ps.setInt(index++, numeroCasaId);
+            }
+
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                Usuarios u = new Usuarios();
+                u.setIdUsuario(rs.getInt("id_usuario"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setCorreo(rs.getString("correo"));
+                u.setNumeroCasaId(rs.getInt("numero_casa_id"));
+                u.setLoteId(rs.getInt("lote_id"));
+                lista.add(u);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
     }
 
 }
