@@ -8,8 +8,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Directorio Residencial</title>
+
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css"/>
-    <script src="<%=request.getContextPath()%>/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
 <div class="container mt-4">
@@ -112,6 +113,14 @@
     </div>
 </div>
 
+<!-- Scripts al final -->
+
+<!-- Bootstrap JS -->
+<script src="<%=request.getContextPath()%>/js/bootstrap.bundle.min.js"></script>
+
+<!-- SweetAlert2 -->
+<script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
+
 <script>
 const form = document.getElementById('formBusqueda');
 const loteSelect = document.getElementById('loteSelect');
@@ -122,15 +131,23 @@ const apellidoInput = form.apellidos;
 form.addEventListener('submit', function(e) {
     // Validar al menos nombre o apellido
     if (!nombreInput.value.trim() && !apellidoInput.value.trim()) {
-        alert('Debe ingresar al menos Nombre o Apellido.');
         e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Ups!',
+            text: 'Debe ingresar al menos Nombre o Apellido.'
+        });
         return;
     }
 
     // Validar lote/casa combinados
     if ((loteSelect.value && !casaSelect.value) || (casaSelect.value && !loteSelect.value)) {
-        alert('Si selecciona un lote debe seleccionar un número de casa, y viceversa.');
         e.preventDefault();
+        Swal.fire({
+            icon: 'warning',
+            title: '¡Atención!',
+            text: 'Si selecciona un lote debe seleccionar un número de casa, y viceversa.'
+        });
         return;
     }
 });
