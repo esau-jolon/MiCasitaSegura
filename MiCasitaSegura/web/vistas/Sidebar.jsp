@@ -105,12 +105,12 @@
 
             /* Íconos más grandes en el estado comprimido */
             .sidebar ul li a i {
-                font-size: 2.5rem; /* Icono más grande */
+                font-size: 2.0rem; /* Icono más grande */
                 transition: font-size 0.3s ease;
             }
 
             .sidebar:hover ul li a i {
-                font-size: 3rem; /* Iconos aún más grandes cuando el mouse pasa por encima */
+                font-size: 2.5rem; /* Iconos aún más grandes cuando el mouse pasa por encima */
             }
 
             .content {
