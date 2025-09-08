@@ -4,9 +4,9 @@
     <head>
         <title>Mi Casita Segura</title>
         <!-- Bootstrap local -->
-        <link rel="stylesheet" href="css/bootstrap.min.css">
-        <link rel="stylesheet" href="../Scripts/bootstrap-icons.min.css">
-
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
+    
         <!-- Estilos personalizados -->
         <style>
             body {
@@ -15,7 +15,7 @@
             }
 
             .sidebar {
-                width: 60px;
+                width: 80px; /* Barra más estrecha inicialmente */
                 height: 100vh;
                 position: fixed;
                 top: 0;
@@ -28,37 +28,37 @@
             }
 
             .sidebar:hover {
-                width: 250px;
+                width: 300px; /* Barra más ancha cuando el mouse pasa por encima */
             }
 
             /* Logo/Icono arriba */
             .sidebar .logo {
                 display: flex;
                 align-items: center;
-                justify-content: flex-start; /* que inicie desde la izquierda */
+                justify-content: flex-start;
                 gap: 8px;
-                padding: 0 15px; /* espacio interno */
-                margin-bottom: 30px;
-                font-size: 1.5rem;
+                padding: 0 20px;
+                margin-bottom: 40px;
+                font-size: 2rem;
                 font-weight: bold;
                 white-space: nowrap;
             }
 
             .sidebar .logo i {
-                font-size: 2rem; /* icono más grande */
-                margin: 0 auto; /* centra el icono cuando está colapsado */
+                font-size: 3rem; /* Icono más grande */
+                margin: 0 auto;
             }
 
             .sidebar .logo span {
                 opacity: 0;
                 visibility: hidden;
                 transition: opacity 0.3s ease;
-                font-size: 1rem;
+                font-size: 1.4rem;
             }
 
             /* Mostrar texto con hover */
             .sidebar:hover .logo i {
-                margin: 0; /* quita centrado */
+                margin: 0;
             }
 
             .sidebar:hover .logo span {
@@ -72,18 +72,20 @@
             }
 
             .sidebar ul li {
-                margin: 15px 0;
+                margin: 25px 0;
             }
 
             .sidebar ul li a {
                 color: #fff;
                 text-decoration: none;
-                padding: 12px 20px;
+                padding: 25px 30px;
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                border-radius: 8px;
+                gap: 20px;
+                border-radius: 15px;
                 transition: background 0.3s;
+                font-size: 1.3rem;
+                font-weight: 600;
             }
 
             .sidebar ul li a:hover {
@@ -101,16 +103,26 @@
                 visibility: visible;
             }
 
+            /* Íconos más grandes en el estado comprimido */
+            .sidebar ul li a i {
+                font-size: 2.5rem; /* Icono más grande */
+                transition: font-size 0.3s ease;
+            }
+
+            .sidebar:hover ul li a i {
+                font-size: 3rem; /* Iconos aún más grandes cuando el mouse pasa por encima */
+            }
+
             .content {
-                margin-left: 60px;
-                padding: 20px;
+                margin-left: 80px; /* Ajuste el margen para el estado comprimido */
+                padding: 30px;
                 background: #f8f9fa;
                 height: 100vh;
                 transition: margin-left 0.3s ease;
             }
 
             .sidebar:hover ~ .content {
-                margin-left: 250px;
+                margin-left: 300px;
             }
 
             iframe {
@@ -132,26 +144,21 @@
                 <span>MI CASITA SEGURA</span>
             </div>
             <ul>
-
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorDirectorio?accion=listar" target="contentFrame">
-                        <i class="bi bi-journal-bookmark"></i><span> Directorio</span>
+                        <i class="bi bi-journal-bookmark"></i><span> DIRECTORIO</span>
                     </a>
                 </li>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorUsuario?accion=listar" target="contentFrame">
-                        <i class="bi bi-people"></i><span> Mantenimiento de Usuarios</span>
+                        <i class="bi bi-people"></i><span> MANTENIMIENTO DE USUARIOS</span>
                     </a>
                 </li>
-
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorVisita?accion=listar" target="contentFrame">
-                        <i class="bi bi-door-open"></i><span> Visitas</span>
+                        <i class="bi bi-door-open"></i><span> VISITAS</span>
                     </a>
                 </li>
-
-
-                <li><a href="reportes.jsp" target="contentFrame"><i class="bi bi-bar-chart"></i><span> Reportes</span></a></li>
             </ul>
         </div>
 
