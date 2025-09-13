@@ -73,7 +73,6 @@ public class ControladorUsuario extends HttpServlet {
         vista.forward(request, response);
     }
 
-   
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -123,7 +122,7 @@ public class ControladorUsuario extends HttpServlet {
                 String nombre = request.getParameter("nombre");
                 String apellidos = request.getParameter("apellidos");
                 String correo = request.getParameter("correo");
-                String contrasena = request.getParameter("contrasena");
+                String contrasena = request.getParameter("contrasena"); // puede estar vacía
 
                 int rolId = Integer.parseInt(request.getParameter("rolId"));
 
@@ -138,19 +137,24 @@ public class ControladorUsuario extends HttpServlet {
                 boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
 
                 // --- Si rol es guardia, forzar null ---
-                final int ID_ROL_GUARDIA = 3; 
+                final int ID_ROL_GUARDIA = 3;
                 if (rolId == ID_ROL_GUARDIA) {
                     numeroCasaId = null;
                     loteId = null;
                 }
 
-                Usuarios u = new Usuarios();
-                u.setIdUsuario(idUsuario);
+                // --- Traer usuario existente para conservar la contraseña si el campo está vacío ---
+                Usuarios u = dao.listarId(idUsuario); // obtener usuario actual
                 u.setDpi(dpi);
                 u.setNombre(nombre);
                 u.setApellidos(apellidos);
                 u.setCorreo(correo);
-                u.setContrasena(contrasena);
+
+                if (contrasena != null && !contrasena.trim().isEmpty()) {
+                    u.setContrasena(contrasena); // actualizar solo si hay valor
+                }
+                // si está vacío, la contraseña anterior se mantiene
+
                 u.setRolId(rolId);
                 u.setNumeroCasaId(numeroCasaId);
                 u.setLoteId(loteId);

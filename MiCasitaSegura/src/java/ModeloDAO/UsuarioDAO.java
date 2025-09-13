@@ -15,6 +15,126 @@ public class UsuarioDAO implements UsuarioCrud {
     PreparedStatement ps;
     ResultSet rs;
 
+    public Usuarios login(String correo, String contrasena) {
+        Usuarios u = null;
+        try {
+            con = cn.getConnection();
+            ps = con.prepareStatement(
+                    "SELECT * FROM usuarios WHERE correo=? AND contrasena=? AND estado=1"
+            );
+            ps.setString(1, correo);
+            ps.setString(2, contrasena);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                u = new Usuarios();
+                u.setIdUsuario(rs.getInt("id_usuario"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setCorreo(rs.getString("correo"));
+                u.setContrasena(rs.getString("contrasena"));
+                u.setRolId(rs.getInt("rol_id"));
+                u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
+                u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
+                u.setEstado(rs.getBoolean("estado"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (Exception e) {
+            }
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (Exception e) {
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+            }
+        }
+        return u;
+    }
+
+    public void registrarAccion(int usuarioId, String accion) {
+        Connection con = null;
+        PreparedStatement ps = null;
+
+        try {
+            con = cn.getConnection(); // obtener conexión nueva cada vez
+            ps = con.prepareStatement("INSERT INTO auditoria(usuario_id, accion) VALUES (?, ?)");
+            ps.setInt(1, usuarioId);
+            ps.setString(2, accion);
+
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                System.out.println("Auditoría registrada: " + accion + " para usuario " + usuarioId);
+            } else {
+                System.out.println("No se pudo registrar la auditoría.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    /*
+    public void registrarAccion(int usuarioId, String accion) {
+        Connection con = null;
+        PreparedStatement ps = null;
+
+        try {
+            con = cn.getConnection();
+            ps = con.prepareStatement("INSERT INTO auditoria(usuario_id, accion) VALUES (?, ?)");
+            ps.setInt(1, usuarioId);
+            ps.setString(2, accion);
+            int filas = ps.executeUpdate();
+            if (filas > 0) {
+                System.out.println("Auditoría registrada: " + accion + " para usuario " + usuarioId);
+            } else {
+                System.out.println("No se pudo registrar la auditoría.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) {
+                    ps.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                if (con != null) {
+                    con.close();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+     */
     @Override
     public List<Usuarios> listar() {
         List<Usuarios> lista = new ArrayList<>();

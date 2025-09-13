@@ -6,16 +6,18 @@
         <!-- Bootstrap local -->
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
-    
+
         <!-- Estilos personalizados -->
         <style>
             body {
                 margin: 0;
                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background: #f0f2f5;
             }
 
+            /* Sidebar */
             .sidebar {
-                width: 80px; /* Barra más estrecha inicialmente */
+                width: 80px; 
                 height: 100vh;
                 position: fixed;
                 top: 0;
@@ -25,13 +27,13 @@
                 padding-top: 20px;
                 transition: width 0.3s ease;
                 overflow: hidden;
+                z-index: 1000;
             }
 
             .sidebar:hover {
-                width: 300px; /* Barra más ancha cuando el mouse pasa por encima */
+                width: 300px; 
             }
 
-            /* Logo/Icono arriba */
             .sidebar .logo {
                 display: flex;
                 align-items: center;
@@ -45,7 +47,7 @@
             }
 
             .sidebar .logo i {
-                font-size: 3rem; /* Icono más grande */
+                font-size: 3rem; 
                 margin: 0 auto;
             }
 
@@ -56,7 +58,6 @@
                 font-size: 1.4rem;
             }
 
-            /* Mostrar texto con hover */
             .sidebar:hover .logo i {
                 margin: 0;
             }
@@ -103,21 +104,19 @@
                 visibility: visible;
             }
 
-            /* Íconos más grandes en el estado comprimido */
             .sidebar ul li a i {
-                font-size: 2.0rem; /* Icono más grande */
+                font-size: 2.0rem; 
                 transition: font-size 0.3s ease;
             }
 
             .sidebar:hover ul li a i {
-                font-size: 2.5rem; /* Iconos aún más grandes cuando el mouse pasa por encima */
+                font-size: 2.5rem; 
             }
 
+            /* Contenido */
             .content {
-                margin-left: 80px; /* Ajuste el margen para el estado comprimido */
+                margin-left: 80px; 
                 padding: 30px;
-                background: #f8f9fa;
-                height: 100vh;
                 transition: margin-left 0.3s ease;
             }
 
@@ -125,24 +124,54 @@
                 margin-left: 300px;
             }
 
-            iframe {
+            /* Header usuario */
+            .user-header {
                 width: 100%;
-                height: calc(100vh - 40px);
-                border: none;
-                border-radius: 8px;
-                background: #fff;
-                box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                background: linear-gradient(180deg, #0d6efd, #0a58ca); /* mismo color que sidebar */
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                margin-bottom: 20px;
+                font-size: 1.3rem;
+                font-weight: 600;
+                color: #ffffff;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
+
+            .user-header i {
+                font-size: 1.8rem;
+                color: #ffd700; /* icono dorado */
+            }
+
+            /* iframe */
+            iframe {
+                width: 95%; 
+                height: 80vh;
+                border: none;
+                border-radius: 15px;
+                background: #ffffff;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+                display: block;
+                margin: 0 auto;
+            }
+
+            iframe:hover {
+                box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            }
+
         </style>
     </head>
     <body>
         <!-- Sidebar -->
         <div class="sidebar">
-            <!-- Icono de casita segura centrado -->
             <div class="logo">
                 <i class="bi bi-house-fill"></i>
                 <span>MI CASITA SEGURA</span>
             </div>
+
             <ul>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorDirectorio?accion=listar" target="contentFrame">
@@ -159,11 +188,27 @@
                         <i class="bi bi-door-open"></i><span> VISITAS</span>
                     </a>
                 </li>
+                <li>
+                    <a href="<%=request.getContextPath()%>/LogoutServlet">
+                        <i class="bi bi-box-arrow-right"></i><span> CERRAR SESIÓN</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
         <!-- Contenido -->
         <div class="content">
+            <!-- Header usuario fuera de la sidebar -->
+            <div class="user-header">
+                <% 
+                    Modelo.Usuarios usuario = (Modelo.Usuarios) session.getAttribute("usuario");
+                    if (usuario != null) { 
+                %>
+                    <i class="bi bi-person-circle"></i>
+                    <span>Bienvenido, <%= usuario.getNombre() %> <%= usuario.getApellidos() %></span>
+                <% } %>
+            </div>
+
             <iframe name="contentFrame"></iframe>
         </div>
     </body>
