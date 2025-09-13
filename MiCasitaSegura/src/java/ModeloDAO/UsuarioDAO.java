@@ -20,7 +20,10 @@ public class UsuarioDAO implements UsuarioCrud {
         try {
             con = cn.getConnection();
             ps = con.prepareStatement(
-                    "SELECT * FROM usuarios WHERE correo=? AND contrasena=? AND estado=1"
+                    "SELECT u.*, r.nombre_rol "
+                    + "FROM usuarios u "
+                    + "INNER JOIN roles r ON u.rol_id = r.id_rol "
+                    + "WHERE u.correo=? AND u.contrasena=? AND u.estado=1"
             );
             ps.setString(1, correo);
             ps.setString(2, contrasena);
@@ -33,6 +36,7 @@ public class UsuarioDAO implements UsuarioCrud {
                 u.setCorreo(rs.getString("correo"));
                 u.setContrasena(rs.getString("contrasena"));
                 u.setRolId(rs.getInt("rol_id"));
+                u.setNombreRol(rs.getString("nombre_rol")); // <-- asignar nombre del rol
                 u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
                 u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
                 u.setEstado(rs.getBoolean("estado"));

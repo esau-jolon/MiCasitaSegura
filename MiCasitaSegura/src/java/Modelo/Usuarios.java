@@ -1,6 +1,7 @@
 package Modelo;
 
 public class Usuarios {
+
     private int idUsuario;
     private String dpi;
     private String nombre;
@@ -11,9 +12,18 @@ public class Usuarios {
     private Integer numeroCasaId; // puede ser null
     private Integer loteId;       // puede ser null
     private boolean estado;
+    private String nombreRol;
 
     // Constructor vacío
     public Usuarios() {
+    }
+
+    public String getNombreRol() {
+        return nombreRol;
+    }
+
+    public void setNombreRol(String nombreRol) {
+        this.nombreRol = nombreRol;
     }
 
     // Constructor sin id (para insertar nuevos registros)
@@ -110,4 +120,3 @@ public class Usuarios {
         this.estado = estado;
     }
 }
-

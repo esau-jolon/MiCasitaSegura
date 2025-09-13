@@ -31,7 +31,7 @@
             }
 
             .sidebar:hover {
-                width: 300px; 
+                width: 280px; 
             }
 
             .sidebar .logo {
@@ -40,14 +40,14 @@
                 justify-content: flex-start;
                 gap: 8px;
                 padding: 0 20px;
-                margin-bottom: 40px;
-                font-size: 2rem;
+                margin-bottom: 30px;
+                font-size: 1.8rem;
                 font-weight: bold;
                 white-space: nowrap;
             }
 
             .sidebar .logo i {
-                font-size: 3rem; 
+                font-size: 2.5rem; 
                 margin: 0 auto;
             }
 
@@ -55,7 +55,7 @@
                 opacity: 0;
                 visibility: hidden;
                 transition: opacity 0.3s ease;
-                font-size: 1.4rem;
+                font-size: 1.2rem;
             }
 
             .sidebar:hover .logo i {
@@ -73,19 +73,19 @@
             }
 
             .sidebar ul li {
-                margin: 25px 0;
+                margin: 20px 0;
             }
 
             .sidebar ul li a {
                 color: #fff;
                 text-decoration: none;
-                padding: 25px 30px;
+                padding: 15px 20px; /* menos ancho */
                 display: flex;
                 align-items: center;
-                gap: 20px;
-                border-radius: 15px;
+                gap: 15px; /* menos espacio entre icono y texto */
+                border-radius: 12px;
                 transition: background 0.3s;
-                font-size: 1.3rem;
+                font-size: 1.1rem; /* más pequeño */
                 font-weight: 600;
             }
 
@@ -105,12 +105,12 @@
             }
 
             .sidebar ul li a i {
-                font-size: 2.0rem; 
+                font-size: 1.7rem; /* iconos un poco más pequeños */
                 transition: font-size 0.3s ease;
             }
 
             .sidebar:hover ul li a i {
-                font-size: 2.5rem; 
+                font-size: 2rem; 
             }
 
             /* Contenido */
@@ -121,13 +121,13 @@
             }
 
             .sidebar:hover ~ .content {
-                margin-left: 300px;
+                margin-left: 280px;
             }
 
             /* Header usuario */
             .user-header {
                 width: 100%;
-                background: linear-gradient(180deg, #0d6efd, #0a58ca); /* mismo color que sidebar */
+                background: linear-gradient(180deg, #0d6efd, #0a58ca);
                 padding: 15px 25px;
                 border-radius: 10px;
                 box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -142,7 +142,7 @@
 
             .user-header i {
                 font-size: 1.8rem;
-                color: #ffd700; /* icono dorado */
+                color: #ffd700;
             }
 
             /* iframe */
@@ -161,7 +161,6 @@
             iframe:hover {
                 box-shadow: 0 15px 40px rgba(0,0,0,0.2);
             }
-
         </style>
     </head>
     <body>
@@ -205,7 +204,10 @@
                     if (usuario != null) { 
                 %>
                     <i class="bi bi-person-circle"></i>
-                    <span>Bienvenido, <%= usuario.getNombre() %> <%= usuario.getApellidos() %></span>
+                    <span>
+                        Bienvenido, <%= usuario.getNombre() %> <%= usuario.getApellidos() %> 
+                        (<%= usuario.getNombreRol() != null ? usuario.getNombreRol() : "Sin rol" %>)
+                    </span>
                 <% } %>
             </div>
 
