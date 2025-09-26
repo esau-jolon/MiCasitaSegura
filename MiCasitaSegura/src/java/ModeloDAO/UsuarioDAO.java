@@ -442,4 +442,30 @@ public class UsuarioDAO implements UsuarioCrud {
         return false; // ❌ Por defecto, no puede abrir
     }
 
+    public boolean existeDpiOCorreo(String dpi, String correo, Integer excluirId) {
+        boolean existe = false;
+        String sql = "SELECT COUNT(*) FROM usuarios WHERE (dpi = ? OR correo = ?)";
+        if (excluirId != null) {
+            sql += " AND id_usuario <> ?";
+        }
+
+        try (Connection con = cn.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, dpi);
+            ps.setString(2, correo);
+            if (excluirId != null) {
+                ps.setInt(3, excluirId);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next() && rs.getInt(1) > 0) {
+                existe = true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return existe;
+    }
+
 }

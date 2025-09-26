@@ -104,8 +104,19 @@ public class ControladorUsuario extends HttpServlet {
 
                 boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
 
+                // 🚨 Validar duplicados
+                if (dao.existeDpiOCorreo(dpi, correo, null)) {
+                    request.setAttribute("error", "El DPI o el correo ya están registrados.");
+                    request.setAttribute("usuario", null);
+                    request.setAttribute("catalogoCasas", new CasaDAO().listar());
+                    request.setAttribute("catalogoLotes", new LoteDAO().listar());
+                    request.setAttribute("catalogoRoles", new RoleDAO().listar());
+                    request.getRequestDispatcher(addEdit).forward(request, response);
+                    return;
+                }
+
                 // --- Si rol es guardia, forzar null ---
-                final int ID_ROL_GUARDIA = 3; // <-- usa el id real de guardia
+                final int ID_ROL_GUARDIA = 3;
                 if (rolId == ID_ROL_GUARDIA) {
                     numeroCasaId = null;
                     loteId = null;
@@ -116,7 +127,6 @@ public class ControladorUsuario extends HttpServlet {
                 dao.add(u);
 
             } else if ("edit".equalsIgnoreCase(action)) {
-
                 int idUsuario = Integer.parseInt(request.getParameter("idUsuario"));
                 String dpi = request.getParameter("dpi");
                 String nombre = request.getParameter("nombre");
@@ -136,6 +146,17 @@ public class ControladorUsuario extends HttpServlet {
 
                 boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
 
+                // 🚨 Validar duplicados excluyendo al propio usuario
+                if (dao.existeDpiOCorreo(dpi, correo, idUsuario)) {
+                    request.setAttribute("error", "El DPI o el correo ya están registrados.");
+                    request.setAttribute("usuario", dao.listarId(idUsuario));
+                    request.setAttribute("catalogoCasas", new CasaDAO().listar());
+                    request.setAttribute("catalogoLotes", new LoteDAO().listar());
+                    request.setAttribute("catalogoRoles", new RoleDAO().listar());
+                    request.getRequestDispatcher(addEdit).forward(request, response);
+                    return;
+                }
+
                 // --- Si rol es guardia, forzar null ---
                 final int ID_ROL_GUARDIA = 3;
                 if (rolId == ID_ROL_GUARDIA) {
@@ -143,8 +164,8 @@ public class ControladorUsuario extends HttpServlet {
                     loteId = null;
                 }
 
-                // --- Traer usuario existente para conservar la contraseña si el campo está vacío ---
-                Usuarios u = dao.listarId(idUsuario); // obtener usuario actual
+                // --- Traer usuario existente para conservar contraseña si el campo está vacío ---
+                Usuarios u = dao.listarId(idUsuario);
                 u.setDpi(dpi);
                 u.setNombre(nombre);
                 u.setApellidos(apellidos);
@@ -153,7 +174,6 @@ public class ControladorUsuario extends HttpServlet {
                 if (contrasena != null && !contrasena.trim().isEmpty()) {
                     u.setContrasena(contrasena); // actualizar solo si hay valor
                 }
-                // si está vacío, la contraseña anterior se mantiene
 
                 u.setRolId(rolId);
                 u.setNumeroCasaId(numeroCasaId);
@@ -167,7 +187,6 @@ public class ControladorUsuario extends HttpServlet {
             response.sendRedirect("ControladorUsuario?accion=listar");
 
         } catch (NumberFormatException ex) {
-            // Manejo básico: log, mensaje de error, etc.
             throw new ServletException("Formato numérico inválido en los parámetros.", ex);
         }
     }

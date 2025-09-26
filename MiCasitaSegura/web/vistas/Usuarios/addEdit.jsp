@@ -49,6 +49,14 @@
             List<Roles> roles = (List<Roles>) request.getAttribute("catalogoRoles");
         %>
 
+        <% String error = (String) request.getAttribute("error"); %>
+        <% if (error != null) {%>
+        <div class="alert alert-danger text-center">
+            <%= error%>
+        </div>
+        <% }%>
+
+
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-8">

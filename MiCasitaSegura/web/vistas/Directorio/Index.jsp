@@ -14,8 +14,8 @@
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-grid.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/all.min.css"/>
-       
-    
+
+
 
         <style>
             body {
@@ -197,20 +197,24 @@
                 <form action="ControladorDirectorio" method="get" class="row g-3" id="formBusqueda">
                     <input type="hidden" name="accion" value="buscar"/>
                     <div class="col-md-3">
-                        <input type="text" name="nombre" class="form-control" placeholder="Nombre">
+                        <input type="text" name="nombre" class="form-control" placeholder="Nombre"
+                               value="<%= request.getParameter("nombre") != null ? request.getParameter("nombre") : ""%>">
                     </div>
                     <div class="col-md-3">
-                        <input type="text" name="apellidos" class="form-control" placeholder="Apellidos">
+                        <input type="text" name="apellidos" class="form-control" placeholder="Apellidos"
+                               value="<%= request.getParameter("apellidos") != null ? request.getParameter("apellidos") : ""%>">
                     </div>
                     <div class="col-md-2">
                         <select name="lote" class="form-select" id="loteSelect">
                             <option value="">-- Seleccione Lote --</option>
                             <%
+                                String loteParam = request.getParameter("lote");
                                 List<Lotes> lotes = (List<Lotes>) request.getAttribute("lotes");
                                 if (lotes != null) {
                                     for (Lotes l : lotes) {
+                                        String selected = (loteParam != null && loteParam.equals(String.valueOf(l.getIdLote()))) ? "selected" : "";
                             %>
-                            <option value="<%=l.getIdLote()%>"><%=l.getCodigoLote()%></option>
+                            <option value="<%=l.getIdLote()%>" <%=selected%>><%=l.getCodigoLote()%></option>
                             <%
                                     }
                                 }
@@ -221,11 +225,13 @@
                         <select name="numeroCasa" class="form-select" id="casaSelect">
                             <option value="">-- Seleccione Casa --</option>
                             <%
+                                String casaParam = request.getParameter("numeroCasa");
                                 List<Casas> casas = (List<Casas>) request.getAttribute("casas");
                                 if (casas != null) {
                                     for (Casas c : casas) {
+                                        String selected = (casaParam != null && casaParam.equals(String.valueOf(c.getIdCasa()))) ? "selected" : "";
                             %>
-                            <option value="<%=c.getIdCasa()%>"><%=c.getNumeroCasa()%></option>
+                            <option value="<%=c.getIdCasa()%>" <%=selected%>><%=c.getNumeroCasa()%></option>
                             <%
                                     }
                                 }
@@ -292,21 +298,13 @@
             form.addEventListener('submit', function (e) {
                 if (!nombreInput.value.trim() && !apellidoInput.value.trim()) {
                     e.preventDefault();
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '¡Ups!',
-                        text: 'Debe ingresar al menos Nombre o Apellido.'
-                    });
+                    Swal.fire({icon: 'warning', title: '¡Ups!', text: 'Debe ingresar al menos Nombre o Apellido.'});
                     return;
                 }
 
                 if ((loteSelect.value && !casaSelect.value) || (!loteSelect.value && casaSelect.value)) {
                     e.preventDefault();
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '¡Atención!',
-                        text: 'Si selecciona un lote debe seleccionar un número de casa, y viceversa.'
-                    });
+                    Swal.fire({icon: 'warning', title: '¡Atención!', text: 'Si selecciona un lote debe seleccionar un número de casa, y viceversa.'});
                     return;
                 }
             });
