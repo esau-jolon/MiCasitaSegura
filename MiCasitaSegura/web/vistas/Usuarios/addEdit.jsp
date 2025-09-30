@@ -7,7 +7,19 @@
         <title><%= (request.getAttribute("usuario") == null ? "Agregar Usuario" : "Editar Usuario")%></title>
 
         <!-- Bootstrap desde CDN (puedes quitarlo si usas local) -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap.min.css"/>
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css"/>
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-grid.min.css"/>
+
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
+
+        <!-- FontAwesome local -->
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/css/all.min.css"/>
+
+        <!-- SweetAlert2 local -->
+        <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
+
 
         <style>
             body {
@@ -260,10 +272,10 @@
             });
         </script>
 
-        <!-- Bootstrap JS (opcional si usas validaciones de formulario o componentes interactivos) -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Bootstrap Icons (para los íconos si los usas) -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+
+        <!-- Bootstrap JS local -->
+        <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
 
     </body>
 </html>

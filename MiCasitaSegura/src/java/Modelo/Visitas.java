@@ -3,31 +3,36 @@ package Modelo;
 import java.sql.Date;
 
 public class Visitas {
+
     private int idVisita;
     private String nombreVisitante;
     private String dpiVisitante;
     private String correoVisitante;
-    private int idResidente; // FK a Usuarios
-    private String tipoVisita; // 'Visita' o 'Por intentos'
-    private Date fechaVisita;  // solo aplica a tipo 'Visita'
-    private Integer intentosPermitidos; // solo aplica a 'Por intentos'
+    private int idResidente;        // FK a Usuarios (residente anfitrión)
+    private int idUsuarioCreador;   // FK a Usuarios (quien registró la visita)
+    private String tipoVisita;      // 'Visita' o 'Por intentos'
+    private Date fechaVisita;       // aplica a tipo 'Visita'
+    private Integer intentosPermitidos; // aplica a 'Por intentos'
     private boolean estado;
 
     public Visitas() {
     }
 
     public Visitas(String nombreVisitante, String dpiVisitante, String correoVisitante,
-                   int idResidente, String tipoVisita, Date fechaVisita, Integer intentosPermitidos, boolean estado) {
+            int idResidente, int idUsuarioCreador, String tipoVisita,
+            Date fechaVisita, Integer intentosPermitidos, boolean estado) {
         this.nombreVisitante = nombreVisitante;
         this.dpiVisitante = dpiVisitante;
         this.correoVisitante = correoVisitante;
         this.idResidente = idResidente;
+        this.idUsuarioCreador = idUsuarioCreador;
         this.tipoVisita = tipoVisita;
         this.fechaVisita = fechaVisita;
         this.intentosPermitidos = intentosPermitidos;
         this.estado = estado;
     }
 
+    // Getters & Setters
     public int getIdVisita() {
         return idVisita;
     }
@@ -68,6 +73,14 @@ public class Visitas {
         this.idResidente = idResidente;
     }
 
+    public int getIdUsuarioCreador() {
+        return idUsuarioCreador;
+    }
+
+    public void setIdUsuarioCreador(int idUsuarioCreador) {
+        this.idUsuarioCreador = idUsuarioCreador;
+    }
+
     public String getTipoVisita() {
         return tipoVisita;
     }
@@ -99,6 +112,4 @@ public class Visitas {
     public void setEstado(boolean estado) {
         this.estado = estado;
     }
-
-   
 }
