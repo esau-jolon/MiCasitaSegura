@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+
 @WebServlet("/ControladorVisita")
 public class ControladorVisita extends HttpServlet {
 
@@ -43,17 +44,19 @@ public class ControladorVisita extends HttpServlet {
 
         } else if ("add".equalsIgnoreCase(action)) {
             request.setAttribute("visita", null);
+            request.setAttribute("catalogoResidentes", usuarioDao.listarResidentes());
             acceso = addEdit;
 
         } else if ("edit".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
             Visitas visita = dao.listarId(id);
             request.setAttribute("visita", visita);
+            request.setAttribute("catalogoResidentes", usuarioDao.listarResidentes());
             acceso = addEdit;
 
         } else if ("cancelar".equalsIgnoreCase(action)) { // ⚡ FA06
             int id = Integer.parseInt(request.getParameter("id"));
-            dao.cancelar(id); // cambia estado y desactiva QR
+            dao.delete(id); // cambia estado y desactiva QR
             request.setAttribute("visitas", dao.listar());
             acceso = listar;
 
@@ -61,6 +64,12 @@ public class ControladorVisita extends HttpServlet {
             int id = Integer.parseInt(request.getParameter("id"));
             dao.descargarQR(id, response); // escribe el PNG al response
             return; // importante: no hacer forward
+
+        } else if ("delete".equalsIgnoreCase(action)) { // ⚡ NUEVO BLOQUE
+            int id = Integer.parseInt(request.getParameter("id"));
+            dao.delete(id); // elimina visita (y QR si lo configuras en DAO)
+            request.setAttribute("visitas", dao.listar());
+            acceso = listar;
 
         } else {
             acceso = listar;
@@ -150,7 +159,4 @@ public class ControladorVisita extends HttpServlet {
 
         response.sendRedirect("ControladorVisita?accion=listar");
     }
-    
-    
-    
 }

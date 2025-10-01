@@ -98,6 +98,36 @@ public class UsuarioDAO implements UsuarioCrud {
         }
         return lista;
     }
+    
+    public List<Usuarios> listarResidentes() {
+        List<Usuarios> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Usuarios WHERE rol_id = 1";
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Usuarios u = new Usuarios();
+                u.setIdUsuario(rs.getInt("id_usuario"));
+                u.setDpi(rs.getString("dpi"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setCorreo(rs.getString("correo"));
+                u.setContrasena(rs.getString("contrasena"));
+                u.setRolId(rs.getInt("rol_id"));
+                u.setNumeroCasaId(rs.getInt("numero_casa_id"));
+                u.setLoteId(rs.getInt("lote_id"));
+                u.setEstado(rs.getBoolean("estado"));
+                lista.add(u);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+    
 
     @Override
     public Usuarios listarId(int id) {

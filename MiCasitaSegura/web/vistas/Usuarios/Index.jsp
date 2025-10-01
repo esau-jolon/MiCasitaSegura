@@ -8,9 +8,22 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Lista de Usuarios</title>
-     
+        <!-- Bootstrap local -->
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css"/>
-        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css"/>
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-grid.min.css"/>
+
+        <!-- Bootstrap Icons -->
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
+
+        <!-- FontAwesome local -->
+        <link rel="stylesheet" href="<%=request.getContextPath()%>/css/all.min.css"/>
+
+        <!-- SweetAlert2 local -->
+        <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
+
+        <!-- Bootstrap JS local -->
+        <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <style>
             .root-vars {
@@ -488,7 +501,7 @@
                 <div class="card-header">
                     <div class="header-content">
                         <div class="header-title">
-                            <i class="fas fa-users"></i>
+                            <i class="bi bi-people-fill"></i>
                             Lista de Usuarios
                         </div>
                         <div class="user-stats">
@@ -522,22 +535,21 @@
 
                 <!-- Add New User Button -->
                 <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=add" class="btn-add">
-                    <i class="fas fa-plus"></i>
+                    <i class="bi bi-person-plus-fill"></i>
                     Crear Usuario
                 </a>
-
 
                 <!-- Table Container -->
                 <div class="table-container">
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th><i class="fas fa-hashtag"></i> ID</th>
-                                <th><i class="fas fa-id-card"></i> DPI</th>
-                                <th><i class="fas fa-user"></i> Usuario</th>
-                                <th><i class="fas fa-user-tag"></i> Rol</th>
-                                <th><i class="fas fa-toggle-on"></i> Estado</th>
-                                <th><i class="fas fa-cogs"></i> Acciones</th>
+                                <th><i class="bi bi-hash"></i> ID</th>
+                                <th><i class="bi bi-credit-card-2-front"></i> DPI</th>
+                                <th><i class="bi bi-person"></i> Usuario</th>
+                                <th><i class="bi bi-person-badge"></i> Rol</th>
+                                <th><i class="bi bi-toggle-on"></i> Estado</th>
+                                <th><i class="bi bi-gear"></i> Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -554,13 +566,13 @@
                                 </td>
                                 <td>
                                     <span class="role-badge">
-                                        <i class="fas fa-user-shield"></i>
+                                        <i class="bi bi-shield-lock-fill"></i>
                                         Rol <%= u.getRolId()%>
                                     </span>
                                 </td>
                                 <td>
                                     <span class="status-badge <%= u.isEstado() ? "status-active" : "status-inactive"%>">
-                                        <i class="fas fa-<%= u.isEstado() ? "check-circle" : "times-circle"%>"></i>
+                                        <i class="bi <%= u.isEstado() ? "bi-check-circle-fill" : "bi-x-circle-fill"%>"></i>
                                         <%= u.isEstado() ? "Activo" : "Inactivo"%>
                                     </span>
                                 </td>
@@ -569,7 +581,7 @@
                                         <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=edit&id=<%= u.getIdUsuario()%>" 
                                            class="btn-action btn-edit"
                                            title="Editar usuario">
-                                            <i class="fas fa-edit"></i>
+                                            <i class="bi bi-pencil-square"></i>
                                             Editar
                                         </a>
 
@@ -577,10 +589,9 @@
                                            class="btn-action btn-delete"
                                            onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\nCorreo: <%= u.getCorreo()%>\n\nEsta acción no se puede deshacer.');"
                                            title="Eliminar usuario">
-                                            <i class="fas fa-trash"></i>
+                                            <i class="bi bi-trash-fill"></i>
                                             Eliminar
                                         </a>
-
                                     </div>
                                 </td>
                             </tr>
@@ -591,7 +602,7 @@
                             <tr>
                                 <td colspan="6" class="empty-state">
                                     <div class="empty-icon">
-                                        <i class="fas fa-users-slash"></i>
+                                        <i class="bi bi-person-x-fill"></i>
                                     </div>
                                     <div class="empty-title">No hay usuarios registrados</div>
                                     <div class="empty-description">Comienza agregando tu primer usuario al sistema</div>

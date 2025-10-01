@@ -69,16 +69,19 @@
             <h2><i class="bi bi-house-lock"></i> Mi Casita Segura</h2>
             <form action="LoginServlet" method="post">
                 <div class="mb-3 input-icon">
-                    <i class="fa-solid fa-envelope"></i>
+                    <i class="bi bi-envelope-fill"></i>
                     <input type="email" name="correo" class="form-control" placeholder="Correo electrónico" required>
                 </div>
                 <div class="mb-3 input-icon">
-                    <i class="fa-solid fa-lock"></i>
+                    <i class="bi bi-lock-fill"></i>
                     <input type="password" name="contrasena" class="form-control" placeholder="Contraseña" required>
                 </div>
-                <button type="submit" class="btn btn-primary btn-login">Iniciar Sesión</button>
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                </button>
             </form>
         </div>
+
 
         <%-- Mostrar error con SweetAlert si existe --%>
         <%
@@ -89,9 +92,9 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
-                text: '<%= error %>'
+                text: '<%= error%>'
             });
         </script>
-        <% } %>
+        <% }%>
     </body>
 </html>

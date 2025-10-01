@@ -174,32 +174,19 @@ public class VisitaDAO {
         return false;
     }
 
-    // 🔹 Eliminar visita
-    public boolean delete(int id) {
-        String sql = "DELETE FROM Visitas WHERE id_visita=?";
-        try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    // 🔹 Cancelar visita (FA06)
-    public boolean cancelar(int idVisita) {
+    // 🔹 "Eliminar" = pasar a estado inactivo tanto la visita como su QR
+    public boolean delete(int idVisita) {
         String sqlVisita = "UPDATE Visitas SET estado = 0 WHERE id_visita = ?";
         String sqlQR = "UPDATE Codigos_QR SET estado = 0 WHERE id_visita = ?";
 
         try (Connection con = Conexion.getConnection()) {
-            // 🔹 Desactivar la visita
+            // Desactivar la visita
             try (PreparedStatement ps = con.prepareStatement(sqlVisita)) {
                 ps.setInt(1, idVisita);
                 ps.executeUpdate();
             }
 
-            // 🔹 Desactivar el código QR asociado
+            // Desactivar el código QR
             try (PreparedStatement psQR = con.prepareStatement(sqlQR)) {
                 psQR.setInt(1, idVisita);
                 psQR.executeUpdate();

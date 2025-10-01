@@ -10,8 +10,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Lista de Usuarios</title>
 
-        <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css"/>
-      <!-- Bootstrap local -->
+        <!-- Bootstrap local -->
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-grid.min.css"/>
@@ -27,6 +26,7 @@
 
         <!-- Bootstrap JS local -->
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
+
         <style>
             .root-vars {
                 primary-color: #667eea;
@@ -502,7 +502,7 @@
                 <div class="card-header">
                     <div class="header-content">
                         <div class="header-title">
-                            <i class="fas fa-door-open"></i>
+                            <i class="bi bi-door-open"></i>
                             Lista de Visitas
                         </div>
                         <div class="user-stats">
@@ -528,7 +528,7 @@
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number"><%= totalVisitas - visitasActivas%></span>
-                                <span>Inactivas</span>
+                                <span>Canceladas</span>
                             </div>
                         </div>
                     </div>
@@ -536,7 +536,7 @@
 
                 <!-- Add New Visit Button -->
                 <a href="${pageContext.request.contextPath}/ControladorVisita?accion=add" class="btn-add">
-                    <i class="fas fa-plus"></i>
+                    <i class="bi bi-plus-circle"></i>
                     Registrar Visita
                 </a>
 
@@ -545,15 +545,15 @@
                     <table class="modern-table">
                         <thead>
                             <tr>
-                                <th><i class="fas fa-hashtag"></i> ID</th>
-                                <th><i class="fas fa-user"></i> Visitante</th>
-                                <th><i class="fas fa-id-card"></i> DPI</th>
-                                <th><i class="fas fa-envelope"></i> Correo</th>
-                                <th><i class="fas fa-home"></i> Residente</th>
-                                <th><i class="fas fa-clipboard-list"></i> Tipo</th>
-                                <th><i class="fas fa-calendar-alt"></i> Fecha</th>
-                                <th><i class="fas fa-toggle-on"></i> Estado</th>
-                                <th><i class="fas fa-cogs"></i> Acciones</th>
+                                <th><i class="bi bi-hash"></i> ID</th>
+                                <th><i class="bi bi-person"></i> Visitante</th>
+                                <th><i class="bi bi-credit-card-2-front"></i> DPI</th>
+                                <th><i class="bi bi-envelope"></i> Correo</th>
+                                <th><i class="bi bi-house"></i> Residente</th>
+                                <th><i class="bi bi-list-ul"></i> Tipo</th>
+                                <th><i class="bi bi-calendar-date"></i> Fecha</th>
+                                <th><i class="bi bi-toggle-on"></i> Estado</th>
+                                <th><i class="bi bi-gear"></i> Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -562,32 +562,30 @@
                                     for (Visitas v : lista) {
                             %>
                             <tr>
-                                <td><span class="user-id">#<%= v.getIdVisita()%></span></td>
-                                <td class="user-info">
-                                    <div class="user-name"><%= v.getNombreVisitante()%></div>
-                                </td>
+                                <td>#<%= v.getIdVisita()%></td>
+                                <td><%= v.getNombreVisitante()%></td>
                                 <td><%= v.getDpiVisitante()%></td>
                                 <td><%= v.getCorreoVisitante()%></td>
-                                <td><%= v.getIdResidente()%></td> <%-- Luego puedes mostrar nombre en vez de ID con un join --%>
+                                <td><%= v.getIdResidente()%></td>
                                 <td><%= v.getTipoVisita()%></td>
                                 <td><%= v.getFechaVisita() != null ? v.getFechaVisita() : "-"%></td>
                                 <td>
                                     <span class="status-badge <%= v.isEstado() ? "status-active" : "status-inactive"%>">
-                                        <i class="fas fa-<%= v.isEstado() ? "check-circle" : "times-circle"%>"></i>
-                                        <%= v.isEstado() ? "Activa" : "Inactiva"%>
+                                        <i class="bi <%= v.isEstado() ? "bi-check-circle-fill" : "bi-x-circle-fill"%>"></i>
+                                        <%= v.isEstado() ? "Activo" : "Cancelada"%>
                                     </span>
                                 </td>
                                 <td>
                                     <div class="action-buttons">
                                         <a href="${pageContext.request.contextPath}/ControladorVisita?accion=edit&id=<%= v.getIdVisita()%>" 
                                            class="btn-action btn-edit" title="Editar visita">
-                                            <i class="fas fa-edit"></i> Editar
+                                            <i class="bi bi-pencil-square"></i> Editar
                                         </a>
                                         <a href="${pageContext.request.contextPath}/ControladorVisita?accion=delete&id=<%= v.getIdVisita()%>" 
                                            class="btn-action btn-delete"
-                                           onclick="return confirm('¿Seguro que deseas eliminar esta visita?\n\nVisitante: <%= v.getNombreVisitante()%>\nCorreo: <%= v.getCorreoVisitante()%>');"
-                                           title="Eliminar visita">
-                                            <i class="fas fa-trash"></i> Eliminar
+                                           onclick="return confirm('¿Seguro que deseas cancelar esta visita?\n\nVisitante: <%= v.getNombreVisitante()%>\nCorreo: <%= v.getCorreoVisitante()%>');"
+                                           title="Cancelar visita">
+                                            <i class="bi bi-slash-circle"></i> Cancelar
                                         </a>
                                     </div>
                                 </td>
@@ -599,7 +597,7 @@
                             <tr>
                                 <td colspan="9" class="empty-state">
                                     <div class="empty-icon">
-                                        <i class="fas fa-door-closed"></i>
+                                        <i class="bi bi-door-closed"></i>
                                     </div>
                                     <div class="empty-title">No hay visitas registradas</div>
                                     <div class="empty-description">Comienza registrando tu primera visita</div>
@@ -611,88 +609,90 @@
                 </div>
             </div>
         </div>
-        <!-- Scripts -->
-        <script>
-            // Smooth scroll and animation effects
-            document.addEventListener('DOMContentLoaded', function () {
-                // Add loading effect to buttons
-                const buttons = document.querySelectorAll('.btn-action, .btn-add');
-                buttons.forEach(button => {
-                    button.addEventListener('click', function (e) {
-                        if (!this.classList.contains('btn-delete')) {
-                            const icon = this.querySelector('i');
-                            const originalClass = icon.className;
-                            icon.className = 'fas fa-spinner fa-spin';
+    </body>
 
-                            setTimeout(() => {
-                                icon.className = originalClass;
-                            }, 1000);
-                        }
-                    });
-                });
+    <!-- Scripts -->
+    <script>
+        // Smooth scroll and animation effects
+        document.addEventListener('DOMContentLoaded', function () {
+            // Add loading effect to buttons
+            const buttons = document.querySelectorAll('.btn-action, .btn-add');
+            buttons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    if (!this.classList.contains('btn-delete')) {
+                        const icon = this.querySelector('i');
+                        const originalClass = icon.className;
+                        icon.className = 'fas fa-spinner fa-spin';
 
-                // Enhanced table row hover effects
-                const tableRows = document.querySelectorAll('.modern-table tbody tr');
-                tableRows.forEach(row => {
-                    row.addEventListener('mouseenter', function () {
-                        this.style.transform = 'scale(1.01)';
-                    });
-
-                    row.addEventListener('mouseleave', function () {
-                        this.style.transform = 'scale(1)';
-                    });
-                });
-
-                // Add ripple effect to buttons
-                function createRipple(event) {
-                    const button = event.currentTarget;
-                    const circle = document.createElement('span');
-                    const diameter = Math.max(button.clientWidth, button.clientHeight);
-                    const radius = diameter / 2;
-
-                    circle.style.width = circle.style.height = `${diameter}px`;
-                    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
-                    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
-                    circle.classList.add('ripple');
-
-                    const ripple = button.getElementsByClassName('ripple')[0];
-                    if (ripple) {
-                        ripple.remove();
+                        setTimeout(() => {
+                            icon.className = originalClass;
+                        }, 1000);
                     }
-
-                    button.appendChild(circle);
-                }
-
-                const rippleButtons = document.querySelectorAll('.btn-add, .btn-action');
-                rippleButtons.forEach(button => {
-                    button.addEventListener('click', createRipple);
                 });
             });
 
-            // Enhanced confirm dialog
-            function confirmDelete(userName, userEmail) {
-                return confirm(`¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: ${userName}\nCorreo: ${userEmail}\n\nEsta acción no se puede deshacer.`);
-            }
-        </script>
+            // Enhanced table row hover effects
+            const tableRows = document.querySelectorAll('.modern-table tbody tr');
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function () {
+                    this.style.transform = 'scale(1.01)';
+                });
 
-        <style>
-            /* Ripple effect */
-            .ripple {
-                position: absolute;
-                border-radius: 50%;
-                transform: scale(0);
-                animation: ripple-animation 600ms linear;
-                background-color: rgba(255, 255, 255, 0.3);
-                pointer-events: none;
-            }
+                row.addEventListener('mouseleave', function () {
+                    this.style.transform = 'scale(1)';
+                });
+            });
 
-            @keyframes ripple-animation {
-                to {
-                    transform: scale(4);
-                    opacity: 0;
+            // Add ripple effect to buttons
+            function createRipple(event) {
+                const button = event.currentTarget;
+                const circle = document.createElement('span');
+                const diameter = Math.max(button.clientWidth, button.clientHeight);
+                const radius = diameter / 2;
+
+                circle.style.width = circle.style.height = `${diameter}px`;
+                circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
+                circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
+                circle.classList.add('ripple');
+
+                const ripple = button.getElementsByClassName('ripple')[0];
+                if (ripple) {
+                    ripple.remove();
                 }
-            }
-        </style>
 
-    </body>
+                button.appendChild(circle);
+            }
+
+            const rippleButtons = document.querySelectorAll('.btn-add, .btn-action');
+            rippleButtons.forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+        });
+
+        // Enhanced confirm dialog
+        function confirmDelete(userName, userEmail) {
+            return confirm(`¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: ${userName}\nCorreo: ${userEmail}\n\nEsta acción no se puede deshacer.`);
+        }
+    </script>
+
+    <style>
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple-animation 600ms linear;
+            background-color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+
+</body>
 </html>
