@@ -81,7 +81,7 @@
                                     <select class="form-select" name="idTipoPago" id="tipoPago" required>
                                         <option value="">Seleccione un tipo</option>
                                         <% if (catalogoTiposPago != null) {
-                                        for (TiposPago t : catalogoTiposPago) {%>
+                                                for (TiposPago t : catalogoTiposPago) {%>
                                         <option value="<%= t.getIdTipoPago()%>"
                                                 data-monto="<%= t.getMonto()%>"
                                                 data-nombre="<%= t.getNombre()%>"
@@ -89,7 +89,7 @@
                                             <%= t.getNombre()%> - Q <%= t.getMonto()%>
                                         </option>
                                         <% }
-                                    }%>
+                                            }%>
                                     </select>
                                 </div>
 
@@ -219,23 +219,43 @@
                         mesContainer.style.display = "none";
                     }
 
-                    // Calcular mora
+                    // === Calcular mora en base al MES SUGERIDO ===
                     let moraCalc = 0;
                     if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
-                        const fecha = new Date(fechaPago.value);
-                        if (fecha.getDate() > 5) {
-                            moraCalc = (fecha.getDate() - 5) * 25;
+                        const fechaHoy = new Date(fechaPago.value); // fecha real de pago
+                        const mesSugerido = mesPagar.value; // texto (ej. "Agosto")
+
+                        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+                        // Determinar índice del mes sugerido
+                        const idxMesSugerido = meses.indexOf(mesSugerido);
+
+                        if (idxMesSugerido >= 0) {
+                            // Construir la fecha límite (día 5 del mes sugerido del año actual)
+                            const fechaLimite = new Date(fechaHoy.getFullYear(), idxMesSugerido, 5);
+
+                            // Si ya pasó la fecha límite → calcular mora
+                            if (fechaHoy > fechaLimite) {
+                                // Diferencia en días
+                                const diffMs = fechaHoy - fechaLimite;
+                                const diasRetraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                                moraCalc = diasRetraso * 25;
+                            }
                         }
                     }
+
+                    // Mostrar resultados
                     mora.value = moraCalc.toFixed(2);
                     total.value = (parseFloat(monto.value) + moraCalc).toFixed(2);
 
-                    // Mostrar tarjeta
+                    // Mostrar tarjeta y habilitar registrar
                     datosTarjeta.style.display = "block";
                     btnRegistrar.disabled = false;
                 });
             });
         </script>
+
 
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
     </body>

@@ -584,14 +584,14 @@
                                             <i class="bi bi-pencil-square"></i>
                                             Editar
                                         </a>
-
                                         <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=delete&id=<%= u.getIdUsuario()%>" 
                                            class="btn-action btn-delete"
-                                           onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\nCorreo: <%= u.getCorreo()%>\n\nEsta acción no se puede deshacer.');"
-                                           title="Eliminar usuario">
-                                            <i class="bi bi-trash-fill"></i>
-                                            Eliminar
+                                           onclick="return confirm('¿Estás seguro de que deseas desactivar este usuario?\n\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\nCorreo: <%= u.getCorreo()%>\n\nEsta acción no se puede deshacer.');"
+                                           title="Desactivar usuario">
+                                            <i class="bi bi-person-x-fill"></i>
+                                            Desactivar Usuario
                                         </a>
+
                                     </div>
                                 </td>
                             </tr>

@@ -1,5 +1,7 @@
 package Modelo;
 
+import java.sql.Timestamp; // Para manejar las fechas de auditoría con precisión
+
 public class Usuarios {
 
     private int idUsuario;
@@ -7,27 +9,26 @@ public class Usuarios {
     private String nombre;
     private String apellidos;
     private String correo;
-    private String contrasena; // mejor no usar "password" para que coincida con la BD
+    private String contrasena;
     private int rolId;
     private Integer numeroCasaId; // puede ser null
     private Integer loteId;       // puede ser null
     private boolean estado;
     private String nombreRol;
 
+    // 🔹 Nuevos campos de auditoría
+    private Integer creadoPor;          // id del usuario que creó
+    private Integer modificadoPor;      // id del usuario que modificó
+    private Timestamp fechaCreacion;    // fecha/hora creación
+    private Timestamp fechaModificacion; // fecha/hora última modificación
+
     // Constructor vacío
     public Usuarios() {
     }
 
-    public String getNombreRol() {
-        return nombreRol;
-    }
-
-    public void setNombreRol(String nombreRol) {
-        this.nombreRol = nombreRol;
-    }
-
-    // Constructor sin id (para insertar nuevos registros)
-    public Usuarios(String dpi, String nombre, String apellidos, String correo, String contrasena, int rolId, Integer numeroCasaId, Integer loteId, boolean estado) {
+    // Constructor para insertar un nuevo usuario
+    public Usuarios(String dpi, String nombre, String apellidos, String correo, String contrasena,
+            int rolId, Integer numeroCasaId, Integer loteId, boolean estado, Integer creadoPor) {
         this.dpi = dpi;
         this.nombre = nombre;
         this.apellidos = apellidos;
@@ -37,6 +38,7 @@ public class Usuarios {
         this.numeroCasaId = numeroCasaId;
         this.loteId = loteId;
         this.estado = estado;
+        this.creadoPor = creadoPor;
     }
 
     // Getters y Setters
@@ -118,5 +120,46 @@ public class Usuarios {
 
     public void setEstado(boolean estado) {
         this.estado = estado;
+    }
+
+    public String getNombreRol() {
+        return nombreRol;
+    }
+
+    public void setNombreRol(String nombreRol) {
+        this.nombreRol = nombreRol;
+    }
+
+    // 🔹 Nuevos getters y setters de auditoría
+    public Integer getCreadoPor() {
+        return creadoPor;
+    }
+
+    public void setCreadoPor(Integer creadoPor) {
+        this.creadoPor = creadoPor;
+    }
+
+    public Integer getModificadoPor() {
+        return modificadoPor;
+    }
+
+    public void setModificadoPor(Integer modificadoPor) {
+        this.modificadoPor = modificadoPor;
+    }
+
+    public Timestamp getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Timestamp fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Timestamp getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Timestamp fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 }

@@ -13,6 +13,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import javax.servlet.annotation.WebServlet;
 
@@ -63,7 +64,6 @@ public class ControladorUsuario extends HttpServlet {
         } else if ("delete".equalsIgnoreCase(action)) {
             id = Integer.parseInt(request.getParameter("id"));
             dao.delete(id);
-            // 🔹 Recargar lista después de borrar
             List<Usuarios> listaUsuarios = dao.listar();
             request.setAttribute("usuarios", listaUsuarios);
             acceso = listar;
@@ -81,6 +81,8 @@ public class ControladorUsuario extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
 
         String action = request.getParameter("accion");
+        HttpSession session = request.getSession();
+        Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario"); // 👈 usuario logueado
 
         try {
             if ("add".equalsIgnoreCase(action)) {
@@ -90,7 +92,6 @@ public class ControladorUsuario extends HttpServlet {
                 String apellidos = request.getParameter("apellidos");
                 String correo = request.getParameter("correo");
                 String contrasena = request.getParameter("contrasena");
-
                 int rolId = Integer.parseInt(request.getParameter("rolId"));
 
                 // --- Lee casa/lote protegiendo null ---
@@ -121,9 +122,23 @@ public class ControladorUsuario extends HttpServlet {
                     numeroCasaId = null;
                     loteId = null;
                 }
+                Usuarios u = new Usuarios();
+                u.setDpi(dpi);
+                u.setNombre(nombre);
+                u.setApellidos(apellidos);
+                u.setCorreo(correo);
+                u.setContrasena(contrasena);
+                u.setRolId(rolId);
+                u.setNumeroCasaId(numeroCasaId);
+                u.setLoteId(loteId);
+                u.setEstado(estado);
+                u.setCreadoPor(usuarioSesion.getIdUsuario()); // 👈 auditoría
 
-                Usuarios u = new Usuarios(dpi, nombre, apellidos, correo, contrasena,
-                        rolId, numeroCasaId, loteId, estado);
+                // 👇 Auditoría: quién creó el usuario
+                if (usuarioSesion != null) {
+                    u.setCreadoPor(usuarioSesion.getIdUsuario());
+                }
+
                 dao.add(u);
 
             } else if ("edit".equalsIgnoreCase(action)) {
@@ -132,7 +147,7 @@ public class ControladorUsuario extends HttpServlet {
                 String nombre = request.getParameter("nombre");
                 String apellidos = request.getParameter("apellidos");
                 String correo = request.getParameter("correo");
-                String contrasena = request.getParameter("contrasena"); // puede estar vacía
+                String contrasena = request.getParameter("contrasena");
 
                 int rolId = Integer.parseInt(request.getParameter("rolId"));
 
@@ -157,22 +172,20 @@ public class ControladorUsuario extends HttpServlet {
                     return;
                 }
 
-                // --- Si rol es guardia, forzar null ---
                 final int ID_ROL_GUARDIA = 3;
                 if (rolId == ID_ROL_GUARDIA) {
                     numeroCasaId = null;
                     loteId = null;
                 }
 
-                // --- Traer usuario existente para conservar contraseña si el campo está vacío ---
-                Usuarios u = dao.listarId(idUsuario);
+                Usuarios u = dao.listarId(idUsuario); // usuario existente
                 u.setDpi(dpi);
                 u.setNombre(nombre);
                 u.setApellidos(apellidos);
                 u.setCorreo(correo);
 
                 if (contrasena != null && !contrasena.trim().isEmpty()) {
-                    u.setContrasena(contrasena); // actualizar solo si hay valor
+                    u.setContrasena(contrasena);
                 }
 
                 u.setRolId(rolId);
@@ -180,10 +193,14 @@ public class ControladorUsuario extends HttpServlet {
                 u.setLoteId(loteId);
                 u.setEstado(estado);
 
+                // 👇 Auditoría: quién modificó
+                if (usuarioSesion != null) {
+                    u.setModificadoPor(usuarioSesion.getIdUsuario());
+                }
+
                 dao.edit(u);
             }
 
-            // Redirigir siempre al listado después del POST
             response.sendRedirect("ControladorUsuario?accion=listar");
 
         } catch (NumberFormatException ex) {

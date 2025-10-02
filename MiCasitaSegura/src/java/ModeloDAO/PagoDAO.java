@@ -136,22 +136,41 @@ public class PagoDAO {
 
     public String obtenerMesSiguiente(int idUsuario) {
         String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
-        String sql = "SELECT MAX(fecha_pago) AS ultima FROM Pagos WHERE id_usuario=? AND id_tipo_pago=1"; // 1=Mantenimiento
-        try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, idUsuario);
-            ResultSet rs = ps.executeQuery();
-            if (rs.next() && rs.getDate("ultima") != null) {
-                java.sql.Date ultima = rs.getDate("ultima");
-                java.util.Calendar cal = java.util.Calendar.getInstance();
-                cal.setTime(ultima);
-                cal.add(java.util.Calendar.MONTH, 1); // siguiente mes
-                return meses[cal.get(java.util.Calendar.MONTH)];
+        String sqlUltimoPago = "SELECT MAX(fecha_pago) AS ultima FROM Pagos WHERE id_usuario=? AND id_tipo_pago=1"; // 1 = Mantenimiento
+        String sqlFechaCreacion = "SELECT FechaCreacion FROM Usuarios WHERE id_usuario=?";
+
+        try (Connection con = Conexion.getConnection()) {
+            // 🔹 Primero revisamos el último pago
+            try (PreparedStatement ps = con.prepareStatement(sqlUltimoPago)) {
+                ps.setInt(1, idUsuario);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next() && rs.getDate("ultima") != null) {
+                    java.sql.Date ultima = rs.getDate("ultima");
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.setTime(ultima);
+                    cal.add(java.util.Calendar.MONTH, 1); // siguiente mes
+                    return meses[cal.get(java.util.Calendar.MONTH)];
+                }
             }
+
+            // 🔹 Si no hay pagos, usamos la fecha de creación del usuario
+            try (PreparedStatement ps = con.prepareStatement(sqlFechaCreacion)) {
+                ps.setInt(1, idUsuario);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next() && rs.getDate("FechaCreacion") != null) {
+                    java.sql.Date fechaCreacion = rs.getDate("FechaCreacion");
+                    java.util.Calendar cal = java.util.Calendar.getInstance();
+                    cal.setTime(fechaCreacion);
+                    return meses[cal.get(java.util.Calendar.MONTH)];
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return meses[new java.util.Date().getMonth()]; // mes actual por defecto
+
+        // 🔹 Si todo falla, devolvemos el mes actual
+        return meses[new java.util.Date().getMonth()];
     }
 
 }

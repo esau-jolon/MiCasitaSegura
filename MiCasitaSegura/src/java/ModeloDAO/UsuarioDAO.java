@@ -41,6 +41,12 @@ public class UsuarioDAO implements UsuarioCrud {
                     u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
                     u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
                     u.setEstado(rs.getBoolean("estado"));
+
+                    // Auditoría
+                    u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);
+                    u.setModificadoPor(rs.getObject("ModificadoPor") != null ? rs.getInt("ModificadoPor") : null);
+                    u.setFechaCreacion(rs.getTimestamp("FechaCreacion"));
+                    u.setFechaModificacion(rs.getTimestamp("FechaModificacion"));
                 }
             }
 
@@ -87,9 +93,16 @@ public class UsuarioDAO implements UsuarioCrud {
                 u.setCorreo(rs.getString("correo"));
                 u.setContrasena(rs.getString("contrasena"));
                 u.setRolId(rs.getInt("rol_id"));
-                u.setNumeroCasaId(rs.getInt("numero_casa_id"));
-                u.setLoteId(rs.getInt("lote_id"));
+                u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
+                u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
                 u.setEstado(rs.getBoolean("estado"));
+
+                // Auditoría
+                u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);
+                u.setModificadoPor(rs.getObject("ModificadoPor") != null ? rs.getInt("ModificadoPor") : null);
+                u.setFechaCreacion(rs.getTimestamp("FechaCreacion"));
+                u.setFechaModificacion(rs.getTimestamp("FechaModificacion"));
+
                 lista.add(u);
             }
 
@@ -98,7 +111,7 @@ public class UsuarioDAO implements UsuarioCrud {
         }
         return lista;
     }
-    
+
     public List<Usuarios> listarResidentes() {
         List<Usuarios> lista = new ArrayList<>();
         String sql = "SELECT * FROM Usuarios WHERE rol_id = 1";
@@ -127,7 +140,6 @@ public class UsuarioDAO implements UsuarioCrud {
         }
         return lista;
     }
-    
 
     @Override
     public Usuarios listarId(int id) {
@@ -149,9 +161,15 @@ public class UsuarioDAO implements UsuarioCrud {
                     u.setCorreo(rs.getString("correo"));
                     u.setContrasena(rs.getString("contrasena"));
                     u.setRolId(rs.getInt("rol_id"));
-                    u.setNumeroCasaId(rs.getInt("numero_casa_id"));
-                    u.setLoteId(rs.getInt("lote_id"));
+                    u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
+                    u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
                     u.setEstado(rs.getBoolean("estado"));
+
+                    // Auditoría
+                    u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);
+                    u.setModificadoPor(rs.getObject("ModificadoPor") != null ? rs.getInt("ModificadoPor") : null);
+                    u.setFechaCreacion(rs.getTimestamp("FechaCreacion"));
+                    u.setFechaModificacion(rs.getTimestamp("FechaModificacion"));
                 }
             }
 
@@ -163,7 +181,8 @@ public class UsuarioDAO implements UsuarioCrud {
 
     @Override
     public boolean add(Usuarios u) {
-        String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado) VALUES(?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO Usuarios(dpi,nombre,apellidos,correo,contrasena,rol_id,numero_casa_id,lote_id,estado,CreadoPor) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = Conexion.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -177,13 +196,15 @@ public class UsuarioDAO implements UsuarioCrud {
             ps.setObject(7, u.getNumeroCasaId());
             ps.setObject(8, u.getLoteId());
             ps.setBoolean(9, u.isEstado());
+            ps.setObject(10, u.getCreadoPor()); // 👈 Auditoría
+
             ps.executeUpdate();
 
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     int idUsuario = rs.getInt(1);
 
-                    // Código único con prefijo
+                    // Generar código único con prefijo
                     String codigo = "USR-" + idUsuario;
 
                     // Guardar en Codigos_QR
@@ -232,7 +253,8 @@ public class UsuarioDAO implements UsuarioCrud {
 
     @Override
     public boolean edit(Usuarios u) {
-        String sql = "UPDATE Usuarios SET dpi=?,nombre=?,apellidos=?,correo=?,contrasena=?,rol_id=?,numero_casa_id=?,lote_id=?,estado=? WHERE id_usuario=?";
+        String sql = "UPDATE Usuarios SET dpi=?,nombre=?,apellidos=?,correo=?,contrasena=?,rol_id=?,numero_casa_id=?,lote_id=?,estado=?,ModificadoPor=? "
+                + "WHERE id_usuario=?";
 
         try (Connection con = Conexion.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
@@ -246,7 +268,8 @@ public class UsuarioDAO implements UsuarioCrud {
             ps.setObject(7, u.getNumeroCasaId());
             ps.setObject(8, u.getLoteId());
             ps.setBoolean(9, u.isEstado());
-            ps.setInt(10, u.getIdUsuario());
+            ps.setObject(10, u.getModificadoPor()); // 👈 Auditoría
+            ps.setInt(11, u.getIdUsuario());
 
             return ps.executeUpdate() > 0;
 
@@ -258,7 +281,7 @@ public class UsuarioDAO implements UsuarioCrud {
 
     @Override
     public boolean delete(int id) {
-        String sql = "DELETE FROM Usuarios WHERE id_usuario=?";
+        String sql = "UPDATE Usuarios SET estado = 0 WHERE id_usuario=?";
 
         try (Connection con = Conexion.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
