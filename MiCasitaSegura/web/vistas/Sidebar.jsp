@@ -187,6 +187,12 @@
                         <i class="bi bi-door-open"></i><span> VISITAS</span>
                     </a>
                 </li>
+
+                <li>
+                    <a href="<%=request.getContextPath()%>/ControladorPago?accion=listar" target="contentFrame">
+                        <i class="bi bi-cash-coin"></i><span> PAGOS</span>
+                    </a>
+                </li>
                 <li>
                     <a href="<%=request.getContextPath()%>/LogoutServlet">
                         <i class="bi bi-box-arrow-right"></i><span> CERRAR SESIÓN</span>
@@ -199,16 +205,16 @@
         <div class="content">
             <!-- Header usuario fuera de la sidebar -->
             <div class="user-header">
-                <% 
+                <%
                     Modelo.Usuarios usuario = (Modelo.Usuarios) session.getAttribute("usuario");
-                    if (usuario != null) { 
+                    if (usuario != null) {
                 %>
-                    <i class="bi bi-person-circle"></i>
-                    <span>
-                        Bienvenido, <%= usuario.getNombre() %> <%= usuario.getApellidos() %> 
-                        (<%= usuario.getNombreRol() != null ? usuario.getNombreRol() : "Sin rol" %>)
-                    </span>
-                <% } %>
+                <i class="bi bi-person-circle"></i>
+                <span>
+                    Bienvenido, <%= usuario.getNombre()%> <%= usuario.getApellidos()%> 
+                    (<%= usuario.getNombreRol() != null ? usuario.getNombreRol() : "Sin rol"%>)
+                </span>
+                <% }%>
             </div>
 
             <iframe name="contentFrame"></iframe>
