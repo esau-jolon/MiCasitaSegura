@@ -11,14 +11,14 @@ public class PagoDAO {
     // Listar todos los pagos
     public List<Pagos> listar() {
         List<Pagos> lista = new ArrayList<>();
-        String sql = "SELECT p.*, u.nombre AS nombreUsuario, tp.nombre AS nombreTipoPago " +
-                     "FROM Pagos p " +
-                     "INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario " +
-                     "INNER JOIN TiposPago tp ON p.id_tipo_pago = tp.id_tipo_pago";
+        String sql = "SELECT p.*, u.nombre AS nombreUsuario, tp.nombre AS nombreTipoPago "
+                + "FROM Pagos p "
+                + "INNER JOIN Usuarios u ON p.id_usuario = u.id_usuario "
+                + "INNER JOIN TiposPago tp ON p.id_tipo_pago = tp.id_tipo_pago";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Pagos p = new Pagos();
@@ -47,7 +47,7 @@ public class PagoDAO {
         Pagos p = null;
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -73,11 +73,11 @@ public class PagoDAO {
 
     // Agregar pago
     public boolean add(Pagos p) {
-        String sql = "INSERT INTO Pagos(id_usuario, id_tipo_pago, fecha_pago, monto, mora, total, observaciones, estado) " +
-                     "VALUES(?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO Pagos(id_usuario, id_tipo_pago, fecha_pago, monto, mora, total, observaciones, estado) "
+                + "VALUES(?,?,?,?,?,?,?,?)";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, p.getIdUsuario());
             ps.setInt(2, p.getIdTipoPago());
@@ -101,7 +101,7 @@ public class PagoDAO {
         String sql = "UPDATE Pagos SET id_usuario=?, id_tipo_pago=?, fecha_pago=?, monto=?, mora=?, total=?, observaciones=?, estado=? WHERE id_pago=?";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, p.getIdUsuario());
             ps.setInt(2, p.getIdTipoPago());
@@ -125,7 +125,7 @@ public class PagoDAO {
     public boolean cancelar(int id) {
         String sql = "UPDATE Pagos SET estado='Cancelado' WHERE id_pago=?";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
@@ -133,4 +133,25 @@ public class PagoDAO {
         }
         return false;
     }
+
+    public String obtenerMesSiguiente(int idUsuario) {
+        String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+        String sql = "SELECT MAX(fecha_pago) AS ultima FROM Pagos WHERE id_usuario=? AND id_tipo_pago=1"; // 1=Mantenimiento
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next() && rs.getDate("ultima") != null) {
+                java.sql.Date ultima = rs.getDate("ultima");
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.setTime(ultima);
+                cal.add(java.util.Calendar.MONTH, 1); // siguiente mes
+                return meses[cal.get(java.util.Calendar.MONTH)];
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return meses[new java.util.Date().getMonth()]; // mes actual por defecto
+    }
+
 }

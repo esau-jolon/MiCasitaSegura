@@ -29,6 +29,9 @@ public class ControladorPago extends HttpServlet {
         String acceso = "";
         String action = request.getParameter("accion");
 
+        HttpSession session = request.getSession();
+        Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
+
         if ("listar".equalsIgnoreCase(action)) {
             List<Pagos> lista = dao.listar();
             request.setAttribute("pagos", lista);
@@ -36,14 +39,28 @@ public class ControladorPago extends HttpServlet {
 
         } else if ("add".equalsIgnoreCase(action)) {
             request.setAttribute("pago", null);
-            request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar()); // catálogo
+            request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+
+            // 🔹 RN5: obtener el mes que corresponde pagar (solo si es mantenimiento)
+            if (usuarioSesion != null) {
+                String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
+                request.setAttribute("mesSugerido", mesSugerido);
+            }
+
             acceso = addEdit;
 
         } else if ("edit".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
             Pagos pago = dao.listarId(id);
             request.setAttribute("pago", pago);
-            request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar()); // catálogo
+            request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+
+            // 🔹 RN5: también puede mostrar mes sugerido cuando edita
+            if (usuarioSesion != null) {
+                String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
+                request.setAttribute("mesSugerido", mesSugerido);
+            }
+
             acceso = addEdit;
 
         } else if ("cancelar".equalsIgnoreCase(action)) {
@@ -101,7 +118,7 @@ public class ControladorPago extends HttpServlet {
             p.setIdPago(idPago);
             p.setIdUsuario(usuarioSesion.getIdUsuario());
             p.setIdTipoPago(idTipoPago);
-            p.setFechaPago(new Date(System.currentTimeMillis())); // mantiene la fecha actualizada
+            p.setFechaPago(new Date(System.currentTimeMillis())); // mantiene fecha actualizada
             p.setMonto(monto);
             p.setMora(mora);
             p.setTotal(total);

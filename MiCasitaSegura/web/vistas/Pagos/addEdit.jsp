@@ -1,4 +1,4 @@
-<%@ page import="Modelo.Pagos, Modelo.TiposPago, java.util.List" %>
+<%@ page import="Modelo.Pagos, Modelo.TiposPago, Modelo.Usuarios, java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
     <head>
@@ -16,7 +16,7 @@
         <style>
             body { background-color: #e9ecef; }
             .card {
-                margin-top: 50px;
+                margin-top: 40px;
                 border: none;
                 border-radius: 15px;
                 box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
@@ -32,23 +32,16 @@
                 border-radius: 10px 10px 0 0;
                 text-align: center;
             }
-            .form-label { font-weight: 600; font-size: 1.1rem; }
+            .form-label { font-weight: 600; font-size: 1.05rem; }
             .form-control, .form-select, textarea {
-                font-size: 1.05rem;
-                padding: 0.8rem 1rem;
+                font-size: 1rem;
+                padding: 0.7rem 1rem;
                 border-radius: 8px;
             }
-            .btn { font-size: 1.1rem; padding: 0.75rem 1.5rem; border-radius: 8px; }
-            .btn-success {
-                background: linear-gradient(135deg, #4ade80, #22c55e);
-                border: none;
-            }
-            .btn-secondary {
-                background: linear-gradient(135deg, #6b7280, #4b5563);
-                border: none;
-            }
+            .btn { font-size: 1.1rem; padding: 0.6rem 1.2rem; border-radius: 8px; }
+            .btn-success { background: linear-gradient(135deg, #4ade80, #22c55e); border: none; }
+            .btn-secondary { background: linear-gradient(135deg, #6b7280, #4b5563); border: none; }
             .btn i { margin-right: 6px; }
-            .mb-3 { margin-bottom: 1.5rem !important; }
         </style>
     </head>
     <body>
@@ -56,7 +49,11 @@
         <%
             Pagos pago = (Pagos) request.getAttribute("pago");
             List<TiposPago> catalogoTiposPago = (List<TiposPago>) request.getAttribute("catalogoTiposPago");
+            Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
             String fechaHoy = new java.sql.Date(System.currentTimeMillis()).toString();
+
+            // Mes sugerido desde el controlador (RN5)
+            String mesSugerido = (String) request.getAttribute("mesSugerido");
         %>
 
         <div class="container">
@@ -67,20 +64,27 @@
                             <%= (pago == null ? "Nuevo Pago" : "Editar Pago")%>
                         </div>
                         <div class="card-body">
-                            <form action="ControladorPago" method="post">
+                            <form action="ControladorPago" method="post" id="formPago">
                                 <input type="hidden" name="idPago" value="<%= (pago != null ? pago.getIdPago() : "")%>"/>
+
+                                <!-- Nombre del Usuario -->
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre del Usuario</label>
+                                    <input type="text" class="form-control"
+                                           value="<%= usuarioSesion != null ? usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() : ""%>"
+                                           readonly>
+                                </div>
 
                                 <!-- Tipo de Pago -->
                                 <div class="mb-3">
                                     <label class="form-label">Tipo de Pago</label>
                                     <select class="form-select" name="idTipoPago" id="tipoPago" required>
                                         <option value="">Seleccione un tipo</option>
-                                        <%
-                                            if (catalogoTiposPago != null) {
-                                                for (TiposPago t : catalogoTiposPago) {
-                                        %>
+                                        <% if (catalogoTiposPago != null) {
+                                        for (TiposPago t : catalogoTiposPago) {%>
                                         <option value="<%= t.getIdTipoPago()%>"
                                                 data-monto="<%= t.getMonto()%>"
+                                                data-nombre="<%= t.getNombre()%>"
                                                 <%= (pago != null && pago.getIdTipoPago() == t.getIdTipoPago() ? "selected" : "")%>>
                                             <%= t.getNombre()%> - Q <%= t.getMonto()%>
                                         </option>
@@ -89,7 +93,21 @@
                                     </select>
                                 </div>
 
-                                <!-- Fecha de Pago (auto con la fecha actual) -->
+                                <!-- Mes a Pagar (RN5) -->
+                                <div class="mb-3" id="mesContainer" style="display:none;">
+                                    <label class="form-label">Mes a Pagar</label>
+                                    <input type="text" class="form-control" id="mesPagar"
+                                           value="<%= mesSugerido != null ? mesSugerido : ""%>" readonly>
+                                </div>
+
+                                <!-- Botón Consultar -->
+                                <div class="mb-3 text-center">
+                                    <button type="button" id="btnConsultar" class="btn btn-primary">
+                                        <i class="bi bi-search"></i> Consultar
+                                    </button>
+                                </div>
+
+                                <!-- Fecha de Pago -->
                                 <div class="mb-3">
                                     <label class="form-label">Fecha de Pago</label>
                                     <input type="date" class="form-control" name="fechaPago" id="fechaPago"
@@ -100,7 +118,7 @@
                                 <div class="mb-3">
                                     <label class="form-label">Monto</label>
                                     <input type="number" step="0.01" class="form-control" id="monto" name="monto"
-                                           value="<%= (pago != null ? pago.getMonto() : "")%>" required readonly>
+                                           value="<%= (pago != null ? pago.getMonto() : "")%>" readonly>
                                 </div>
 
                                 <!-- Mora -->
@@ -120,7 +138,27 @@
                                 <!-- Observaciones -->
                                 <div class="mb-3">
                                     <label class="form-label">Observaciones</label>
-                                    <textarea class="form-control" name="observaciones"><%= (pago != null ? pago.getObservaciones() : "")%></textarea>
+                                    <textarea class="form-control" name="observaciones" id="observaciones" required><%= (pago != null ? pago.getObservaciones() : "")%></textarea>
+                                </div>
+
+                                <!-- Datos de Tarjeta -->
+                                <div id="datosTarjeta" style="display:none;">
+                                    <div class="mb-3">
+                                        <label class="form-label">Número de Tarjeta</label>
+                                        <input type="text" class="form-control" name="numTarjeta" id="numTarjeta" maxlength="16" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Fecha Vencimiento</label>
+                                        <input type="month" class="form-control" name="fechaVenc" id="fechaVenc" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">CVV</label>
+                                        <input type="text" class="form-control" name="cvv" id="cvv" maxlength="3" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre Titular</label>
+                                        <input type="text" class="form-control" name="nombreTitular" id="nombreTitular" required>
+                                    </div>
                                 </div>
 
                                 <!-- Estado -->
@@ -135,10 +173,10 @@
 
                                 <!-- Botones -->
                                 <div class="text-center">
-                                    <button type="submit" class="btn btn-success px-4 me-2" name="accion" value="<%= (pago == null ? "add" : "edit")%>">
-                                        <i class="bi bi-save"></i> <%= (pago == null ? "Guardar" : "Actualizar")%>
+                                    <button type="submit" class="btn btn-success" id="btnRegistrar" name="accion" value="<%= (pago == null ? "add" : "edit")%>" disabled>
+                                        <i class="bi bi-save"></i> <%= (pago == null ? "Registrar Pago" : "Actualizar")%>
                                     </button>
-                                    <a href="ControladorPago?accion=listar" class="btn btn-secondary px-4">
+                                    <a href="ControladorPago?accion=listar" class="btn btn-secondary">
                                         <i class="bi bi-x-circle"></i> Cancelar
                                     </a>
                                 </div>
@@ -149,48 +187,53 @@
             </div>
         </div>
 
-        <!-- Script: Calcular monto, mora y total -->
+        <!-- Script -->
         <script>
             document.addEventListener("DOMContentLoaded", function () {
-                const tipoPagoSelect = document.getElementById("tipoPago");
-                const montoInput = document.getElementById("monto");
-                const moraInput = document.getElementById("mora");
-                const totalInput = document.getElementById("total");
-                const fechaPagoInput = document.getElementById("fechaPago");
+                const tipoPago = document.getElementById("tipoPago");
+                const monto = document.getElementById("monto");
+                const mora = document.getElementById("mora");
+                const total = document.getElementById("total");
+                const fechaPago = document.getElementById("fechaPago");
+                const mesContainer = document.getElementById("mesContainer");
+                const mesPagar = document.getElementById("mesPagar");
 
-                function calcularTotal() {
-                    const monto = parseFloat(montoInput.value) || 0;
-                    const mora = parseFloat(moraInput.value) || 0;
-                    totalInput.value = (monto + mora).toFixed(2);
-                }
+                const btnConsultar = document.getElementById("btnConsultar");
+                const datosTarjeta = document.getElementById("datosTarjeta");
+                const btnRegistrar = document.getElementById("btnRegistrar");
 
-                tipoPagoSelect.addEventListener("change", function () {
-                    const option = tipoPagoSelect.options[tipoPagoSelect.selectedIndex];
-                    const monto = option.getAttribute("data-monto");
-                    montoInput.value = monto || 0;
-                    calcularTotal();
-                });
-
-                // Calcular mora si la fecha es después del día 5
-                function calcularMora() {
-                    const option = tipoPagoSelect.options[tipoPagoSelect.selectedIndex];
-                    const nombreTipo = option ? option.text.toLowerCase() : "";
-                    let mora = 0;
-
-                    // ✅ Solo aplica mora para "Mantenimiento"
-                    if (nombreTipo.includes("mantenimiento")) {
-                        const fecha = new Date(fechaPagoInput.value);
-                        if (fecha.getDate() > 5) {
-                            mora = (fecha.getDate() - 5) * 25;
-                        }
+                btnConsultar.addEventListener("click", function () {
+                    const option = tipoPago.options[tipoPago.selectedIndex];
+                    if (!option.value) {
+                        Swal.fire("Atención", "Debe seleccionar un tipo de pago", "warning");
+                        return;
                     }
 
-                    moraInput.value = mora.toFixed(2);
-                    calcularTotal();
-                }
+                    // Asignar monto
+                    monto.value = option.getAttribute("data-monto");
 
-                calcularMora();
-                calcularTotal();
+                    // Mostrar mes a pagar solo si es mantenimiento
+                    if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
+                        mesContainer.style.display = "block";
+                    } else {
+                        mesContainer.style.display = "none";
+                    }
+
+                    // Calcular mora
+                    let moraCalc = 0;
+                    if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
+                        const fecha = new Date(fechaPago.value);
+                        if (fecha.getDate() > 5) {
+                            moraCalc = (fecha.getDate() - 5) * 25;
+                        }
+                    }
+                    mora.value = moraCalc.toFixed(2);
+                    total.value = (parseFloat(monto.value) + moraCalc).toFixed(2);
+
+                    // Mostrar tarjeta
+                    datosTarjeta.style.display = "block";
+                    btnRegistrar.disabled = false;
+                });
             });
         </script>
 
