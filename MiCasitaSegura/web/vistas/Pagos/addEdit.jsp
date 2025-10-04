@@ -51,138 +51,118 @@
             List<TiposPago> catalogoTiposPago = (List<TiposPago>) request.getAttribute("catalogoTiposPago");
             Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
             String fechaHoy = new java.sql.Date(System.currentTimeMillis()).toString();
-
-            // Mes sugerido desde el controlador (RN5)
             String mesSugerido = (String) request.getAttribute("mesSugerido");
         %>
 
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-md-8">
-                    <div class="card">
-                        <div class="card-header text-center">
-                            <%= (pago == null ? "Nuevo Pago" : "Editar Pago")%>
+        <div class="container mt-4">
+            <div class="card shadow-lg">
+                <div class="card-header text-center bg-primary text-white">
+                    <%= (pago == null ? "Nuevo Pago" : "Editar Pago")%>
+                </div>
+                <div class="card-body">
+                    <form action="ControladorPago" method="post" id="formPago">
+                        <input type="hidden" name="idPago" value="<%= (pago != null ? pago.getIdPago() : "")%>"/>
+
+                        <!-- Inputs ocultos para mes y año -->
+                        <input type="hidden" name="mesPagado" id="mesPagado"
+                               value="<%= (pago != null && pago.getMesPagado() != null ? pago.getMesPagado() : "")%>">
+                        <input type="hidden" name="anioPagado" id="anioPagado"
+                               value="<%= (pago != null && pago.getAnioPagado() != null ? pago.getAnioPagado() : "")%>">
+
+                        <!-- Nombre Usuario -->
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Usuario</label>
+                            <input type="text" class="form-control"
+                                   value="<%= usuarioSesion != null ? usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() : ""%>"
+                                   readonly>
                         </div>
-                        <div class="card-body">
-                            <form action="ControladorPago" method="post" id="formPago">
-                                <input type="hidden" name="idPago" value="<%= (pago != null ? pago.getIdPago() : "")%>"/>
 
-                                <!-- Nombre del Usuario -->
-                                <div class="mb-3">
-                                    <label class="form-label">Nombre del Usuario</label>
-                                    <input type="text" class="form-control"
-                                           value="<%= usuarioSesion != null ? usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() : ""%>"
-                                           readonly>
-                                </div>
-
-                                <!-- Tipo de Pago -->
-                                <div class="mb-3">
-                                    <label class="form-label">Tipo de Pago</label>
-                                    <select class="form-select" name="idTipoPago" id="tipoPago" required>
-                                        <option value="">Seleccione un tipo</option>
-                                        <% if (catalogoTiposPago != null) {
-                                                for (TiposPago t : catalogoTiposPago) {%>
-                                        <option value="<%= t.getIdTipoPago()%>"
-                                                data-monto="<%= t.getMonto()%>"
-                                                data-nombre="<%= t.getNombre()%>"
-                                                <%= (pago != null && pago.getIdTipoPago() == t.getIdTipoPago() ? "selected" : "")%>>
-                                            <%= t.getNombre()%> - Q <%= t.getMonto()%>
-                                        </option>
-                                        <% }
-                                            }%>
-                                    </select>
-                                </div>
-
-                                <!-- Mes a Pagar (RN5) -->
-                                <div class="mb-3" id="mesContainer" style="display:none;">
-                                    <label class="form-label">Mes a Pagar</label>
-                                    <input type="text" class="form-control" id="mesPagar"
-                                           value="<%= mesSugerido != null ? mesSugerido : ""%>" readonly>
-                                </div>
-
-                                <!-- Botón Consultar -->
-                                <div class="mb-3 text-center">
-                                    <button type="button" id="btnConsultar" class="btn btn-primary">
-                                        <i class="bi bi-search"></i> Consultar
-                                    </button>
-                                </div>
-
-                                <!-- Fecha de Pago -->
-                                <div class="mb-3">
-                                    <label class="form-label">Fecha de Pago</label>
-                                    <input type="date" class="form-control" name="fechaPago" id="fechaPago"
-                                           value="<%= (pago != null ? pago.getFechaPago() : fechaHoy)%>" readonly>
-                                </div>
-
-                                <!-- Monto -->
-                                <div class="mb-3">
-                                    <label class="form-label">Monto</label>
-                                    <input type="number" step="0.01" class="form-control" id="monto" name="monto"
-                                           value="<%= (pago != null ? pago.getMonto() : "")%>" readonly>
-                                </div>
-
-                                <!-- Mora -->
-                                <div class="mb-3">
-                                    <label class="form-label">Mora</label>
-                                    <input type="number" step="0.01" class="form-control" id="mora" name="mora"
-                                           value="<%= (pago != null ? pago.getMora() : 0)%>" readonly>
-                                </div>
-
-                                <!-- Total -->
-                                <div class="mb-3">
-                                    <label class="form-label">Total</label>
-                                    <input type="number" step="0.01" class="form-control" id="total" name="total"
-                                           value="<%= (pago != null ? pago.getTotal() : "")%>" readonly>
-                                </div>
-
-                                <!-- Observaciones -->
-                                <div class="mb-3">
-                                    <label class="form-label">Observaciones</label>
-                                    <textarea class="form-control" name="observaciones" id="observaciones" required><%= (pago != null ? pago.getObservaciones() : "")%></textarea>
-                                </div>
-
-                                <!-- Datos de Tarjeta -->
-                                <div id="datosTarjeta" style="display:none;">
-                                    <div class="mb-3">
-                                        <label class="form-label">Número de Tarjeta</label>
-                                        <input type="text" class="form-control" name="numTarjeta" id="numTarjeta" maxlength="16" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Fecha Vencimiento</label>
-                                        <input type="month" class="form-control" name="fechaVenc" id="fechaVenc" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">CVV</label>
-                                        <input type="text" class="form-control" name="cvv" id="cvv" maxlength="3" required>
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label">Nombre Titular</label>
-                                        <input type="text" class="form-control" name="nombreTitular" id="nombreTitular" required>
-                                    </div>
-                                </div>
-
-                                <!-- Estado -->
-                                <div class="mb-3">
-                                    <label class="form-label">Estado</label>
-                                    <select class="form-select" name="estado">
-                                        <option value="Pendiente" <%= (pago != null && pago.getEstado().equals("Pendiente") ? "selected" : "")%>>Pendiente</option>
-                                        <option value="Realizado" <%= (pago != null && pago.getEstado().equals("Realizado") ? "selected" : "")%>>Realizado</option>
-                                        <option value="Cancelado" <%= (pago != null && pago.getEstado().equals("Cancelado") ? "selected" : "")%>>Cancelado</option>
-                                    </select>
-                                </div>
-
-                                <!-- Botones -->
-                                <div class="text-center">
-                                    <button type="submit" class="btn btn-success" id="btnRegistrar" name="accion" value="<%= (pago == null ? "add" : "edit")%>" disabled>
-                                        <i class="bi bi-save"></i> <%= (pago == null ? "Registrar Pago" : "Actualizar")%>
-                                    </button>
-                                    <a href="ControladorPago?accion=listar" class="btn btn-secondary">
-                                        <i class="bi bi-x-circle"></i> Cancelar
-                                    </a>
-                                </div>
-                            </form>
+                        <!-- Tipo de Pago -->
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Pago</label>
+                            <select class="form-select" name="idTipoPago" id="tipoPago" required>
+                                <option value="">Seleccione un tipo</option>
+                                <% if (catalogoTiposPago != null) {
+                                        for (TiposPago t : catalogoTiposPago) {%>
+                                <option value="<%= t.getIdTipoPago()%>"
+                                        data-monto="<%= t.getMonto()%>"
+                                        data-nombre="<%= t.getNombre()%>"
+                                        <%= (pago != null && pago.getIdTipoPago() == t.getIdTipoPago() ? "selected" : "")%>>
+                                    <%= t.getNombre()%> - Q <%= t.getMonto()%>
+                                </option>
+                                <% }
+                                    }%>
+                            </select>
                         </div>
-                    </div>
+
+                        <!-- Mes a Pagar -->
+                        <div class="mb-3" id="mesContainer" style="display:none;">
+                            <label class="form-label">Mes a Pagar</label>
+                            <input type="text" class="form-control" id="mesPagar"
+                                   value="<%= mesSugerido != null ? mesSugerido : ""%>" readonly>
+                        </div>
+
+                        <!-- Botón Consultar -->
+                        <div class="mb-3 text-center">
+                            <button type="button" id="btnConsultar" class="btn btn-primary">
+                                <i class="bi bi-search"></i> Consultar
+                            </button>
+                        </div>
+
+                        <!-- Fecha de Pago -->
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Pago</label>
+                            <input type="date" class="form-control" name="fechaPago" id="fechaPago"
+                                   value="<%= (pago != null ? pago.getFechaPago() : fechaHoy)%>" readonly>
+                        </div>
+
+                        <!-- Monto -->
+                        <div class="mb-3">
+                            <label class="form-label">Monto</label>
+                            <input type="number" step="0.01" class="form-control" id="monto" name="monto"
+                                   value="<%= (pago != null ? pago.getMonto() : "")%>" readonly>
+                        </div>
+
+                        <!-- Mora -->
+                        <div class="mb-3">
+                            <label class="form-label">Mora</label>
+                            <input type="number" step="0.01" class="form-control" id="mora" name="mora"
+                                   value="<%= (pago != null ? pago.getMora() : 0)%>" readonly>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="mb-3">
+                            <label class="form-label">Total</label>
+                            <input type="number" step="0.01" class="form-control" id="total" name="total"
+                                   value="<%= (pago != null ? pago.getTotal() : "")%>" readonly>
+                        </div>
+
+                        <!-- Observaciones -->
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" name="observaciones" required><%= (pago != null ? pago.getObservaciones() : "")%></textarea>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-select" name="estado">
+                                <option value="Pendiente" <%= (pago != null && "Pendiente".equals(pago.getEstado()) ? "selected" : "")%>>Pendiente</option>
+                                <option value="Realizado" <%= (pago != null && "Realizado".equals(pago.getEstado()) ? "selected" : "")%>>Realizado</option>
+                                <option value="Cancelado" <%= (pago != null && "Cancelado".equals(pago.getEstado()) ? "selected" : "")%>>Cancelado</option>
+                            </select>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success" id="btnRegistrar" name="accion" value="<%= (pago == null ? "add" : "edit")%>" disabled>
+                                <i class="bi bi-save"></i> <%= (pago == null ? "Registrar Pago" : "Actualizar")%>
+                            </button>
+                            <a href="ControladorPago?accion=listar" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -197,10 +177,10 @@
                 const fechaPago = document.getElementById("fechaPago");
                 const mesContainer = document.getElementById("mesContainer");
                 const mesPagar = document.getElementById("mesPagar");
-
                 const btnConsultar = document.getElementById("btnConsultar");
-                const datosTarjeta = document.getElementById("datosTarjeta");
                 const btnRegistrar = document.getElementById("btnRegistrar");
+                const mesPagado = document.getElementById("mesPagado");
+                const anioPagado = document.getElementById("anioPagado");
 
                 btnConsultar.addEventListener("click", function () {
                     const option = tipoPago.options[tipoPago.selectedIndex];
@@ -209,35 +189,31 @@
                         return;
                     }
 
-                    // Asignar monto
                     monto.value = option.getAttribute("data-monto");
 
-                    // Mostrar mes a pagar solo si es mantenimiento
                     if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
                         mesContainer.style.display = "block";
                     } else {
                         mesContainer.style.display = "none";
                     }
 
-                    // === Calcular mora en base al MES SUGERIDO ===
                     let moraCalc = 0;
-                    if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
-                        const fechaHoy = new Date(fechaPago.value); // fecha real de pago
-                        const mesSugerido = mesPagar.value; // texto (ej. "Agosto")
+                    let anioPago = new Date(fechaPago.value).getFullYear();
 
+                    if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
+                        const fechaHoy = new Date(fechaPago.value);
+                        const mesSugerido = mesPagar.value;
                         const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
                             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-                        // Determinar índice del mes sugerido
                         const idxMesSugerido = meses.indexOf(mesSugerido);
-
                         if (idxMesSugerido >= 0) {
-                            // Construir la fecha límite (día 5 del mes sugerido del año actual)
-                            const fechaLimite = new Date(fechaHoy.getFullYear(), idxMesSugerido, 5);
+                            const mesNumero = idxMesSugerido + 1;
+                            mesPagado.value = mesNumero;
+                            anioPagado.value = anioPago;
 
-                            // Si ya pasó la fecha límite → calcular mora
+                            const fechaLimite = new Date(anioPago, idxMesSugerido, 5);
                             if (fechaHoy > fechaLimite) {
-                                // Diferencia en días
                                 const diffMs = fechaHoy - fechaLimite;
                                 const diasRetraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                                 moraCalc = diasRetraso * 25;
@@ -245,17 +221,13 @@
                         }
                     }
 
-                    // Mostrar resultados
                     mora.value = moraCalc.toFixed(2);
                     total.value = (parseFloat(monto.value) + moraCalc).toFixed(2);
 
-                    // Mostrar tarjeta y habilitar registrar
-                    datosTarjeta.style.display = "block";
                     btnRegistrar.disabled = false;
                 });
             });
         </script>
-
 
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
     </body>

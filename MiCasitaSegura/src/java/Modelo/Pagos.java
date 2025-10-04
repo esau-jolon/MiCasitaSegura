@@ -3,6 +3,7 @@ package Modelo;
 import java.sql.Date;
 
 public class Pagos {
+
     private int idPago;
     private int idUsuario;
     private int idTipoPago;
@@ -13,10 +14,14 @@ public class Pagos {
     private String observaciones;
     private String estado; // Realizado o Cancelado
 
-    private String nombreUsuario; // opcional (para joins en consultas)
-    private String nombreTipoPago; // opcional
+    private Integer mesPagado;   // 🔹 Nuevo campo (puede ser null)
+    private Integer anioPagado;  // 🔹 Nuevo campo (puede ser null)
 
-    public Pagos() {}
+    private String nombreUsuario;   // opcional (para joins en consultas)
+    private String nombreTipoPago;  // opcional
+
+    public Pagos() {
+    }
 
     // Getters y Setters
     public int getIdPago() {
@@ -89,6 +94,22 @@ public class Pagos {
 
     public void setEstado(String estado) {
         this.estado = estado;
+    }
+
+    public Integer getMesPagado() {
+        return mesPagado;
+    }
+
+    public void setMesPagado(Integer mesPagado) {
+        this.mesPagado = mesPagado;
+    }
+
+    public Integer getAnioPagado() {
+        return anioPagado;
+    }
+
+    public void setAnioPagado(Integer anioPagado) {
+        this.anioPagado = anioPagado;
     }
 
     public String getNombreUsuario() {

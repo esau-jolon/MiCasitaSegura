@@ -55,7 +55,7 @@ public class ControladorPago extends HttpServlet {
             request.setAttribute("pago", pago);
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
 
-            // 🔹 RN5: también puede mostrar mes sugerido cuando edita
+            // 🔹 RN5 también en edición
             if (usuarioSesion != null) {
                 String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
                 request.setAttribute("mesSugerido", mesSugerido);
@@ -103,6 +103,16 @@ public class ControladorPago extends HttpServlet {
             p.setObservaciones(observaciones);
             p.setEstado("Realizado");
 
+            // 🔹 Guardar mes/año del formulario si es mantenimiento
+            if (idTipoPago == 1) {
+                String mesPagadoStr = request.getParameter("mesPagado");
+                String anioPagadoStr = request.getParameter("anioPagado");
+                if (mesPagadoStr != null && anioPagadoStr != null) {
+                    p.setMesPagado(Integer.parseInt(mesPagadoStr));
+                    p.setAnioPagado(Integer.parseInt(anioPagadoStr));
+                }
+            }
+
             dao.add(p);
 
         } else if ("edit".equalsIgnoreCase(action)) {
@@ -118,12 +128,25 @@ public class ControladorPago extends HttpServlet {
             p.setIdPago(idPago);
             p.setIdUsuario(usuarioSesion.getIdUsuario());
             p.setIdTipoPago(idTipoPago);
-            p.setFechaPago(new Date(System.currentTimeMillis())); // mantiene fecha actualizada
+            p.setFechaPago(new Date(System.currentTimeMillis()));
             p.setMonto(monto);
             p.setMora(mora);
             p.setTotal(total);
             p.setObservaciones(observaciones);
             p.setEstado(estado);
+
+            // 🔹 Guardar mes/año desde el formulario si es mantenimiento
+            if (idTipoPago == 1) {
+                String mesPagadoStr = request.getParameter("mesPagado");
+                String anioPagadoStr = request.getParameter("anioPagado");
+                if (mesPagadoStr != null && anioPagadoStr != null) {
+                    p.setMesPagado(Integer.parseInt(mesPagadoStr));
+                    p.setAnioPagado(Integer.parseInt(anioPagadoStr));
+                }
+            } else {
+                p.setMesPagado(null);
+                p.setAnioPagado(null);
+            }
 
             dao.edit(p);
         }
