@@ -11,6 +11,8 @@
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-grid.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/all.min.css"/>
+
+        <!-- SweetAlert2 -->
         <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
 
         <style>
@@ -63,11 +65,14 @@
                     <form action="ControladorPago" method="post" id="formPago">
                         <input type="hidden" name="idPago" value="<%= (pago != null ? pago.getIdPago() : "")%>"/>
 
-                        <!-- Inputs ocultos para mes y año -->
+                        <!-- Inputs ocultos -->
                         <input type="hidden" name="mesPagado" id="mesPagado"
                                value="<%= (pago != null && pago.getMesPagado() != null ? pago.getMesPagado() : "")%>">
                         <input type="hidden" name="anioPagado" id="anioPagado"
                                value="<%= (pago != null && pago.getAnioPagado() != null ? pago.getAnioPagado() : "")%>">
+
+                        <!-- Input oculto para accion -->
+                        <input type="hidden" id="accionForm" name="accion" value="<%= (pago == null ? "add" : "edit")%>">
 
                         <!-- Nombre Usuario -->
                         <div class="mb-3">
@@ -83,7 +88,7 @@
                             <select class="form-select" name="idTipoPago" id="tipoPago" required>
                                 <option value="">Seleccione un tipo</option>
                                 <% if (catalogoTiposPago != null) {
-                                        for (TiposPago t : catalogoTiposPago) {%>
+                                for (TiposPago t : catalogoTiposPago) {%>
                                 <option value="<%= t.getIdTipoPago()%>"
                                         data-monto="<%= t.getMonto()%>"
                                         data-nombre="<%= t.getNombre()%>"
@@ -91,7 +96,7 @@
                                     <%= t.getNombre()%> - Q <%= t.getMonto()%>
                                 </option>
                                 <% }
-                                    }%>
+                            }%>
                             </select>
                         </div>
 
@@ -143,6 +148,26 @@
                             <textarea class="form-control" name="observaciones" required><%= (pago != null ? pago.getObservaciones() : "")%></textarea>
                         </div>
 
+                        <!-- Datos de Tarjeta -->
+                        <div id="datosTarjeta">
+                            <div class="mb-3">
+                                <label class="form-label">Número de Tarjeta</label>
+                                <input type="text" class="form-control" name="numTarjeta" id="numTarjeta" maxlength="19" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Fecha Vencimiento</label>
+                                <input type="month" class="form-control" name="fechaVenc" id="fechaVenc" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">CVV</label>
+                                <input type="text" class="form-control" name="cvv" id="cvv" maxlength="4" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Nombre Titular</label>
+                                <input type="text" class="form-control" name="nombreTitular" id="nombreTitular" required>
+                            </div>
+                        </div>
+
                         <!-- Estado -->
                         <div class="mb-3">
                             <label class="form-label">Estado</label>
@@ -155,7 +180,7 @@
 
                         <!-- Botones -->
                         <div class="text-center">
-                            <button type="submit" class="btn btn-success" id="btnRegistrar" name="accion" value="<%= (pago == null ? "add" : "edit")%>" disabled>
+                            <button type="submit" class="btn btn-success" id="btnRegistrar">
                                 <i class="bi bi-save"></i> <%= (pago == null ? "Registrar Pago" : "Actualizar")%>
                             </button>
                             <a href="ControladorPago?accion=listar" class="btn btn-secondary">
@@ -178,13 +203,14 @@
                 const mesContainer = document.getElementById("mesContainer");
                 const mesPagar = document.getElementById("mesPagar");
                 const btnConsultar = document.getElementById("btnConsultar");
-                const btnRegistrar = document.getElementById("btnRegistrar");
                 const mesPagado = document.getElementById("mesPagado");
                 const anioPagado = document.getElementById("anioPagado");
+                const form = document.getElementById("formPago");
 
+                // Acción del botón Consultar
                 btnConsultar.addEventListener("click", function () {
                     const option = tipoPago.options[tipoPago.selectedIndex];
-                    if (!option.value) {
+                    if (!option || !option.value) {
                         Swal.fire("Atención", "Debe seleccionar un tipo de pago", "warning");
                         return;
                     }
@@ -195,6 +221,8 @@
                         mesContainer.style.display = "block";
                     } else {
                         mesContainer.style.display = "none";
+                        mesPagado.value = "";
+                        anioPagado.value = "";
                     }
 
                     let moraCalc = 0;
@@ -223,8 +251,76 @@
 
                     mora.value = moraCalc.toFixed(2);
                     total.value = (parseFloat(monto.value) + moraCalc).toFixed(2);
+                });
 
-                    btnRegistrar.disabled = false;
+                // Interceptar submit para simular cobro (acepta cualquier tarjeta)
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    const numTarjeta = document.getElementById("numTarjeta").value.trim();
+                    const cvv = document.getElementById("cvv").value.trim();
+                    const titular = document.getElementById("nombreTitular").value.trim();
+
+                    // Validaciones rápidas
+                    if (numTarjeta.length < 12 || numTarjeta.length > 19 || !/^\d+$/.test(numTarjeta)) {
+                        Swal.fire("Error", "Número de tarjeta inválido", "error");
+                        return;
+                    }
+                    if (cvv.length < 3 || cvv.length > 4 || !/^\d+$/.test(cvv)) {
+                        Swal.fire("Error", "CVV inválido (3 o 4 dígitos)", "error");
+                        return;
+                    }
+                    if (!titular) {
+                        Swal.fire("Error", "Debe ingresar el nombre del titular", "error");
+                        return;
+                    }
+
+                    Swal.fire({
+                        title: 'Confirmar pago',
+                        html: `Se intentará cobrar a la tarjeta terminada en <strong>${numTarjeta.slice(-4)}</strong>`,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Sí, continuar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            Swal.fire({
+                                title: 'Procesando pago...',
+                                html: 'Por favor espere un momento',
+                                allowOutsideClick: false,
+                                didOpen: () => {
+                                    Swal.showLoading();
+                                }
+                            });
+
+                            setTimeout(() => {
+                                Swal.close();
+                                const authCode = Math.floor(100000 + Math.random() * 900000); // 6 dígitos
+
+                                Swal.fire({
+                                    title: "Pago exitoso",
+                                    html: `El cobro se realizó correctamente.<br>Autorización: <strong>APROBADO #${authCode}</strong>`,
+                                    icon: "success"
+                                }).then(() => {
+                                    // agregamos código de autorización
+                                    let inputAuth = document.getElementById("authCode");
+                                    if (!inputAuth) {
+                                        inputAuth = document.createElement("input");
+                                        inputAuth.type = "hidden";
+                                        inputAuth.name = "authCode";
+                                        inputAuth.id = "authCode";
+                                        form.appendChild(inputAuth);
+                                    }
+                                    inputAuth.value = authCode;
+
+                                    // forzamos envío sin validaciones HTML5
+                                    form.noValidate = true;
+                                    form.submit();
+                                });
+
+                            }, 2000);
+                        }
+                    });
                 });
             });
         </script>
