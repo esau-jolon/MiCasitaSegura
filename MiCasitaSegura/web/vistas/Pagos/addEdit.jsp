@@ -1,4 +1,5 @@
 <%@ page import="Modelo.Pagos, Modelo.TiposPago, Modelo.Usuarios, java.util.List" %>
+<%@ page import="Modelo.EstadosPago" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <html>
     <head>
@@ -175,10 +176,21 @@
                         <!-- Estado -->
                         <div class="mb-3">
                             <label class="form-label">Estado</label>
-                            <select class="form-select" name="estado">
-                                <option value="Pendiente" <%= (pago != null && "Pendiente".equals(pago.getEstado()) ? "selected" : "")%>>Pendiente</option>
-                                <option value="Realizado" <%= (pago != null && "Realizado".equals(pago.getEstado()) ? "selected" : "")%>>Realizado</option>
-                                <option value="Cancelado" <%= (pago != null && "Cancelado".equals(pago.getEstado()) ? "selected" : "")%>>Cancelado</option>
+                            <select class="form-select" name="idEstadoPago" id="idEstadoPago" required>
+                                <option value="">Seleccione un estado</option>
+                                <%
+                                    List<EstadosPago> catalogoEstadosPago = (List<EstadosPago>) request.getAttribute("catalogoEstadosPago");
+                                    if (catalogoEstadosPago != null) {
+                                        for (EstadosPago e : catalogoEstadosPago) {
+                                %>
+                                <option value="<%= e.getIdEstadoPago()%>"
+                                        <%= (pago != null && pago.getIdEstadoPago() == e.getIdEstadoPago() ? "selected" : "")%>>
+                                    <%= e.getDescripcion()%>
+                                </option>
+                                <%
+                                        }
+                                    }
+                                %>
                             </select>
                         </div>
 

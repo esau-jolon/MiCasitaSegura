@@ -190,7 +190,7 @@
 
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorPago?accion=listar" target="contentFrame">
-                        <i class="bi bi-cash-coin"></i><span> PAGOS</span>
+                        <i class="bi bi-cash-coin"></i><span> GESTIONAR PAGOS</span>
                     </a>
                 </li>
                 <li>

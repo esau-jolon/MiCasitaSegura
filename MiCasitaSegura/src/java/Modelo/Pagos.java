@@ -7,23 +7,26 @@ public class Pagos {
     private int idPago;
     private int idUsuario;
     private int idTipoPago;
+    private int idEstadoPago; // 🔹 Nuevo campo FK hacia EstadosPago
+
     private Date fechaPago;
     private double monto;
     private double mora;
     private double total;
     private String observaciones;
-    private String estado; // Realizado o Cancelado
 
-    private Integer mesPagado;   // 🔹 Nuevo campo (puede ser null)
-    private Integer anioPagado;  // 🔹 Nuevo campo (puede ser null)
+    private Integer mesPagado;   // 🔹 Puede ser null (solo para mantenimiento)
+    private Integer anioPagado;  // 🔹 Puede ser null
 
-    private String nombreUsuario;   // opcional (para joins en consultas)
-    private String nombreTipoPago;  // opcional
+    // 🔹 Campos adicionales para mostrar datos relacionados (no se guardan en la tabla directamente)
+    private String nombreUsuario;
+    private String nombreTipoPago;
+    private String nombreEstadoPago; // 🔹 descripción del estado (Pendiente, Realizado, etc.)
 
     public Pagos() {
     }
 
-    // Getters y Setters
+    // ======= Getters y Setters =======
     public int getIdPago() {
         return idPago;
     }
@@ -46,6 +49,14 @@ public class Pagos {
 
     public void setIdTipoPago(int idTipoPago) {
         this.idTipoPago = idTipoPago;
+    }
+
+    public int getIdEstadoPago() {
+        return idEstadoPago;
+    }
+
+    public void setIdEstadoPago(int idEstadoPago) {
+        this.idEstadoPago = idEstadoPago;
     }
 
     public Date getFechaPago() {
@@ -88,14 +99,6 @@ public class Pagos {
         this.observaciones = observaciones;
     }
 
-    public String getEstado() {
-        return estado;
-    }
-
-    public void setEstado(String estado) {
-        this.estado = estado;
-    }
-
     public Integer getMesPagado() {
         return mesPagado;
     }
@@ -126,5 +129,34 @@ public class Pagos {
 
     public void setNombreTipoPago(String nombreTipoPago) {
         this.nombreTipoPago = nombreTipoPago;
+    }
+
+    public String getNombreEstadoPago() {
+        return nombreEstadoPago;
+    }
+
+    public void setNombreEstadoPago(String nombreEstadoPago) {
+        this.nombreEstadoPago = nombreEstadoPago;
+    }
+
+    // ======= Método auxiliar opcional =======
+    @Override
+    public String toString() {
+        return "Pagos{"
+                + "idPago=" + idPago
+                + ", idUsuario=" + idUsuario
+                + ", idTipoPago=" + idTipoPago
+                + ", idEstadoPago=" + idEstadoPago
+                + ", fechaPago=" + fechaPago
+                + ", monto=" + monto
+                + ", mora=" + mora
+                + ", total=" + total
+                + ", observaciones='" + observaciones + '\''
+                + ", mesPagado=" + mesPagado
+                + ", anioPagado=" + anioPagado
+                + ", nombreUsuario='" + nombreUsuario + '\''
+                + ", nombreTipoPago='" + nombreTipoPago + '\''
+                + ", descripcionEstadoPago='" + nombreEstadoPago + '\''
+                + '}';
     }
 }

@@ -2,8 +2,10 @@ package Controlador;
 
 import Modelo.Pagos;
 import Modelo.TiposPago;
+import Modelo.EstadosPago;
 import ModeloDAO.PagoDAO;
 import ModeloDAO.TiposPagoDAO;
+import ModeloDAO.EstadosPagoDAO;
 import Modelo.Usuarios;
 
 import javax.servlet.*;
@@ -22,6 +24,7 @@ public class ControladorPago extends HttpServlet {
 
     PagoDAO dao = new PagoDAO();
     TiposPagoDAO tiposPagoDAO = new TiposPagoDAO();
+    EstadosPagoDAO estadosPagoDAO = new EstadosPagoDAO();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -41,6 +44,7 @@ public class ControladorPago extends HttpServlet {
         } else if ("add".equalsIgnoreCase(action)) {
             request.setAttribute("pago", null);
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+            request.setAttribute("catalogoEstadosPago", estadosPagoDAO.listar());
 
             if (usuarioSesion != null) {
                 String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
@@ -54,6 +58,7 @@ public class ControladorPago extends HttpServlet {
             Pagos pago = dao.listarId(id);
             request.setAttribute("pago", pago);
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+            request.setAttribute("catalogoEstadosPago", estadosPagoDAO.listar());
 
             if (usuarioSesion != null) {
                 String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
@@ -89,6 +94,7 @@ public class ControladorPago extends HttpServlet {
 
                 int idUsuario = usuarioSesion.getIdUsuario();
                 int idTipoPago = Integer.parseInt(request.getParameter("idTipoPago"));
+                int idEstadoPago = Integer.parseInt(request.getParameter("idEstadoPago"));
                 double monto = Double.parseDouble(request.getParameter("monto"));
                 double mora = Double.parseDouble(request.getParameter("mora"));
                 double total = Double.parseDouble(request.getParameter("total"));
@@ -103,6 +109,10 @@ public class ControladorPago extends HttpServlet {
                 // ======= VALIDACIONES =======
                 if (idTipoPago <= 0) {
                     throw new IllegalArgumentException("Debe seleccionar un tipo de pago válido.");
+                }
+
+                if (idEstadoPago <= 0) {
+                    throw new IllegalArgumentException("Debe seleccionar un estado de pago válido.");
                 }
 
                 if (monto <= 0 || total <= 0) {
@@ -134,7 +144,6 @@ public class ControladorPago extends HttpServlet {
                 }
 
                 try {
-                    // Convierte MM/YYYY → YearMonth correctamente
                     String[] partes = fechaVenc.split("/");
                     if (partes.length != 2) {
                         throw new IllegalArgumentException("Formato inválido. Use MM/YYYY.");
@@ -161,12 +170,12 @@ public class ControladorPago extends HttpServlet {
                 Pagos p = new Pagos();
                 p.setIdUsuario(idUsuario);
                 p.setIdTipoPago(idTipoPago);
+                p.setIdEstadoPago(idEstadoPago);
                 p.setFechaPago(new Date(System.currentTimeMillis()));
                 p.setMonto(monto);
                 p.setMora(mora);
-                p.setTotal(monto + mora); // cálculo seguro
+                p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
-                p.setEstado("Realizado");
 
                 // Guardar mes/año si aplica
                 if (idTipoPago == 1) {
@@ -183,13 +192,17 @@ public class ControladorPago extends HttpServlet {
             } else if ("edit".equalsIgnoreCase(action)) {
                 int idPago = Integer.parseInt(request.getParameter("idPago"));
                 int idTipoPago = Integer.parseInt(request.getParameter("idTipoPago"));
+                int idEstadoPago = Integer.parseInt(request.getParameter("idEstadoPago"));
                 double monto = Double.parseDouble(request.getParameter("monto"));
                 double mora = Double.parseDouble(request.getParameter("mora"));
                 String observaciones = request.getParameter("observaciones");
-                String estado = request.getParameter("estado");
 
                 if (idTipoPago <= 0) {
                     throw new IllegalArgumentException("Debe seleccionar un tipo de pago válido.");
+                }
+
+                if (idEstadoPago <= 0) {
+                    throw new IllegalArgumentException("Debe seleccionar un estado de pago válido.");
                 }
 
                 if (monto <= 0) {
@@ -200,12 +213,12 @@ public class ControladorPago extends HttpServlet {
                 p.setIdPago(idPago);
                 p.setIdUsuario(usuarioSesion.getIdUsuario());
                 p.setIdTipoPago(idTipoPago);
+                p.setIdEstadoPago(idEstadoPago);
                 p.setFechaPago(new Date(System.currentTimeMillis()));
                 p.setMonto(monto);
                 p.setMora(mora);
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
-                p.setEstado(estado);
 
                 if (idTipoPago == 1) {
                     String mesPagadoStr = request.getParameter("mesPagado");
@@ -227,12 +240,14 @@ public class ControladorPago extends HttpServlet {
         } catch (IllegalArgumentException ex) {
             request.setAttribute("mensajeError", ex.getMessage());
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+            request.setAttribute("catalogoEstadosPago", estadosPagoDAO.listar());
             RequestDispatcher vista = request.getRequestDispatcher(addEdit);
             vista.forward(request, response);
 
         } catch (Exception ex) {
             request.setAttribute("mensajeError", "Ocurrió un error inesperado: " + ex.getMessage());
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+            request.setAttribute("catalogoEstadosPago", estadosPagoDAO.listar());
             RequestDispatcher vista = request.getRequestDispatcher(addEdit);
             vista.forward(request, response);
         }
