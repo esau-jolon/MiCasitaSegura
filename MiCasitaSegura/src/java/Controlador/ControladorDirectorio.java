@@ -25,7 +25,7 @@ public class ControladorDirectorio extends HttpServlet {
 
         String accion = request.getParameter("accion");
 
-        // Cargamos siempre los catálogos
+        // 🔹 Cargar siempre catálogos
         request.setAttribute("casas", casaDAO.listar());
         request.setAttribute("lotes", loteDAO.listar());
 
@@ -39,14 +39,14 @@ public class ControladorDirectorio extends HttpServlet {
             String loteStr = request.getParameter("lote");
             String casaStr = request.getParameter("numeroCasa");
 
-            // Validación: al menos nombre o apellido
+            // 🔸 Validación: al menos nombre o apellido
             if ((nombre == null || nombre.isEmpty()) && (apellidos == null || apellidos.isEmpty())) {
                 request.setAttribute("mensaje", "Debe ingresar al menos Nombre o Apellido para buscar.");
                 request.getRequestDispatcher("vistas/Directorio/Index.jsp").forward(request, response);
                 return;
             }
 
-            // Validación FA3 combinada: lote y casa
+            // 🔸 Validación: lote y casa deben ir juntos
             boolean loteSeleccionado = loteStr != null && !loteStr.isEmpty();
             boolean casaSeleccionada = casaStr != null && !casaStr.isEmpty();
 
@@ -62,7 +62,8 @@ public class ControladorDirectorio extends HttpServlet {
             List<Usuarios> lista = usuarioDAO.buscar(nombre, apellidos, loteId, casaId);
 
             if (lista == null || lista.isEmpty()) {
-                request.setAttribute("mensaje", "No se encontró ningún usuario con los datos ingresados.");
+                // 🔹 Pasamos bandera para mostrar alerta en JSP
+                request.setAttribute("noResultados", true);
             }
 
             request.setAttribute("usuarios", lista);

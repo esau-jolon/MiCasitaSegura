@@ -218,7 +218,7 @@ public class VisitaDAO {
                         e.printStackTrace();
                         System.err.println("[ERROR] Error en hilo de envío de correo: " + e.getMessage());
                     }
-                }).start(); // 🔸 se ejecuta en segundo plano
+                }).start();
             }
 
             return true;

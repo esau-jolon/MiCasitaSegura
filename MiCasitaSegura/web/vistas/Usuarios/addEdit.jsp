@@ -171,10 +171,18 @@
                                     </select>
                                 </div>
 
+
                                 <div class="text-center">
                                     <button type="submit" class="btn btn-success px-4 me-2" name="accion" value="<%= (u == null ? "add" : "edit")%>">
                                         <i class="bi bi-save"></i> <%= (u == null ? "Guardar" : "Actualizar")%>
                                     </button>
+
+                                    <% if (u == null) { %>
+                                    <!-- 🔹 Solo mostrar en modo "Nuevo" -->
+                                    <button type="button" id="btnLimpiar" class="btn btn-warning px-4 me-2">
+                                        <i class="bi bi-brush"></i> Limpiar campos
+                                    </button>
+                                    <% }%>
                                     <a href="ControladorUsuario?accion=listar" class="btn btn-secondary px-4">
                                         <i class="bi bi-x-circle"></i> Cancelar
                                     </a>
@@ -273,6 +281,30 @@
         </script>
 
 
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const form = document.querySelector("form.needs-validation");
+
+                // 🔹 Limpiar campos (solo si el botón existe)
+                const limpiarBtn = document.getElementById("btnLimpiar");
+                if (limpiarBtn) {
+                    limpiarBtn.addEventListener("click", function () {
+                        Swal.fire({
+                            title: '¿Deseas limpiar todos los campos?',
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, limpiar',
+                            cancelButtonText: 'Cancelar',
+                            confirmButtonColor: '#ffc107'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                form.reset();
+                            }
+                        });
+                    });
+                }
+            });
+        </script>
 
         <!-- Bootstrap JS local -->
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>

@@ -15,7 +15,8 @@
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-grid.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/all.min.css"/>
 
-
+        <!-- SweetAlert2 local -->
+        <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
 
         <style>
             body {
@@ -295,19 +296,38 @@
             const nombreInput = form.nombre;
             const apellidoInput = form.apellidos;
 
+            // 🔹 Validaciones previas al enviar
             form.addEventListener('submit', function (e) {
                 if (!nombreInput.value.trim() && !apellidoInput.value.trim()) {
                     e.preventDefault();
-                    Swal.fire({icon: 'warning', title: '¡Ups!', text: 'Debe ingresar al menos Nombre o Apellido.'});
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡Ups!',
+                        text: 'Debe ingresar al menos Nombre o Apellido.'
+                    });
                     return;
                 }
 
                 if ((loteSelect.value && !casaSelect.value) || (!loteSelect.value && casaSelect.value)) {
                     e.preventDefault();
-                    Swal.fire({icon: 'warning', title: '¡Atención!', text: 'Si selecciona un lote debe seleccionar un número de casa, y viceversa.'});
+                    Swal.fire({
+                        icon: 'warning',
+                        title: '¡Atención!',
+                        text: 'Si selecciona un lote debe seleccionar un número de casa, y viceversa.'
+                    });
                     return;
                 }
             });
+
+            // 🔹 Mostrar alerta si no se encontró ningún usuario
+            <% if (request.getAttribute("noResultados") != null && (boolean) request.getAttribute("noResultados")) { %>
+            Swal.fire({
+                icon: 'info',
+                title: 'Sin resultados',
+                text: 'No se encontró ningún usuario con los datos ingresados.',
+                confirmButtonColor: '#667eea'
+            });
+            <% }%>
         </script>
     </body>
 </html>
