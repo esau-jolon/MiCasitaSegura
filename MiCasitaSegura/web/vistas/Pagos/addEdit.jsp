@@ -88,7 +88,7 @@
                             <select class="form-select" name="idTipoPago" id="tipoPago" required>
                                 <option value="">Seleccione un tipo</option>
                                 <% if (catalogoTiposPago != null) {
-                                for (TiposPago t : catalogoTiposPago) {%>
+                                        for (TiposPago t : catalogoTiposPago) {%>
                                 <option value="<%= t.getIdTipoPago()%>"
                                         data-monto="<%= t.getMonto()%>"
                                         data-nombre="<%= t.getNombre()%>"
@@ -96,7 +96,7 @@
                                     <%= t.getNombre()%> - Q <%= t.getMonto()%>
                                 </option>
                                 <% }
-                            }%>
+                                    }%>
                             </select>
                         </div>
 
@@ -156,8 +156,12 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Fecha Vencimiento</label>
-                                <input type="month" class="form-control" name="fechaVenc" id="fechaVenc" required>
+                                <input type="text" class="form-control" name="fechaVenc" id="fechaVenc"
+                                       maxlength="7" placeholder="MM/YYYY" required>
+
                             </div>
+
+
                             <div class="mb-3">
                                 <label class="form-label">CVV</label>
                                 <input type="text" class="form-control" name="cvv" id="cvv" maxlength="4" required>
@@ -192,7 +196,6 @@
             </div>
         </div>
 
-        <!-- Script -->
         <script>
             document.addEventListener("DOMContentLoaded", function () {
                 const tipoPago = document.getElementById("tipoPago");
@@ -206,8 +209,61 @@
                 const mesPagado = document.getElementById("mesPagado");
                 const anioPagado = document.getElementById("anioPagado");
                 const form = document.getElementById("formPago");
+                const numTarjeta = document.getElementById("numTarjeta");
+                const fechaVenc = document.getElementById("fechaVenc");
 
-                // Acción del botón Consultar
+                // === Restricción 1: Solo números en número de tarjeta ===
+                if (numTarjeta) {
+                    numTarjeta.addEventListener("input", function () {
+                        this.value = this.value.replace(/\D/g, ""); // solo dígitos
+                    });
+                }
+
+                // === Restricción 2: Máscara automática para fecha de vencimiento (MM/YYYY) ===
+                if (fechaVenc) {
+                    fechaVenc.addEventListener("input", function () {
+                        let valor = this.value.replace(/\D/g, ""); // elimina caracteres no numéricos
+
+                        // Inserta la barra automáticamente después de 2 dígitos
+                        if (valor.length > 2) {
+                            valor = valor.substring(0, 2) + "/" + valor.substring(2, 6);
+                        }
+
+                        // Limita a 7 caracteres (MM/YYYY)
+                        this.value = valor.substring(0, 7);
+                    });
+
+                    fechaVenc.addEventListener("blur", function () {
+                        const valor = this.value.trim();
+
+                        if (!/^\d{2}\/\d{4}$/.test(valor)) {
+                            Swal.fire("Formato inválido", "Ingrese la fecha como MM/YYYY.", "warning");
+                            this.value = "";
+                            return;
+                        }
+
+                        const [mesStr, anioStr] = valor.split("/");
+                        const mes = parseInt(mesStr, 10);
+                        const anio = parseInt(anioStr, 10);
+
+                        if (mes < 1 || mes > 12) {
+                            Swal.fire("Mes inválido", "El mes debe estar entre 01 y 12.", "error");
+                            this.value = "";
+                            return;
+                        }
+
+                        const hoy = new Date();
+                        const fechaIngresada = new Date(anio, mes - 1);
+                        const fechaActual = new Date(hoy.getFullYear(), hoy.getMonth());
+
+                        if (fechaIngresada < fechaActual) {
+                            Swal.fire("Tarjeta vencida", "No puedes ingresar una tarjeta vencida.", "error");
+                            this.value = "";
+                        }
+                    });
+                }
+
+                // === Botón consultar: solo efectos visuales ===
                 btnConsultar.addEventListener("click", function () {
                     const option = tipoPago.options[tipoPago.selectedIndex];
                     if (!option || !option.value) {
@@ -215,9 +271,12 @@
                         return;
                     }
 
-                    monto.value = option.getAttribute("data-monto");
+                    monto.value = option.getAttribute("data-monto") || "0.00";
 
-                    if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
+                    if (
+                            option.getAttribute("data-nombre") &&
+                            option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")
+                            ) {
                         mesContainer.style.display = "block";
                     } else {
                         mesContainer.style.display = "none";
@@ -226,104 +285,66 @@
                     }
 
                     let moraCalc = 0;
-                    let anioPago = new Date(fechaPago.value).getFullYear();
+                    const fechaHoy = new Date(fechaPago.value);
+                    const meses = [
+                        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+                    ];
+                    const mesSugerido = mesPagar.value;
+                    const idxMes = meses.indexOf(mesSugerido);
 
-                    if (option.getAttribute("data-nombre").toLowerCase().includes("mantenimiento")) {
-                        const fechaHoy = new Date(fechaPago.value);
-                        const mesSugerido = mesPagar.value;
-                        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                    if (idxMes >= 0) {
+                        const anioPago = fechaHoy.getFullYear();
+                        mesPagado.value = idxMes + 1;
+                        anioPagado.value = anioPago;
 
-                        const idxMesSugerido = meses.indexOf(mesSugerido);
-                        if (idxMesSugerido >= 0) {
-                            const mesNumero = idxMesSugerido + 1;
-                            mesPagado.value = mesNumero;
-                            anioPagado.value = anioPago;
-
-                            const fechaLimite = new Date(anioPago, idxMesSugerido, 5);
-                            if (fechaHoy > fechaLimite) {
-                                const diffMs = fechaHoy - fechaLimite;
-                                const diasRetraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                                moraCalc = diasRetraso * 25;
-                            }
+                        const fechaLimite = new Date(anioPago, idxMes, 5);
+                        if (fechaHoy > fechaLimite) {
+                            const diffMs = fechaHoy - fechaLimite;
+                            const diasRetraso = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                            moraCalc = diasRetraso * 25;
                         }
                     }
 
                     mora.value = moraCalc.toFixed(2);
-                    total.value = (parseFloat(monto.value) + moraCalc).toFixed(2);
+                    total.value = (parseFloat(monto.value || 0) + moraCalc).toFixed(2);
                 });
 
-                // Interceptar submit para simular cobro (acepta cualquier tarjeta)
+                // === Confirmación visual de pago ===
                 form.addEventListener("submit", function (e) {
                     e.preventDefault();
 
-                    const numTarjeta = document.getElementById("numTarjeta").value.trim();
-                    const cvv = document.getElementById("cvv").value.trim();
-                    const titular = document.getElementById("nombreTitular").value.trim();
-
-                    // Validaciones rápidas
-                    if (numTarjeta.length < 12 || numTarjeta.length > 19 || !/^\d+$/.test(numTarjeta)) {
-                        Swal.fire("Error", "Número de tarjeta inválido", "error");
-                        return;
-                    }
-                    if (cvv.length < 3 || cvv.length > 4 || !/^\d+$/.test(cvv)) {
-                        Swal.fire("Error", "CVV inválido (3 o 4 dígitos)", "error");
-                        return;
-                    }
-                    if (!titular) {
-                        Swal.fire("Error", "Debe ingresar el nombre del titular", "error");
-                        return;
-                    }
+                    const last4 = numTarjeta && numTarjeta.value ? numTarjeta.value.slice(-4) : "";
+                    const confirmText = last4
+                            ? `Se intentará cobrar a la tarjeta terminada en <strong>${last4}</strong>. ¿Desea continuar?`
+                            : "¿Desea continuar con el pago?";
 
                     Swal.fire({
-                        title: 'Confirmar pago',
-                        html: `Se intentará cobrar a la tarjeta terminada en <strong>${numTarjeta.slice(-4)}</strong>`,
-                        icon: 'question',
+                        title: "Confirmar pago",
+                        html: confirmText,
+                        icon: "question",
                         showCancelButton: true,
-                        confirmButtonText: 'Sí, continuar',
-                        cancelButtonText: 'Cancelar'
+                        confirmButtonText: "Sí, continuar",
+                        cancelButtonText: "Cancelar",
                     }).then((result) => {
                         if (result.isConfirmed) {
                             Swal.fire({
-                                title: 'Procesando pago...',
-                                html: 'Por favor espere un momento',
+                                title: "Procesando pago...",
+                                html: "Por favor espere un momento",
                                 allowOutsideClick: false,
-                                didOpen: () => {
-                                    Swal.showLoading();
-                                }
+                                didOpen: () => Swal.showLoading(),
                             });
 
                             setTimeout(() => {
                                 Swal.close();
-                                const authCode = Math.floor(100000 + Math.random() * 900000); // 6 dígitos
-
-                                Swal.fire({
-                                    title: "Pago exitoso",
-                                    html: `El cobro se realizó correctamente.<br>Autorización: <strong>APROBADO #${authCode}</strong>`,
-                                    icon: "success"
-                                }).then(() => {
-                                    // agregamos código de autorización
-                                    let inputAuth = document.getElementById("authCode");
-                                    if (!inputAuth) {
-                                        inputAuth = document.createElement("input");
-                                        inputAuth.type = "hidden";
-                                        inputAuth.name = "authCode";
-                                        inputAuth.id = "authCode";
-                                        form.appendChild(inputAuth);
-                                    }
-                                    inputAuth.value = authCode;
-
-                                    // forzamos envío sin validaciones HTML5
-                                    form.noValidate = true;
-                                    form.submit();
-                                });
-
-                            }, 2000);
+                                form.submit(); // envío real al backend
+                            }, 1200);
                         }
                     });
                 });
             });
         </script>
+
 
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
     </body>

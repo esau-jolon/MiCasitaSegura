@@ -11,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
 import java.sql.Date;
+import java.time.YearMonth;
 import java.util.List;
 
 @WebServlet("/ControladorPago")
@@ -41,7 +42,6 @@ public class ControladorPago extends HttpServlet {
             request.setAttribute("pago", null);
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
 
-            // 🔹 RN5: obtener el mes que corresponde pagar (solo si es mantenimiento)
             if (usuarioSesion != null) {
                 String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
                 request.setAttribute("mesSugerido", mesSugerido);
@@ -55,7 +55,6 @@ public class ControladorPago extends HttpServlet {
             request.setAttribute("pago", pago);
             request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
 
-            // 🔹 RN5 también en edición
             if (usuarioSesion != null) {
                 String mesSugerido = dao.obtenerMesSiguiente(usuarioSesion.getIdUsuario());
                 request.setAttribute("mesSugerido", mesSugerido);
@@ -85,72 +84,157 @@ public class ControladorPago extends HttpServlet {
         HttpSession session = request.getSession();
         Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
 
-        if ("add".equalsIgnoreCase(action)) {
-            int idUsuario = usuarioSesion.getIdUsuario();
-            int idTipoPago = Integer.parseInt(request.getParameter("idTipoPago"));
-            double monto = Double.parseDouble(request.getParameter("monto"));
-            double mora = Double.parseDouble(request.getParameter("mora"));
-            double total = Double.parseDouble(request.getParameter("total"));
-            String observaciones = request.getParameter("observaciones");
+        try {
+            if ("add".equalsIgnoreCase(action)) {
 
-            Pagos p = new Pagos();
-            p.setIdUsuario(idUsuario);
-            p.setIdTipoPago(idTipoPago);
-            p.setFechaPago(new Date(System.currentTimeMillis())); // fecha automática
-            p.setMonto(monto);
-            p.setMora(mora);
-            p.setTotal(total);
-            p.setObservaciones(observaciones);
-            p.setEstado("Realizado");
+                int idUsuario = usuarioSesion.getIdUsuario();
+                int idTipoPago = Integer.parseInt(request.getParameter("idTipoPago"));
+                double monto = Double.parseDouble(request.getParameter("monto"));
+                double mora = Double.parseDouble(request.getParameter("mora"));
+                double total = Double.parseDouble(request.getParameter("total"));
+                String observaciones = request.getParameter("observaciones");
 
-            // 🔹 Guardar mes/año del formulario si es mantenimiento
-            if (idTipoPago == 1) {
-                String mesPagadoStr = request.getParameter("mesPagado");
-                String anioPagadoStr = request.getParameter("anioPagado");
-                if (mesPagadoStr != null && anioPagadoStr != null) {
-                    p.setMesPagado(Integer.parseInt(mesPagadoStr));
-                    p.setAnioPagado(Integer.parseInt(anioPagadoStr));
+                // === Datos de tarjeta ===
+                String numTarjeta = request.getParameter("numTarjeta");
+                String fechaVenc = request.getParameter("fechaVenc");
+                String cvv = request.getParameter("cvv");
+                String nombreTitular = request.getParameter("nombreTitular");
+
+                // ======= VALIDACIONES =======
+                if (idTipoPago <= 0) {
+                    throw new IllegalArgumentException("Debe seleccionar un tipo de pago válido.");
                 }
+
+                if (monto <= 0 || total <= 0) {
+                    throw new IllegalArgumentException("El monto y el total deben ser mayores que cero.");
+                }
+
+                if (observaciones == null || observaciones.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Debe ingresar observaciones del pago.");
+                }
+
+                // Número de tarjeta
+                if (numTarjeta == null || !numTarjeta.matches("\\d{12,19}")) {
+                    throw new IllegalArgumentException("Número de tarjeta inválido. Solo se permiten entre 12 y 19 dígitos.");
+                }
+
+                // CVV
+                if (cvv == null || !cvv.matches("\\d{3,4}")) {
+                    throw new IllegalArgumentException("CVV inválido. Debe tener 3 o 4 dígitos numéricos.");
+                }
+
+                // Nombre del titular
+                if (nombreTitular == null || nombreTitular.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Debe ingresar el nombre del titular de la tarjeta.");
+                }
+
+                // === Validar fecha de vencimiento (MM/YYYY) ===
+                if (fechaVenc == null || fechaVenc.trim().isEmpty()) {
+                    throw new IllegalArgumentException("Debe indicar la fecha de vencimiento de la tarjeta.");
+                }
+
+                try {
+                    // Convierte MM/YYYY → YearMonth correctamente
+                    String[] partes = fechaVenc.split("/");
+                    if (partes.length != 2) {
+                        throw new IllegalArgumentException("Formato inválido. Use MM/YYYY.");
+                    }
+
+                    int mes = Integer.parseInt(partes[0]);
+                    int anio = Integer.parseInt(partes[1]);
+
+                    if (mes < 1 || mes > 12) {
+                        throw new IllegalArgumentException("El mes de vencimiento debe estar entre 01 y 12.");
+                    }
+
+                    YearMonth fechaSeleccionada = YearMonth.of(anio, mes);
+                    YearMonth fechaActual = YearMonth.now();
+
+                    if (fechaSeleccionada.isBefore(fechaActual)) {
+                        throw new IllegalArgumentException("La tarjeta está vencida. Use una con fecha válida.");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("Formato de fecha de vencimiento inválido. Use MM/YYYY.");
+                }
+
+                // ======= CREAR PAGO =======
+                Pagos p = new Pagos();
+                p.setIdUsuario(idUsuario);
+                p.setIdTipoPago(idTipoPago);
+                p.setFechaPago(new Date(System.currentTimeMillis()));
+                p.setMonto(monto);
+                p.setMora(mora);
+                p.setTotal(monto + mora); // cálculo seguro
+                p.setObservaciones(observaciones);
+                p.setEstado("Realizado");
+
+                // Guardar mes/año si aplica
+                if (idTipoPago == 1) {
+                    String mesPagadoStr = request.getParameter("mesPagado");
+                    String anioPagadoStr = request.getParameter("anioPagado");
+                    if (mesPagadoStr != null && anioPagadoStr != null) {
+                        p.setMesPagado(Integer.parseInt(mesPagadoStr));
+                        p.setAnioPagado(Integer.parseInt(anioPagadoStr));
+                    }
+                }
+
+                dao.add(p);
+
+            } else if ("edit".equalsIgnoreCase(action)) {
+                int idPago = Integer.parseInt(request.getParameter("idPago"));
+                int idTipoPago = Integer.parseInt(request.getParameter("idTipoPago"));
+                double monto = Double.parseDouble(request.getParameter("monto"));
+                double mora = Double.parseDouble(request.getParameter("mora"));
+                String observaciones = request.getParameter("observaciones");
+                String estado = request.getParameter("estado");
+
+                if (idTipoPago <= 0) {
+                    throw new IllegalArgumentException("Debe seleccionar un tipo de pago válido.");
+                }
+
+                if (monto <= 0) {
+                    throw new IllegalArgumentException("El monto debe ser mayor que cero.");
+                }
+
+                Pagos p = new Pagos();
+                p.setIdPago(idPago);
+                p.setIdUsuario(usuarioSesion.getIdUsuario());
+                p.setIdTipoPago(idTipoPago);
+                p.setFechaPago(new Date(System.currentTimeMillis()));
+                p.setMonto(monto);
+                p.setMora(mora);
+                p.setTotal(monto + mora);
+                p.setObservaciones(observaciones);
+                p.setEstado(estado);
+
+                if (idTipoPago == 1) {
+                    String mesPagadoStr = request.getParameter("mesPagado");
+                    String anioPagadoStr = request.getParameter("anioPagado");
+                    if (mesPagadoStr != null && anioPagadoStr != null) {
+                        p.setMesPagado(Integer.parseInt(mesPagadoStr));
+                        p.setAnioPagado(Integer.parseInt(anioPagadoStr));
+                    }
+                } else {
+                    p.setMesPagado(null);
+                    p.setAnioPagado(null);
+                }
+
+                dao.edit(p);
             }
 
-            dao.add(p);
+            response.sendRedirect("ControladorPago?accion=listar");
 
-        } else if ("edit".equalsIgnoreCase(action)) {
-            int idPago = Integer.parseInt(request.getParameter("idPago"));
-            int idTipoPago = Integer.parseInt(request.getParameter("idTipoPago"));
-            double monto = Double.parseDouble(request.getParameter("monto"));
-            double mora = Double.parseDouble(request.getParameter("mora"));
-            double total = Double.parseDouble(request.getParameter("total"));
-            String observaciones = request.getParameter("observaciones");
-            String estado = request.getParameter("estado");
+        } catch (IllegalArgumentException ex) {
+            request.setAttribute("mensajeError", ex.getMessage());
+            request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+            RequestDispatcher vista = request.getRequestDispatcher(addEdit);
+            vista.forward(request, response);
 
-            Pagos p = new Pagos();
-            p.setIdPago(idPago);
-            p.setIdUsuario(usuarioSesion.getIdUsuario());
-            p.setIdTipoPago(idTipoPago);
-            p.setFechaPago(new Date(System.currentTimeMillis()));
-            p.setMonto(monto);
-            p.setMora(mora);
-            p.setTotal(total);
-            p.setObservaciones(observaciones);
-            p.setEstado(estado);
-
-            // 🔹 Guardar mes/año desde el formulario si es mantenimiento
-            if (idTipoPago == 1) {
-                String mesPagadoStr = request.getParameter("mesPagado");
-                String anioPagadoStr = request.getParameter("anioPagado");
-                if (mesPagadoStr != null && anioPagadoStr != null) {
-                    p.setMesPagado(Integer.parseInt(mesPagadoStr));
-                    p.setAnioPagado(Integer.parseInt(anioPagadoStr));
-                }
-            } else {
-                p.setMesPagado(null);
-                p.setAnioPagado(null);
-            }
-
-            dao.edit(p);
+        } catch (Exception ex) {
+            request.setAttribute("mensajeError", "Ocurrió un error inesperado: " + ex.getMessage());
+            request.setAttribute("catalogoTiposPago", tiposPagoDAO.listar());
+            RequestDispatcher vista = request.getRequestDispatcher(addEdit);
+            vista.forward(request, response);
         }
-
-        response.sendRedirect("ControladorPago?accion=listar");
     }
 }

@@ -30,7 +30,7 @@ public class ControladorDirectorio extends HttpServlet {
         request.setAttribute("lotes", loteDAO.listar());
 
         if ("listar".equals(accion)) {
-            request.setAttribute("usuarios", usuarioDAO.listar());
+            request.setAttribute("usuarios", usuarioDAO.listarResidentes());
             request.getRequestDispatcher("vistas/Directorio/Index.jsp").forward(request, response);
 
         } else if ("buscar".equals(accion)) {
