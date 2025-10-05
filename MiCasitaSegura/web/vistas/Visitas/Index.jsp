@@ -584,12 +584,21 @@
                                             <i class="bi bi-pencil-square"></i> Editar
                                         </a>
 
-                                        <a href="${pageContext.request.contextPath}/ControladorVisita?accion=delete&id=<%= v.getIdVisita()%>" 
+
+                                        <a href="#"
                                            class="btn-action btn-delete"
-                                           onclick="return confirm('¿Seguro que deseas cancelar esta visita?\n\nVisitante: <%= v.getNombreVisitante()%>\nCorreo: <%= v.getCorreoVisitante()%>');"
+                                           data-id="<%= v.getIdVisita()%>"
+                                           data-nombre="<%= v.getNombreVisitante() != null ? v.getNombreVisitante().replace("\"", "&quot;").replace("'", "&#39;") : ""%>"
+                                           data-correo="<%= v.getCorreoVisitante() != null ? v.getCorreoVisitante().replace("\"", "&quot;").replace("'", "&#39;") : ""%>"
+                                           onclick="confirmCancel(this); return false;"
                                            title="Cancelar visita">
                                             <i class="bi bi-slash-circle"></i> Cancelar
                                         </a>
+
+
+
+
+
 
                                         <a href="${pageContext.request.contextPath}/ControladorVisita?accion=descargarQR&id=<%= v.getIdVisita()%>"
                                            class="btn-action btn-edit"
@@ -607,7 +616,7 @@
                                 </td>
 
 
-                                
+
                             </tr>
                             <%
                                 }
@@ -630,11 +639,46 @@
         </div>
     </body>
 
+    <script>
+        function confirmCancel(element) {
+            const id = element.getAttribute('data-id');
+
+            Swal.fire({
+                title: '¿Cancelar esta visita?',
+                text: 'Esta acción no se puede deshacer.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cancelar visita',
+                cancelButtonText: 'No, mantener activa',
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Cancelando...',
+                        text: 'Por favor, espera un momento.',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                        didOpen: () => Swal.showLoading()
+                    });
+
+                    const contextPath = '<%= request.getContextPath()%>';
+                    window.location.href = contextPath + '/ControladorVisita?accion=cancelar&id=' + id;
+                }
+            });
+        }
+    </script>
+
+
+
+
+
+
     <!-- Scripts -->
     <script>
-        // Smooth scroll and animation effects
         document.addEventListener('DOMContentLoaded', function () {
-            // Add loading effect to buttons
+            // Efecto de carga en botones
             const buttons = document.querySelectorAll('.btn-action, .btn-add');
             buttons.forEach(button => {
                 button.addEventListener('click', function (e) {
@@ -650,19 +694,18 @@
                 });
             });
 
-            // Enhanced table row hover effects
+            // Efecto hover en filas de tabla
             const tableRows = document.querySelectorAll('.modern-table tbody tr');
             tableRows.forEach(row => {
                 row.addEventListener('mouseenter', function () {
                     this.style.transform = 'scale(1.01)';
                 });
-
                 row.addEventListener('mouseleave', function () {
                     this.style.transform = 'scale(1)';
                 });
             });
 
-            // Add ripple effect to buttons
+            // Efecto ripple
             function createRipple(event) {
                 const button = event.currentTarget;
                 const circle = document.createElement('span');
@@ -675,9 +718,8 @@
                 circle.classList.add('ripple');
 
                 const ripple = button.getElementsByClassName('ripple')[0];
-                if (ripple) {
+                if (ripple)
                     ripple.remove();
-                }
 
                 button.appendChild(circle);
             }
@@ -688,11 +730,8 @@
             });
         });
 
-        // Enhanced confirm dialog
-        function confirmDelete(userName, userEmail) {
-            return confirm(`¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: ${userName}\nCorreo: ${userEmail}\n\nEsta acción no se puede deshacer.`);
-        }
     </script>
+
 
     <style>
         /* Ripple effect */

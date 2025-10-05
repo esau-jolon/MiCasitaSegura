@@ -2,6 +2,10 @@
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL%20VISITA%20SIN%20BUGS/MiCasitaSegura/MiCasitaSegura/web/vistas/Visitas/Index.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL%20VISITA%20SIN%20BUGS/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorVisita.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL%20VISITA%20SIN%20BUGS/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/VisitaDAO.java</file>
+        </group>
     </open-files>
 </project-private>

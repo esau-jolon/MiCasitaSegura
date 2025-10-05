@@ -47,12 +47,12 @@
                         </div>
 
                         <!-- Correo -->
-                        <div class="mb-3">
-                            <label class="form-label">Correo del Visitante</label>
+                       <div class="mb-3">
+                            <label class="form-label">Correo del Visitante *</label>
                             <input type="email" class="form-control" name="correoVisitante"
-                                   value="<%= (v != null ? v.getCorreoVisitante() : "")%>">
+                                   value="<%= (v != null ? v.getCorreoVisitante() : "")%>" required>
                         </div>
-
+                        
                         <!-- Residente anfitrión -->
                         <div class="mb-3">
                             <label class="form-label">Residente que recibe *</label>
