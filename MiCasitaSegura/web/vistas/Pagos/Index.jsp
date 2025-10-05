@@ -195,6 +195,14 @@
                 font-weight: 600;
             }
 
+            .status-pendiente {
+                background: linear-gradient(135deg, #facc15, #fbbf24);
+                color: #1a1a1a;
+                padding: .5rem 1rem;
+                border-radius: 50px;
+                font-weight: 600;
+            }
+
             /* --- Botones de acción --- */
             .action-buttons {
                 display: flex;
@@ -230,6 +238,13 @@
 
             .btn-action:hover { transform: scale(1.05); }
 
+            /* --- Deshabilitado --- */
+            .disabled-action {
+                opacity: 0.5;
+                pointer-events: none;
+                cursor: not-allowed;
+            }
+
             /* --- Estado vacío --- */
             .empty-state {
                 text-align: center;
@@ -242,130 +257,100 @@
                 margin-bottom: 1rem;
                 opacity: 0.5;
             }
-
-            /* --- Responsivo --- */
-            @media (max-width: 992px) {
-                .page-title { font-size: 2.2rem; }
-                .modern-table { font-size: 0.9rem; }
-                .btn-add { width: 100%; margin: 1rem auto; }
-            }
-
-            @media (max-width: 768px) {
-                .page-title { font-size: 1.8rem; }
-                .btn-add { padding: .8rem 1.5rem; }
-                .modern-table th, .modern-table td { padding: .8rem; }
-                .action-buttons { flex-direction: column; }
-            }
-
-            /* --- Ripple effect --- */
-            .ripple {
-                position: absolute;
-                border-radius: 50%;
-                transform: scale(0);
-                animation: ripple-animation 600ms linear;
-                background-color: rgba(255,255,255,0.3);
-                pointer-events: none;
-            }
-            @keyframes ripple-animation {
-                to { transform: scale(4); opacity: 0; }
-            }
         </style>
     </head>
     <body>
 
         <div class="container">
-
             <div class="main-card">
-          
-
-                <div class="container">
-                    <div class="page-header">
-                        <h1 class="page-title">Gestión de Pagos</h1>
-                        <p class="page-subtitle">Consulta, registra y administra los pagos realizados</p>
-                    </div>
-
-                    <div class="main-card">
-                        <div class="card-header">
-                            <div class="header-title"><i class="bi bi-cash-coin"></i> Lista de Pagos</div>
-                        </div>
-
-                        <a href="${pageContext.request.contextPath}/ControladorPago?accion=add" class="btn-add">
-                            <i class="bi bi-credit-card"></i> Pagar Servicio
-                        </a>
-
-                        <div class="table-container">
-                            <table class="modern-table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th><th>Usuario</th><th>Tipo</th><th>Fecha</th><th>Mes/Año</th>
-                                        <th>Monto</th><th>Mora</th><th>Total</th><th>Observaciones</th><th>Estado</th><th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <%
-                                        List<Pagos> lista = (List<Pagos>) request.getAttribute("pagos");
-                                        if (lista != null && !lista.isEmpty()) {
-                                            for (Pagos p : lista) {
-                                    %>
-                                    <tr>
-                                        <td>#<%= p.getIdPago()%></td>
-                                        <td><%= p.getNombreUsuario()%></td>
-                                        <td><%= p.getNombreTipoPago()%></td>
-                                        <td><%= p.getFechaPago()%></td>
-                                        <td><%= (p.getMesPagado() != null && p.getAnioPagado() != null) ? p.getMesPagado() + "/" + p.getAnioPagado() : "-"%></td>
-                                        <td>Q <%= p.getMonto()%></td>
-                                        <td>Q <%= p.getMora()%></td>
-                                        <td><strong>Q <%= p.getTotal()%></strong></td>
-                                        <td><%= p.getObservaciones() != null ? p.getObservaciones() : "-"%></td>
-                                        <td>
-                                            <%
-                                                String estado = p.getNombreEstadoPago();
-                                                String claseEstado = "";
-                                                String icono = "";
-                                                if ("Realizado".equalsIgnoreCase(estado)) {
-                                                    claseEstado = "status-realizado";
-                                                    icono = "bi-check-circle-fill";
-                                                } else if ("Pendiente".equalsIgnoreCase(estado)) {
-                                                    claseEstado = "status-pendiente";
-                                                    icono = "bi-hourglass-split";
-                                                } else if ("Cancelado".equalsIgnoreCase(estado)) {
-                                                    claseEstado = "status-cancelado";
-                                                    icono = "bi-x-circle-fill";
-                                                }
-                                            %>
-                                            <span class="<%= claseEstado%>">
-                                                <i class="bi <%= icono%>"></i> <%= estado%>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <a href="${pageContext.request.contextPath}/ControladorPago?accion=edit&id=<%= p.getIdPago()%>"
-                                                   class="btn-action btn-edit">
-                                                    <i class="bi bi-pencil-square"></i> Editar
-                                                </a>
-                                                <a href="${pageContext.request.contextPath}/ControladorPago?accion=cancelar&id=<%= p.getIdPago()%>"
-                                                   class="btn-action btn-cancel"
-                                                   onclick="return confirm('¿Cancelar este pago? Total: Q<%= p.getTotal()%>');">
-                                                    <i class="bi bi-x-circle"></i> Cancelar
-                                                </a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    <% }
-                } else { %>
-                                    <tr>
-                                        <td colspan="11" class="text-center text-muted py-5">
-                                            <i class="bi bi-wallet-x display-6 d-block mb-3"></i>
-                                            No hay pagos registrados aún
-                                        </td>
-                                    </tr>
-                                    <% }%>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                <div class="page-header">
+                    <h1 class="page-title">Gestión de Pagos</h1>
+                    <p class="page-subtitle">Consulta, registra y administra los pagos realizados</p>
                 </div>
 
+                <div class="main-card">
+                    <div class="card-header">
+                        <div class="header-title"><i class="bi bi-cash-coin"></i> Lista de Pagos</div>
+                    </div>
+
+                    <a href="${pageContext.request.contextPath}/ControladorPago?accion=add" class="btn-add">
+                        <i class="bi bi-credit-card"></i> Pagar Servicio
+                    </a>
+
+                    <div class="table-container">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th><th>Usuario</th><th>Tipo</th><th>Fecha</th><th>Mes/Año</th>
+                                    <th>Monto</th><th>Mora</th><th>Total</th><th>Observaciones</th><th>Estado</th><th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <%
+                                    List<Pagos> lista = (List<Pagos>) request.getAttribute("pagos");
+                                    if (lista != null && !lista.isEmpty()) {
+                                        for (Pagos p : lista) {
+                                            String estado = p.getNombreEstadoPago();
+                                            String claseEstado = "";
+                                            String icono = "";
+                                            boolean deshabilitar = false;
+
+                                            if ("Realizado".equalsIgnoreCase(estado)) {
+                                                claseEstado = "status-realizado";
+                                                icono = "bi-check-circle-fill";
+                                                deshabilitar = true;
+                                            } else if ("Pendiente".equalsIgnoreCase(estado)) {
+                                                claseEstado = "status-pendiente";
+                                                icono = "bi-hourglass-split";
+                                            } else if ("Cancelado".equalsIgnoreCase(estado)) {
+                                                claseEstado = "status-cancelado";
+                                                icono = "bi-x-circle-fill";
+                                            }
+                                %>
+                                <tr>
+                                    <td>#<%= p.getIdPago()%></td>
+                                    <td><%= p.getNombreUsuario()%></td>
+                                    <td><%= p.getNombreTipoPago()%></td>
+                                    <td><%= p.getFechaPago()%></td>
+                                    <td><%= (p.getMesPagado() != null && p.getAnioPagado() != null) ? p.getMesPagado() + "/" + p.getAnioPagado() : "-"%></td>
+                                    <td>Q <%= p.getMonto()%></td>
+                                    <td>Q <%= p.getMora()%></td>
+                                    <td><strong>Q <%= p.getTotal()%></strong></td>
+                                    <td><%= p.getObservaciones() != null ? p.getObservaciones() : "-"%></td>
+                                    <td>
+                                        <span class="<%= claseEstado %>">
+                                            <i class="bi <%= icono %>"></i> <%= estado %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="${pageContext.request.contextPath}/ControladorPago?accion=edit&id=<%= p.getIdPago()%>"
+                                               class="btn-action btn-edit <%= deshabilitar ? "disabled-action" : "" %>"
+                                               title="<%= deshabilitar ? "No se puede editar un pago realizado" : "" %>">
+                                                <i class="bi bi-pencil-square"></i> Editar
+                                            </a>
+                                            <a href="${pageContext.request.contextPath}/ControladorPago?accion=cancelar&id=<%= p.getIdPago()%>"
+                                               class="btn-action btn-cancel <%= deshabilitar ? "disabled-action" : "" %>"
+                                               <%= deshabilitar ? "" : "onclick=\"return confirm('¿Cancelar este pago? Total: Q" + p.getTotal() + "');\"" %>
+                                               title="<%= deshabilitar ? "No se puede cancelar un pago realizado" : "" %>">
+                                                <i class="bi bi-x-circle"></i> Cancelar
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% }
+                                } else { %>
+                                <tr>
+                                    <td colspan="11" class="text-center text-muted py-5">
+                                        <i class="bi bi-wallet-x display-6 d-block mb-3"></i>
+                                        No hay pagos registrados aún
+                                    </td>
+                                </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -390,6 +375,5 @@
                 });
             });
         </script>
-
     </body>
 </html>

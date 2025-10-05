@@ -77,9 +77,12 @@ public class VisitaDAO {
         if ("Por intentos".equalsIgnoreCase(v.getTipoVisita()) && v.getIntentosPermitidos() <= 1) {
             throw new IllegalArgumentException("El número de intentos debe ser mayor a 1 (RN4).");
         }
-        if ("Visita".equalsIgnoreCase(v.getTipoVisita())
-                && v.getFechaVisita().before(new java.sql.Date(System.currentTimeMillis()))) {
-            throw new IllegalArgumentException("La fecha de visita no puede ser de días pasados (RN5).");
+        if ("Visita".equalsIgnoreCase(v.getTipoVisita())) {
+            java.sql.Date hoy = new java.sql.Date(System.currentTimeMillis());
+            // Permitir misma fecha o futura
+            if (v.getFechaVisita().before(hoy)) {
+                throw new IllegalArgumentException("La fecha de visita no puede ser de días pasados (RN5).");
+            }
         }
 
         String sql = "INSERT INTO Visitas(nombre_visitante,dpi_visitante,correo_visitante,id_residente,id_usuario_creador,tipo_visita,fecha_visita,intentos_permitidos,estado) "
