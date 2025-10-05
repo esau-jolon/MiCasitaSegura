@@ -8,7 +8,6 @@ import ModeloDAO.UsuarioDAO;
 import java.io.IOException;
 import java.sql.Date;
 import java.util.List;
-
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -16,7 +15,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 
 @WebServlet("/ControladorVisita")
 public class ControladorVisita extends HttpServlet {
@@ -54,20 +52,20 @@ public class ControladorVisita extends HttpServlet {
             request.setAttribute("catalogoResidentes", usuarioDao.listarResidentes());
             acceso = addEdit;
 
-        } else if ("cancelar".equalsIgnoreCase(action)) { // ⚡ FA06
+        } else if ("cancelar".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            dao.delete(id); // cambia estado y desactiva QR
+            dao.delete(id);
             request.setAttribute("visitas", dao.listar());
             acceso = listar;
 
-        } else if ("descargarQR".equalsIgnoreCase(action)) { // ⚡ FA05
+        } else if ("descargarQR".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            dao.descargarQR(id, response); // escribe el PNG al response
-            return; // importante: no hacer forward
+            dao.descargarQR(id, response);
+            return;
 
-        } else if ("delete".equalsIgnoreCase(action)) { // ⚡ NUEVO BLOQUE
+        } else if ("delete".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            dao.delete(id); // elimina visita (y QR si lo configuras en DAO)
+            dao.delete(id);
             request.setAttribute("visitas", dao.listar());
             acceso = listar;
 
@@ -88,75 +86,92 @@ public class ControladorVisita extends HttpServlet {
 
         String action = request.getParameter("accion");
         HttpSession session = request.getSession();
-        Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario"); // logueado
+        Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
 
-        if ("add".equalsIgnoreCase(action)) {
-            String nombreVisitante = request.getParameter("nombreVisitante");
-            String dpiVisitante = request.getParameter("dpiVisitante");
-            String correoVisitante = request.getParameter("correoVisitante");
-            int idResidente = Integer.parseInt(request.getParameter("idResidente"));
-            String tipoVisita = request.getParameter("tipoVisita");
+        try {
+            if ("add".equalsIgnoreCase(action)) {
+                String nombreVisitante = request.getParameter("nombreVisitante");
+                String dpiVisitante = request.getParameter("dpiVisitante");
+                String correoVisitante = request.getParameter("correoVisitante");
+                int idResidente = Integer.parseInt(request.getParameter("idResidente"));
+                String tipoVisita = request.getParameter("tipoVisita");
 
-            Date fechaVisita = null;
-            if (request.getParameter("fechaVisita") != null && !request.getParameter("fechaVisita").isEmpty()) {
-                fechaVisita = Date.valueOf(request.getParameter("fechaVisita"));
+                Date fechaVisita = null;
+                if (request.getParameter("fechaVisita") != null && !request.getParameter("fechaVisita").isEmpty()) {
+                    fechaVisita = Date.valueOf(request.getParameter("fechaVisita"));
+                }
+
+                Integer intentos = null;
+                if (request.getParameter("intentosPermitidos") != null && !request.getParameter("intentosPermitidos").isEmpty()) {
+                    intentos = Integer.parseInt(request.getParameter("intentosPermitidos"));
+                }
+
+                boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
+
+                Visitas v = new Visitas();
+                v.setNombreVisitante(nombreVisitante);
+                v.setDpiVisitante(dpiVisitante);
+                v.setCorreoVisitante(correoVisitante);
+                v.setIdResidente(idResidente);
+                v.setIdUsuarioCreador(usuarioSesion.getIdUsuario());
+                v.setTipoVisita(tipoVisita);
+                v.setFechaVisita(fechaVisita);
+                v.setIntentosPermitidos(intentos);
+                v.setEstado(estado);
+
+                dao.add(v);
+                response.sendRedirect("ControladorVisita?accion=listar");
+
+            } else if ("edit".equalsIgnoreCase(action)) {
+                int idVisita = Integer.parseInt(request.getParameter("idVisita"));
+                String nombreVisitante = request.getParameter("nombreVisitante");
+                String dpiVisitante = request.getParameter("dpiVisitante");
+                String correoVisitante = request.getParameter("correoVisitante");
+                int idResidente = Integer.parseInt(request.getParameter("idResidente"));
+                String tipoVisita = request.getParameter("tipoVisita");
+
+                Date fechaVisita = null;
+                if (request.getParameter("fechaVisita") != null && !request.getParameter("fechaVisita").isEmpty()) {
+                    fechaVisita = Date.valueOf(request.getParameter("fechaVisita"));
+                }
+
+                Integer intentos = null;
+                if (request.getParameter("intentosPermitidos") != null && !request.getParameter("intentosPermitidos").isEmpty()) {
+                    intentos = Integer.parseInt(request.getParameter("intentosPermitidos"));
+                }
+
+                boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
+
+                Visitas v = new Visitas();
+                v.setIdVisita(idVisita);
+                v.setNombreVisitante(nombreVisitante);
+                v.setDpiVisitante(dpiVisitante);
+                v.setCorreoVisitante(correoVisitante);
+                v.setIdResidente(idResidente);
+                v.setIdUsuarioCreador(usuarioSesion.getIdUsuario());
+                v.setTipoVisita(tipoVisita);
+                v.setFechaVisita(fechaVisita);
+                v.setIntentosPermitidos(intentos);
+                v.setEstado(estado);
+
+                dao.edit(v);
+                response.sendRedirect("ControladorVisita?accion=listar");
             }
 
-            Integer intentos = null;
-            if (request.getParameter("intentosPermitidos") != null && !request.getParameter("intentosPermitidos").isEmpty()) {
-                intentos = Integer.parseInt(request.getParameter("intentosPermitidos"));
-            }
+        } catch (IllegalArgumentException ex) {
+            // ⚠️ Error de validación del DAO (por ejemplo RN4 o RN5)
+            request.setAttribute("errorMensaje", ex.getMessage());
+            request.setAttribute("catalogoResidentes", usuarioDao.listarResidentes());
+            RequestDispatcher vista = request.getRequestDispatcher(addEdit);
+            vista.forward(request, response);
 
-            boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
-
-            Visitas v = new Visitas();
-            v.setNombreVisitante(nombreVisitante);
-            v.setDpiVisitante(dpiVisitante);
-            v.setCorreoVisitante(correoVisitante);
-            v.setIdResidente(idResidente);
-            v.setIdUsuarioCreador(usuarioSesion.getIdUsuario()); // ⚡ RN2
-            v.setTipoVisita(tipoVisita);
-            v.setFechaVisita(fechaVisita);
-            v.setIntentosPermitidos(intentos);
-            v.setEstado(estado);
-
-            dao.add(v);
-
-        } else if ("edit".equalsIgnoreCase(action)) {
-            int idVisita = Integer.parseInt(request.getParameter("idVisita"));
-            String nombreVisitante = request.getParameter("nombreVisitante");
-            String dpiVisitante = request.getParameter("dpiVisitante");
-            String correoVisitante = request.getParameter("correoVisitante");
-            int idResidente = Integer.parseInt(request.getParameter("idResidente"));
-            String tipoVisita = request.getParameter("tipoVisita");
-
-            Date fechaVisita = null;
-            if (request.getParameter("fechaVisita") != null && !request.getParameter("fechaVisita").isEmpty()) {
-                fechaVisita = Date.valueOf(request.getParameter("fechaVisita"));
-            }
-
-            Integer intentos = null;
-            if (request.getParameter("intentosPermitidos") != null && !request.getParameter("intentosPermitidos").isEmpty()) {
-                intentos = Integer.parseInt(request.getParameter("intentosPermitidos"));
-            }
-
-            boolean estado = Boolean.parseBoolean(request.getParameter("estado"));
-
-            Visitas v = new Visitas();
-            v.setIdVisita(idVisita);
-            v.setNombreVisitante(nombreVisitante);
-            v.setDpiVisitante(dpiVisitante);
-            v.setCorreoVisitante(correoVisitante);
-            v.setIdResidente(idResidente);
-            v.setIdUsuarioCreador(usuarioSesion.getIdUsuario()); // ⚡ RN2
-            v.setTipoVisita(tipoVisita);
-            v.setFechaVisita(fechaVisita);
-            v.setIntentosPermitidos(intentos);
-            v.setEstado(estado);
-
-            dao.edit(v);
+        } catch (Exception e) {
+            // ⚠️ Error inesperado
+            e.printStackTrace();
+            request.setAttribute("errorMensaje", "Ocurrió un error inesperado al registrar la visita.");
+            request.setAttribute("catalogoResidentes", usuarioDao.listarResidentes());
+            RequestDispatcher vista = request.getRequestDispatcher(addEdit);
+            vista.forward(request, response);
         }
-
-        response.sendRedirect("ControladorVisita?accion=listar");
     }
 }

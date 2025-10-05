@@ -184,7 +184,7 @@
                 </li>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorVisita?accion=listar" target="contentFrame">
-                        <i class="bi bi-door-open"></i><span> VISITAS</span>
+                        <i class="bi bi-door-open"></i><span> REGISTRAR VISITANTE</span>
                     </a>
                 </li>
 

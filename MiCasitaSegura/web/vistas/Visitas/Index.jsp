@@ -577,18 +577,37 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
+                                        <% if (v.isEstado()) {%>
+                                        <!-- ✅ SOLO SI LA VISITA ESTÁ ACTIVA -->
                                         <a href="${pageContext.request.contextPath}/ControladorVisita?accion=edit&id=<%= v.getIdVisita()%>" 
                                            class="btn-action btn-edit" title="Editar visita">
                                             <i class="bi bi-pencil-square"></i> Editar
                                         </a>
+
                                         <a href="${pageContext.request.contextPath}/ControladorVisita?accion=delete&id=<%= v.getIdVisita()%>" 
                                            class="btn-action btn-delete"
                                            onclick="return confirm('¿Seguro que deseas cancelar esta visita?\n\nVisitante: <%= v.getNombreVisitante()%>\nCorreo: <%= v.getCorreoVisitante()%>');"
                                            title="Cancelar visita">
                                             <i class="bi bi-slash-circle"></i> Cancelar
                                         </a>
+
+                                        <a href="${pageContext.request.contextPath}/ControladorVisita?accion=descargarQR&id=<%= v.getIdVisita()%>"
+                                           class="btn-action btn-edit"
+                                           style="background: linear-gradient(135deg, #60a5fa, #3b82f6); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);"
+                                           title="Descargar código QR">
+                                            <i class="bi bi-qr-code"></i> QR
+                                        </a>
+                                        <% } else { %>
+                                        <!-- ❌ SI LA VISITA ESTÁ CANCELADA -->
+                                        <span class="text-muted" style="font-size: 0.9rem;">
+                                            <i class="bi bi-info-circle"></i> Sin acciones disponibles
+                                        </span>
+                                        <% } %>
                                     </div>
                                 </td>
+
+
+                                
                             </tr>
                             <%
                                 }

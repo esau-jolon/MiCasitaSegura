@@ -11,6 +11,8 @@
         <title><%= (v == null ? "Registrar Visita" : "Editar Visita")%></title>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
+        <!-- SweetAlert2 -->
+        <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
     </head>
     <body>
         <div class="container mt-4">
@@ -65,7 +67,7 @@
                                     <%= u.getNombre()%> <%= u.getApellidos()%> (Casa: <%= u.getNumeroCasaId()%>)
                                 </option>
                                 <% }
-                            }%>
+                                    }%>
                             </select>
                         </div>
 
@@ -79,12 +81,13 @@
                             </select>
                         </div>
 
-                        <!-- Fecha -->
                         <div class="mb-3" id="campoFecha" style="display:none;">
                             <label class="form-label">Fecha de Visita *</label>
-                            <input type="date" class="form-control" name="fechaVisita"
+                            <input type="date" class="form-control" name="fechaVisita" id="fechaVisita"
+                                   min="<%= new java.sql.Date(System.currentTimeMillis()).toString()%>"
                                    value="<%= (v != null && v.getFechaVisita() != null ? v.getFechaVisita().toString() : "")%>">
                         </div>
+
 
                         <!-- Intentos -->
                         <div class="mb-3" id="campoIntentos" style="display:none;">
@@ -129,23 +132,65 @@
                 const tipoVisita = document.getElementById("tipoVisita");
                 const campoFecha = document.getElementById("campoFecha");
                 const campoIntentos = document.getElementById("campoIntentos");
+                const fechaInput = document.getElementById("fechaVisita");
 
-                function toggleCampos() {
-                    if (tipoVisita.value === "Visita") {
-                        campoFecha.style.display = "block";
-                        campoIntentos.style.display = "none";
-                    } else if (tipoVisita.value === "Por intentos") {
-                        campoFecha.style.display = "none";
-                        campoIntentos.style.display = "block";
-                    } else {
-                        campoFecha.style.display = "none";
-                        campoIntentos.style.display = "none";
-                    }
-                }
+                // 🔹 Establecer la fecha mínima como hoy
+                if (fechaInput) {
+                    const hoy = new Date();
+                    const yyyy = hoy.getFullYear();
+                    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+                    const dd = String(hoy.getDate()).padStart(2, '0');
+                    const fechaHoy = `${yyyy}-${mm}-${dd}`;
+                                fechaInput.setAttribute("min", fechaHoy);
+                            }
 
-                tipoVisita.addEventListener("change", toggleCampos);
-                toggleCampos();
+                            // Mostrar/ocultar campos según el tipo de visita
+                            function toggleCampos() {
+                                if (tipoVisita.value === "Visita") {
+                                    campoFecha.style.display = "block";
+                                    campoIntentos.style.display = "none";
+                                } else if (tipoVisita.value === "Por intentos") {
+                                    campoFecha.style.display = "none";
+                                    campoIntentos.style.display = "block";
+                                } else {
+                                    campoFecha.style.display = "none";
+                                    campoIntentos.style.display = "none";
+                                }
+                            }
+
+                            tipoVisita.addEventListener("change", toggleCampos);
+                            toggleCampos();
+                        });
+        </script>
+
+        <%-- ⚠️ Mostrar errores con SweetAlert2 --%>
+        <%
+            String errorMensaje = (String) request.getAttribute("errorMensaje");
+            if (errorMensaje != null && !errorMensaje.isEmpty()) {
+        %>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                Swal.fire({
+                    title: "Error",
+                    text: "<%= errorMensaje.replace("\"", "\\\"")%>",
+                    icon: "error",
+                    confirmButtonText: "Entendido"
+                });
             });
         </script>
+        <%
+            }
+        %>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const inputFecha = document.getElementById("fechaVisita");
+                if (inputFecha) {
+                    const hoy = new Date().toISOString().split("T")[0];
+                    inputFecha.setAttribute("min", hoy);
+                }
+            });
+        </script>
+
     </body>
 </html>

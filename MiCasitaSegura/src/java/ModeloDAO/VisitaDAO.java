@@ -73,14 +73,31 @@ public class VisitaDAO {
 
     // 🔹 Agregar nueva visita + generar QR
     public boolean add(Visitas v) {
-        // Validaciones RN4, RN5
+        // 🔹 Validaciones RN4, RN5
         if ("Por intentos".equalsIgnoreCase(v.getTipoVisita()) && v.getIntentosPermitidos() <= 1) {
             throw new IllegalArgumentException("El número de intentos debe ser mayor a 1 (RN4).");
         }
+
         if ("Visita".equalsIgnoreCase(v.getTipoVisita())) {
             java.sql.Date hoy = new java.sql.Date(System.currentTimeMillis());
-            // Permitir misma fecha o futura
-            if (v.getFechaVisita().before(hoy)) {
+
+            // ⚡ Comparación robusta: permitir misma fecha o futura
+            java.util.Calendar calVisita = java.util.Calendar.getInstance();
+            calVisita.setTime(v.getFechaVisita());
+            java.util.Calendar calHoy = java.util.Calendar.getInstance();
+            calHoy.setTime(hoy);
+
+            calVisita.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            calVisita.set(java.util.Calendar.MINUTE, 0);
+            calVisita.set(java.util.Calendar.SECOND, 0);
+            calVisita.set(java.util.Calendar.MILLISECOND, 0);
+
+            calHoy.set(java.util.Calendar.HOUR_OF_DAY, 0);
+            calHoy.set(java.util.Calendar.MINUTE, 0);
+            calHoy.set(java.util.Calendar.SECOND, 0);
+            calHoy.set(java.util.Calendar.MILLISECOND, 0);
+
+            if (calVisita.before(calHoy)) {
                 throw new IllegalArgumentException("La fecha de visita no puede ser de días pasados (RN5).");
             }
         }
@@ -103,51 +120,67 @@ public class VisitaDAO {
 
             ps.executeUpdate();
 
+            int idVisita = 0;
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    int idVisita = rs.getInt(1);
-                    String codigo = "VIS-" + idVisita;
-
-                    byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
-
-                    String sqlQR = "INSERT INTO Codigos_QR(codigo, fecha_inicio, fecha_fin, intentos_disponibles, id_visita, estado) "
-                            + "VALUES(?, NOW(), ?, ?, ?, 1)";
-                    try (PreparedStatement psQR = con.prepareStatement(sqlQR)) {
-                        psQR.setString(1, codigo);
-                        if ("Visita".equalsIgnoreCase(v.getTipoVisita())) {
-                            psQR.setDate(2, v.getFechaVisita());
-                            psQR.setNull(3, Types.INTEGER);
-                            psQR.setInt(4, idVisita);
-                        } else {
-                            psQR.setNull(2, Types.DATE);
-                            psQR.setInt(3, v.getIntentosPermitidos());
-                            psQR.setInt(4, idVisita);
-                        }
-                        psQR.executeUpdate();
-                    }
-
-                    if (v.getCorreoVisitante() != null && !v.getCorreoVisitante().isEmpty()) {
-                        String mensajeVisitante
-                                = "¡Hola!\n\nSe ha generado exitosamente tu código QR.\n\n"
-                                + "Nombre del visitante: " + v.getNombreVisitante() + "\n"
-                                + (v.getTipoVisita().equalsIgnoreCase("Visita")
-                                ? "Validez del QR: hasta " + v.getFechaVisita() + "\n"
-                                : "Intentos disponibles: " + v.getIntentosPermitidos() + "\n");
-                        EmailSender.enviarConAdjunto(
-                                v.getCorreoVisitante(),
-                                "Notificación de accesos creados",
-                                mensajeVisitante,
-                                qrBytes
-                        );
-                    }
+                    idVisita = rs.getInt(1);
                 }
             }
+
+            if (idVisita > 0) {
+                final int idVisitaFinal = idVisita;
+
+                // 🔹 Lógica asíncrona: QR + correo
+                new Thread(() -> {
+                    try (Connection con2 = Conexion.getConnection()) {
+                        String codigo = "VIS-" + idVisitaFinal;
+                        byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
+
+                        String sqlQR = "INSERT INTO Codigos_QR(codigo, fecha_inicio, fecha_fin, intentos_disponibles, id_visita, estado) "
+                                + "VALUES(?, NOW(), ?, ?, ?, 1)";
+                        try (PreparedStatement psQR = con2.prepareStatement(sqlQR)) {
+                            psQR.setString(1, codigo);
+                            if ("Visita".equalsIgnoreCase(v.getTipoVisita())) {
+                                psQR.setDate(2, v.getFechaVisita());
+                                psQR.setNull(3, Types.INTEGER);
+                                psQR.setInt(4, idVisitaFinal);
+                            } else {
+                                psQR.setNull(2, Types.DATE);
+                                psQR.setInt(3, v.getIntentosPermitidos());
+                                psQR.setInt(4, idVisitaFinal);
+                            }
+                            psQR.executeUpdate();
+                        }
+
+                        if (v.getCorreoVisitante() != null && !v.getCorreoVisitante().isEmpty()) {
+                            String mensajeVisitante
+                                    = "¡Hola!\n\nSe ha generado exitosamente tu código QR.\n\n"
+                                    + "Nombre del visitante: " + v.getNombreVisitante() + "\n"
+                                    + (v.getTipoVisita().equalsIgnoreCase("Visita")
+                                    ? "Validez del QR: hasta " + v.getFechaVisita() + "\n"
+                                    : "Intentos disponibles: " + v.getIntentosPermitidos() + "\n");
+
+                            EmailSender.enviarConAdjunto(
+                                    v.getCorreoVisitante(),
+                                    "Notificación de accesos creados",
+                                    mensajeVisitante,
+                                    qrBytes
+                            );
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }).start(); // 🔸 se ejecuta en segundo plano
+            }
+
             return true;
 
+        } catch (IllegalArgumentException ex) {
+            throw ex;
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Error al registrar la visita.");
         }
-        return false;
     }
 
     // 🔹 Editar visita
