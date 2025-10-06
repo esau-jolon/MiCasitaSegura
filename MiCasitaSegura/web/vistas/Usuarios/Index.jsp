@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="Modelo.Usuarios" %>
 
+
 <!DOCTYPE html>
 <html lang="es">
     <head>
@@ -25,6 +26,7 @@
         <!-- Bootstrap JS local -->
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
         <style>
             .root-vars {
                 primary-color: #667eea;
@@ -39,6 +41,34 @@
                 text-secondary: #a0a0a0;
                 border-color: rgba(255, 255, 255, 0.1);
                 shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+            }
+            /* === Botón Activar Usuario === */
+            .btn-activate {
+                background: linear-gradient(135deg, #22c55e, #16a34a); /* Verde degradado */
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 0.6rem 1rem;
+                font-size: 0.85rem;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                justify-content: center;
+                min-width: 90px;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+            }
+
+            .btn-activate:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(34, 197, 94, 0.45);
+                color: white;
+            }
+
+            .btn-activate:active {
+                transform: translateY(0);
+                box-shadow: 0 2px 10px rgba(34, 197, 94, 0.2);
             }
 
             body {
@@ -578,22 +608,37 @@
                                 </td>
                                 <td>
                                     <div class="action-buttons">
+                                        <!-- Botón Editar -->
                                         <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=edit&id=<%= u.getIdUsuario()%>" 
                                            class="btn-action btn-edit"
                                            title="Editar usuario">
                                             <i class="bi bi-pencil-square"></i>
                                             Editar
                                         </a>
-                                        <a href="${pageContext.request.contextPath}/ControladorUsuario?accion=delete&id=<%= u.getIdUsuario()%>" 
-                                           class="btn-action btn-delete"
-                                           onclick="return confirm('¿Estás seguro de que deseas desactivar este usuario?\n\nNombre: <%= u.getNombre()%> <%= u.getApellidos()%>\nCorreo: <%= u.getCorreo()%>\n\nEsta acción no se puede deshacer.');"
-                                           title="Desactivar usuario">
+
+                                        <% if (u.isEstado()) {%>
+                                        <!-- 🔹 Si está ACTIVO, mostrar botón para DESACTIVAR -->
+                                        <button type="button"
+                                                class="btn-action btn-delete"
+                                                onclick="confirmarCambioEstado('<%= u.getIdUsuario()%>', '<%= u.getNombre()%> <%= u.getApellidos()%>', false)"
+                                                title="Desactivar Usuario">
                                             <i class="bi bi-person-x-fill"></i>
                                             Desactivar Usuario
-                                        </a>
+                                        </button>
+                                        <% } else {%>
+                                        <!-- 🔹 Si está INACTIVO, mostrar botón para ACTIVAR -->
+                                        <button type="button"
+                                                class="btn-action btn-activate"
+                                                onclick="confirmarCambioEstado('<%= u.getIdUsuario()%>', '<%= u.getNombre()%> <%= u.getApellidos()%>', true)"
+                                                title="Activar Usuario">
+                                            <i class="bi bi-person-check-fill"></i>
+                                            Activar Usuario
+                                        </button>
 
+                                        <% } %>
                                     </div>
                                 </td>
+
                             </tr>
                             <%
                                 }
@@ -615,6 +660,41 @@
             </div>
         </div>
 
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('success') === 'true') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Usuario desactivado con éxito',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+            });
+
+            function confirmarEliminacion(idUsuario, nombreUsuario) {
+                Swal.fire({
+                    title: '¿Está seguro de desactivar el usuario?',
+                    text: `Usuario: ${nombreUsuario}`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, desactivar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const contextPath = '<%= request.getContextPath()%>';
+                        window.location.href = contextPath + '/ControladorUsuario?accion=delete&id=' + idUsuario;
+                    }
+                });
+            }
+        </script>
+
+
+
         <!-- Scripts -->
         <script>
             // Smooth scroll and animation effects
@@ -627,7 +707,6 @@
                             const icon = this.querySelector('i');
                             const originalClass = icon.className;
                             icon.className = 'fas fa-spinner fa-spin';
-
                             setTimeout(() => {
                                 icon.className = originalClass;
                             }, 1000);
@@ -653,12 +732,10 @@
                     const circle = document.createElement('span');
                     const diameter = Math.max(button.clientWidth, button.clientHeight);
                     const radius = diameter / 2;
-
                     circle.style.width = circle.style.height = `${diameter}px`;
                     circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
                     circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
                     circle.classList.add('ripple');
-
                     const ripple = button.getElementsByClassName('ripple')[0];
                     if (ripple) {
                         ripple.remove();
@@ -677,7 +754,33 @@
             function confirmDelete(userName, userEmail) {
                 return confirm(`¿Estás seguro de que deseas eliminar este usuario?\n\nNombre: ${userName}\nCorreo: ${userEmail}\n\nEsta acción no se puede deshacer.`);
             }
+            function confirmarCambioEstado(idUsuario, nombreUsuario, activar) {
+                const accion = activar ? 'activar' : 'desactivar';
+                const titulo = `¿Está seguro de ${accion} el usuario?`;
+                const textoBoton = activar ? 'Sí, activar' : 'Sí, desactivar';
+
+                Swal.fire({
+                    title: titulo,
+                    text: `Usuario: ${nombreUsuario}`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: textoBoton,
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: activar ? '#198754' : '#d33',
+                    cancelButtonColor: '#3085d6',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const contextPath = '<%= request.getContextPath()%>';
+                        const accionFinal = activar ? 'activar' : 'delete';
+                        window.location.href = contextPath + '/ControladorUsuario?accion=' + accionFinal + '&id=' + idUsuario;
+                    }
+                });
+            }
+
         </script>
+
+
 
         <style>
             /* Ripple effect */

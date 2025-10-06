@@ -196,57 +196,77 @@ public class UsuarioDAO implements UsuarioCrud {
             ps.setObject(7, u.getNumeroCasaId());
             ps.setObject(8, u.getLoteId());
             ps.setBoolean(9, u.isEstado());
-            ps.setObject(10, u.getCreadoPor()); // 👈 Auditoría
-
+            ps.setObject(10, u.getCreadoPor());
             ps.executeUpdate();
 
+            int idUsuario = 0;
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
-                    int idUsuario = rs.getInt(1);
-
-                    // Generar código único con prefijo
-                    String codigo = "USR-" + idUsuario;
-
-                    // Guardar en Codigos_QR
-                    String sqlQR = "INSERT INTO Codigos_QR(codigo, tipo, fecha_inicio, id_usuario, estado) VALUES(?, 'permanente', NOW(), ?, 0)";
-                    try (PreparedStatement psQR = con.prepareStatement(sqlQR)) {
-                        psQR.setString(1, codigo);
-                        psQR.setInt(2, idUsuario);
-                        psQR.executeUpdate();
-                    }
-
-                    // --- Generar QR y enviar correo en segundo plano ---
-                    new Thread(() -> {
-                        try {
-                            byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
-
-                            String mensaje = "Estimado(a) " + u.getNombre() + " " + u.getApellidos() + ",\n\n"
-                                    + "Le damos la bienvenida al sistema *Mi Casita Segura* como nuevo residente.\n\n"
-                                    + "Adjunto encontrará su código QR personal, el cual le permitirá acceder a las instalaciones.\n\n"
-                                    + "⚠️ Importante:\n"
-                                    + "- Uso personal e intransferible.\n"
-                                    + "- No lo comparta.\n"
-                                    + "- Guárdelo en un lugar seguro.\n\n"
-                                    + "Gracias por confiar en Mi Casita Segura.\n\n"
-                                    + "Atentamente,\n"
-                                    + "Administración - Mi Casita Segura";
-
-                            EmailSender.enviarConAdjunto(
-                                    u.getCorreo(),
-                                    "Bienvenido a Mi Casita Segura",
-                                    mensaje,
-                                    qrBytes
-                            );
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }).start();
+                    idUsuario = rs.getInt(1);
                 }
             }
+
+            if (idUsuario > 0) {
+                final int idUsuarioFinal = idUsuario;
+
+                new Thread(() -> {
+                    try (Connection con2 = Conexion.getConnection()) {
+                        String codigo = "USR-" + idUsuarioFinal;
+                        byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
+
+                        // Insertar el registro QR
+                        String sqlQR = "INSERT INTO Codigos_QR(codigo, tipo, fecha_inicio, id_usuario, estado) VALUES(?, 'permanente', NOW(), ?, 0)";
+                        try (PreparedStatement psQR = con2.prepareStatement(sqlQR)) {
+                            psQR.setString(1, codigo);
+                            psQR.setInt(2, idUsuarioFinal);
+                            psQR.executeUpdate();
+                        }
+
+                        // Recuperar datos actualizados del usuario
+                        String nombre = "", apellidos = "", correo = "";
+                        try (PreparedStatement psDatos = con2.prepareStatement(
+                                "SELECT nombre, apellidos, correo FROM Usuarios WHERE id_usuario = ?")) {
+                            psDatos.setInt(1, idUsuarioFinal);
+                            try (ResultSet rsDatos = psDatos.executeQuery()) {
+                                if (rsDatos.next()) {
+                                    nombre = rsDatos.getString("nombre");
+                                    apellidos = rsDatos.getString("apellidos");
+                                    correo = rsDatos.getString("correo");
+                                }
+                            }
+                        }
+
+                        // 📩 Mensaje EXACTO solicitado
+                        String mensaje = "¡Hola!\n"
+                                + "Se ha generado exitosamente tu código QR de acceso al residencial. "
+                                + "A continuación, encontrarás los detalles de tu registro:\n"
+                                + "Nombre del Residente: " + nombre + " " + apellidos + "\n"
+                                + "Validez del código QR: Permanente\n"
+                                + "Instrucciones importantes:\n"
+                                + "Guarda este correo o el código QR adjunto.\n"
+                                + "Preséntalo al llegar al residencial para que el personal de seguridad lo escanee y valide tu acceso.";
+
+                        EmailSender.enviarConAdjunto(
+                                correo,
+                                "Bienvenido a Mi Casita Segura",
+                                mensaje,
+                                qrBytes
+                        );
+
+                        System.out.println("[INFO] Correo de bienvenida enviado a: " + correo);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        System.err.println("[ERROR] Falló el hilo de correo en add(Usuarios): " + e.getMessage());
+                    }
+                }).start();
+            }
+
             return true;
 
         } catch (Exception e) {
             e.printStackTrace();
+            System.err.println("[ERROR] No se pudo registrar el usuario: " + e.getMessage());
         }
         return false;
     }
@@ -282,6 +302,21 @@ public class UsuarioDAO implements UsuarioCrud {
     @Override
     public boolean delete(int id) {
         String sql = "UPDATE Usuarios SET estado = 0 WHERE id_usuario=?";
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean activar(int id) {
+        String sql = "UPDATE Usuarios SET estado = 1 WHERE id_usuario=?";
 
         try (Connection con = Conexion.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {

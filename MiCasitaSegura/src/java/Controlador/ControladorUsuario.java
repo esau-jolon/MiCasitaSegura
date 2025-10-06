@@ -64,9 +64,13 @@ public class ControladorUsuario extends HttpServlet {
         } else if ("delete".equalsIgnoreCase(action)) {
             id = Integer.parseInt(request.getParameter("id"));
             dao.delete(id);
-            List<Usuarios> listaUsuarios = dao.listar();
-            request.setAttribute("usuarios", listaUsuarios);
-            acceso = listar;
+            response.sendRedirect("ControladorUsuario?accion=listar&success=true");
+            return;
+        } else if ("activar".equalsIgnoreCase(action)) {
+            id = Integer.parseInt(request.getParameter("id"));
+            dao.activar(id);
+            response.sendRedirect("ControladorUsuario?accion=listar&success=true");
+            return;
         }
 
         RequestDispatcher vista = request.getRequestDispatcher(acceso);
@@ -82,7 +86,7 @@ public class ControladorUsuario extends HttpServlet {
 
         String action = request.getParameter("accion");
         HttpSession session = request.getSession();
-        Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario"); // 👈 usuario logueado
+        Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario"); // usuario logueado
 
         try {
             if ("add".equalsIgnoreCase(action)) {
@@ -122,6 +126,7 @@ public class ControladorUsuario extends HttpServlet {
                     numeroCasaId = null;
                     loteId = null;
                 }
+
                 Usuarios u = new Usuarios();
                 u.setDpi(dpi);
                 u.setNombre(nombre);
@@ -132,7 +137,6 @@ public class ControladorUsuario extends HttpServlet {
                 u.setNumeroCasaId(numeroCasaId);
                 u.setLoteId(loteId);
                 u.setEstado(estado);
-                u.setCreadoPor(usuarioSesion.getIdUsuario()); // 👈 auditoría
 
                 // 👇 Auditoría: quién creó el usuario
                 if (usuarioSesion != null) {
@@ -148,7 +152,6 @@ public class ControladorUsuario extends HttpServlet {
                 String apellidos = request.getParameter("apellidos");
                 String correo = request.getParameter("correo");
                 String contrasena = request.getParameter("contrasena");
-
                 int rolId = Integer.parseInt(request.getParameter("rolId"));
 
                 String casaParam = request.getParameter("numeroCasaId");
@@ -201,11 +204,11 @@ public class ControladorUsuario extends HttpServlet {
                 dao.edit(u);
             }
 
+            // 🔹 Redirige siempre al listar después de guardar
             response.sendRedirect("ControladorUsuario?accion=listar");
 
         } catch (NumberFormatException ex) {
             throw new ServletException("Formato numérico inválido en los parámetros.", ex);
         }
     }
-
 }
