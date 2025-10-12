@@ -80,7 +80,11 @@
             }
         </style>
     </head>
+    
+    
     <body>
+        
+        
         <div class="container">
             <h2><i class="bi bi-chat-dots"></i> Comunicación Interna</h2>
             <p class="text-muted text-center">

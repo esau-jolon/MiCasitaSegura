@@ -28,6 +28,22 @@ public class ConversacionDAO {
         return false;
     }
 
+    public boolean existeConversacion(int idResidente, int idAgente) {
+        String sql = "SELECT COUNT(*) FROM Conversacion WHERE idResidente = ? AND idAgente = ?";
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, idResidente);
+            ps.setInt(2, idAgente);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     public Conversacion obtenerPorId(int idConversacion) {
         Conversacion c = null;
         String sql = "SELECT * FROM Conversacion WHERE idConversacion = ?";
