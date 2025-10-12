@@ -56,6 +56,31 @@ public class UsuarioDAO implements UsuarioCrud {
         return u;
     }
 
+    public Usuarios obtenerPorId(int idUsuario) {
+        Usuarios u = null;
+        String sql = "SELECT u.*, r.nombre_rol FROM usuarios u "
+                + "INNER JOIN roles r ON u.rol_id = r.id_rol WHERE u.id_usuario = ?";
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idUsuario);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    u = new Usuarios();
+                    u.setIdUsuario(rs.getInt("id_usuario"));
+                    u.setNombre(rs.getString("nombre"));
+                    u.setApellidos(rs.getString("apellidos"));
+                    u.setCorreo(rs.getString("correo"));
+                    u.setRolId(rs.getInt("rol_id"));
+                    u.setNombreRol(rs.getString("nombre_rol"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return u;
+    }
+
     public void registrarAccion(int usuarioId, String accion) {
         String sql = "INSERT INTO auditoria(usuario_id, accion) VALUES (?, ?)";
 
@@ -96,6 +121,48 @@ public class UsuarioDAO implements UsuarioCrud {
                 u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
                 u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
                 u.setEstado(rs.getBoolean("estado"));
+
+                // Auditoría
+                u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);
+                u.setModificadoPor(rs.getObject("ModificadoPor") != null ? rs.getInt("ModificadoPor") : null);
+                u.setFechaCreacion(rs.getTimestamp("FechaCreacion"));
+                u.setFechaModificacion(rs.getTimestamp("FechaModificacion"));
+
+                lista.add(u);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public List<Usuarios> listarGuardias() {
+        List<Usuarios> lista = new ArrayList<>();
+        String sql = "SELECT u.*, r.nombre_rol "
+                + "FROM usuarios u "
+                + "INNER JOIN roles r ON u.rol_id = r.id_rol "
+                + "WHERE u.rol_id = 2 AND u.estado = 1";
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Usuarios u = new Usuarios();
+                u.setIdUsuario(rs.getInt("id_usuario"));
+                u.setDpi(rs.getString("dpi"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setCorreo(rs.getString("correo"));
+                u.setContrasena(rs.getString("contrasena"));
+                u.setRolId(rs.getInt("rol_id"));
+                u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
+                u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
+                u.setEstado(rs.getBoolean("estado"));
+
+                // Nombre del rol
+                u.setNombreRol(rs.getString("nombre_rol"));
 
                 // Auditoría
                 u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);

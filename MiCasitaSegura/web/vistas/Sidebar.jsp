@@ -189,6 +189,13 @@
                 </li>
 
                 <li>
+                    <a href="<%=request.getContextPath()%>/ControladorConversacion?accion=listar" target="contentFrame">
+                        <i class="bi bi-chat-dots"></i><span> COMUNICACIÓN INTERNA</span>
+                    </a>
+                </li>
+
+
+                <li>
                     <a href="<%=request.getContextPath()%>/ControladorPago?accion=listar" target="contentFrame">
                         <i class="bi bi-cash-coin"></i><span> GESTIONAR PAGOS</span>
                     </a>
