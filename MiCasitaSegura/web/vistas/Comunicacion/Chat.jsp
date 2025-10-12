@@ -154,6 +154,7 @@
         </div>
 
         <script>
+            // --- Datos del usuario y conversación ---
             const userId = '<%= usuarioSesion.getIdUsuario()%>';
             const idConversacion = <%= idConversacion%>;
             const idResidente = <%= idResidente%>;
@@ -162,7 +163,7 @@
             // 🔹 Determinar automáticamente quién es el receptor
             const idReceptor = (userId == idResidente) ? idAgente : idResidente;
 
-            // 🔹 WebSocket adaptado dinámicamente al contexto
+            // --- Conexión WebSocket dinámica ---
             const socket = new WebSocket("ws://" + window.location.host + "<%= request.getContextPath()%>/chatSocket?userId=" + userId);
             const chatBody = document.getElementById("chatBody");
             const txtMensaje = document.getElementById("txtMensaje");
@@ -173,12 +174,21 @@
             socket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-                    mostrarMensaje(data.from, data.text);
+
+                    // Evitar mostrar mensajes del sistema o duplicados
+                    if (data.text) {
+                        mostrarMensaje(data.from, data.text);
+                        console.log("💬 Mensaje recibido:", data);
+                    }
                 } catch (e) {
-                    console.log("Mensaje no JSON:", event.data);
+                    console.warn("Mensaje no JSON:", event.data);
                 }
             };
 
+            socket.onclose = () => console.log("🔴 Desconectado del WebSocket");
+            socket.onerror = (err) => console.error("⚠️ Error WebSocket:", err);
+
+            // --- Eventos para enviar mensajes ---
             btnEnviar.addEventListener("click", enviarMensaje);
             txtMensaje.addEventListener("keypress", e => {
                 if (e.key === "Enter")
@@ -190,6 +200,7 @@
                 if (texto === "")
                     return;
 
+                // Guardar en BD
                 fetch("<%= request.getContextPath()%>/ControladorMensaje", {
                     method: "POST",
                     body: new URLSearchParams({
@@ -198,21 +209,37 @@
                         idReceptor: idReceptor,
                         contenido: texto
                     })
-                });
+                }).catch(err => console.error("Error al guardar mensaje:", err));
 
+                // Enviar en tiempo real
                 socket.send(JSON.stringify({from: userId, to: idReceptor, text: texto}));
+
+                // Mostrar localmente
                 mostrarMensaje(userId, texto);
                 txtMensaje.value = "";
             }
 
+            // --- Mostrar mensaje en el chat ---
             function mostrarMensaje(from, text) {
                 const div = document.createElement("div");
                 div.classList.add("message", from == userId ? "sent" : "received");
-                div.innerHTML = `<span>${text}</span><span class="timestamp">\${new Date().toLocaleTimeString()}</span>`;
+
+                const spanTexto = document.createElement("span");
+                spanTexto.textContent = text;
+
+                const spanHora = document.createElement("span");
+                spanHora.classList.add("timestamp");
+                spanHora.textContent = new Date().toLocaleTimeString();
+
+                div.appendChild(spanTexto);
+                div.appendChild(spanHora);
+
                 chatBody.appendChild(div);
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
+
         </script>
+
     </body>
 </html>
 
