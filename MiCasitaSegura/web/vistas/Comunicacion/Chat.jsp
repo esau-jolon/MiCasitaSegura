@@ -8,13 +8,13 @@
     Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
     List<Mensaje> mensajes = (List<Mensaje>) request.getAttribute("mensajes");
     int idConversacion = (Integer) request.getAttribute("idConversacion");
-    Usuarios contacto = (Usuarios) request.getAttribute("contacto"); // el otro usuario
+    Usuarios contacto = (Usuarios) request.getAttribute("contacto");
     int idResidente = (Integer) request.getAttribute("idResidente");
     int idAgente = (Integer) request.getAttribute("idAgente");
 %>
 
 <!DOCTYPE html>
-<html>
+<html lang="es">
     <head>
         <meta charset="UTF-8">
         <title>Chat - Comunicación Interna</title>
@@ -24,96 +24,207 @@
 
         <style>
             body {
-                background-color: #f8f9fa;
+                background-color: #f0f2f5;
                 font-family: 'Segoe UI', Tahoma, sans-serif;
+                margin: 0;
+                padding: 0;
             }
+
+            /* 📱 Contenedor general del chat */
             .chat-container {
-                width: 85%;
-                max-width: 900px;
-                margin: 30px auto;
+                width: 96%;
+                max-width: 1400px;
+                margin: 40px auto;
                 background: #fff;
-                border-radius: 12px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                border-radius: 25px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.15);
                 display: flex;
                 flex-direction: column;
-                height: 80vh;
+                height: 88vh;
+                overflow: hidden;
             }
+
+            /* 🔵 Encabezado */
             .chat-header {
                 background: linear-gradient(45deg, #0d6efd, #0a58ca);
                 color: white;
-                padding: 15px;
-                border-radius: 12px 12px 0 0;
+                padding: 26px 40px;
+                border-radius: 25px 25px 0 0;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
             }
+
             .chat-header h4 {
                 margin: 0;
                 font-weight: 600;
+                font-size: 1.8rem;
             }
+
+            /* 🗨️ Cuerpo del chat */
             .chat-body {
                 flex: 1;
-                padding: 15px;
+                padding: 50px 70px;
                 overflow-y: auto;
-                background-color: #f1f5ff;
-            }
-            .chat-footer {
-                padding: 10px 15px;
-                border-top: 1px solid #ddd;
-                display: flex;
-                gap: 10px;
-            }
-            .chat-footer input {
-                flex: 1;
-                border-radius: 20px;
-                padding: 10px 15px;
-                border: 1px solid #ccc;
-                outline: none;
-                transition: all 0.3s ease;
-            }
-            .chat-footer input:focus {
-                border-color: #0d6efd;
-                box-shadow: 0 0 5px rgba(13,110,253,0.5);
-            }
-            .btn-send {
-                background-color: #0d6efd;
-                color: white;
-                border-radius: 20px;
-                padding: 10px 25px;
-                border: none;
-                font-weight: 600;
-                transition: background 0.3s ease;
-            }
-            .btn-send:hover {
-                background-color: #0a58ca;
-            }
-            .message {
-                margin: 8px 0;
+                background-color: #e9efff;
                 display: flex;
                 flex-direction: column;
-                max-width: 70%;
-                word-wrap: break-word;
-                padding: 10px 15px;
-                border-radius: 15px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             }
+
+            /* 💬 Mensajes estilo WhatsApp / Telegram */
+            .message {
+                display: inline-block;
+                margin: 20px 0;
+                padding: 25px 32px;
+                border-radius: 35px;
+                max-width: 80%;
+                word-wrap: break-word;
+                font-size: 1.6rem; /* 🟩 Texto más grande */
+                line-height: 1.7;
+                position: relative;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+                animation: fadeIn 0.3s ease;
+            }
+
+            @keyframes fadeIn {
+                from {opacity: 0; transform: translateY(10px);}
+                to {opacity: 1; transform: translateY(0);}
+            }
+
+            /* 🔹 Mensajes enviados (tú) */
             .sent {
                 background-color: #0d6efd;
                 color: white;
                 align-self: flex-end;
-                border-bottom-right-radius: 0;
-            }
-            .received {
-                background-color: #e9ecef;
-                align-self: flex-start;
-                border-bottom-left-radius: 0;
-            }
-            .timestamp {
-                font-size: 0.75rem;
-                color: #6c757d;
                 text-align: right;
+                border-bottom-right-radius: 0;
+                margin-left: auto;
+            }
+
+            /* 🔸 Mensajes recibidos (otro usuario) */
+            .received {
+                background-color: #f1f0f0;
+                color: #212529;
+                align-self: flex-start;
+                text-align: left;
+                border-bottom-left-radius: 0;
+                margin-right: auto;
+            }
+
+            /* 💬 Cola estilo WhatsApp */
+            .sent::after {
+                content: "";
+                position: absolute;
+                right: -16px;
+                bottom: 0;
+                border-left: 16px solid #0d6efd;
+                border-top: 16px solid transparent;
+                border-bottom: 16px solid transparent;
+            }
+
+            .received::after {
+                content: "";
+                position: absolute;
+                left: -16px;
+                bottom: 0;
+                border-right: 16px solid #f1f0f0;
+                border-top: 16px solid transparent;
+                border-bottom: 16px solid transparent;
+            }
+
+            .timestamp {
+                font-size: 1.05rem;
+                color: #c8c8c8;
+                display: block;
+                margin-top: 10px;
+            }
+
+            /* ✍️ Footer */
+            .chat-footer {
+                padding: 25px 40px;
+                border-top: 1px solid #ddd;
+                display: flex;
+                gap: 25px;
+                background-color: #fff;
+            }
+
+            .chat-footer input {
+                flex: 1;
+                border-radius: 45px;
+                padding: 20px 35px;
+                border: 3px solid #0d6efd;
+                outline: none;
+                transition: all 0.3s ease;
+                font-size: 1.4rem;
+            }
+
+            .chat-footer input:focus {
+                box-shadow: 0 0 12px rgba(13,110,253,0.4);
+            }
+
+            .btn-send {
+                background-color: #0d6efd;
+                color: white;
+                border-radius: 50%;
+                width: 70px;
+                height: 70px;
+                border: none;
+                font-size: 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.3s ease, transform 0.1s ease;
+            }
+
+            .btn-send:hover {
+                background-color: #0a58ca;
+                transform: scale(1.05);
+            }
+
+            /* Scrollbar */
+            .chat-body::-webkit-scrollbar {
+                width: 14px;
+            }
+            .chat-body::-webkit-scrollbar-thumb {
+                background-color: rgba(0,0,0,0.3);
+                border-radius: 12px;
+            }
+
+            /* 📱 Versión responsive (móviles) */
+            @media (max-width: 768px) {
+                .chat-container {
+                    height: 92vh;
+                    width: 98%;
+                    margin: 10px auto;
+                }
+
+                .chat-header h4 {
+                    font-size: 1.3rem;
+                }
+
+                .chat-body {
+                    padding: 20px 15px;
+                }
+
+                .message {
+                    font-size: 1.2rem;
+                    padding: 18px 24px;
+                }
+
+                .chat-footer input {
+                    font-size: 1.1rem;
+                    padding: 14px 22px;
+                }
+
+                .btn-send {
+                    width: 55px;
+                    height: 55px;
+                    font-size: 1.5rem;
+                }
             }
         </style>
+
+
     </head>
     <body>
         <div class="chat-container">
@@ -154,41 +265,27 @@
         </div>
 
         <script>
-            // --- Datos del usuario y conversación ---
             const userId = '<%= usuarioSesion.getIdUsuario()%>';
             const idConversacion = <%= idConversacion%>;
             const idResidente = <%= idResidente%>;
             const idAgente = <%= idAgente%>;
-
-            // 🔹 Determinar automáticamente quién es el receptor
             const idReceptor = (userId == idResidente) ? idAgente : idResidente;
 
-            // --- Conexión WebSocket dinámica ---
             const socket = new WebSocket("ws://" + window.location.host + "<%= request.getContextPath()%>/chatSocket?userId=" + userId);
             const chatBody = document.getElementById("chatBody");
             const txtMensaje = document.getElementById("txtMensaje");
             const btnEnviar = document.getElementById("btnEnviar");
 
-            socket.onopen = () => console.log("✅ Conectado al WebSocket como usuario " + userId);
-
             socket.onmessage = (event) => {
                 try {
                     const data = JSON.parse(event.data);
-
-                    // Evitar mostrar mensajes del sistema o duplicados
-                    if (data.text) {
+                    if (data.text)
                         mostrarMensaje(data.from, data.text);
-                        console.log("💬 Mensaje recibido:", data);
-                    }
                 } catch (e) {
                     console.warn("Mensaje no JSON:", event.data);
                 }
             };
 
-            socket.onclose = () => console.log("🔴 Desconectado del WebSocket");
-            socket.onerror = (err) => console.error("⚠️ Error WebSocket:", err);
-
-            // --- Eventos para enviar mensajes ---
             btnEnviar.addEventListener("click", enviarMensaje);
             txtMensaje.addEventListener("keypress", e => {
                 if (e.key === "Enter")
@@ -200,7 +297,6 @@
                 if (texto === "")
                     return;
 
-                // Guardar en BD
                 fetch("<%= request.getContextPath()%>/ControladorMensaje", {
                     method: "POST",
                     body: new URLSearchParams({
@@ -209,17 +305,13 @@
                         idReceptor: idReceptor,
                         contenido: texto
                     })
-                }).catch(err => console.error("Error al guardar mensaje:", err));
+                });
 
-                // Enviar en tiempo real
                 socket.send(JSON.stringify({from: userId, to: idReceptor, text: texto}));
-
-                // Mostrar localmente
                 mostrarMensaje(userId, texto);
                 txtMensaje.value = "";
             }
 
-            // --- Mostrar mensaje en el chat ---
             function mostrarMensaje(from, text) {
                 const div = document.createElement("div");
                 div.classList.add("message", from == userId ? "sent" : "received");
@@ -238,9 +330,10 @@
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
 
+            // Auto-scroll al abrir
+            window.onload = () => {
+                chatBody.scrollTop = chatBody.scrollHeight;
+            };
         </script>
-
     </body>
 </html>
-
-
