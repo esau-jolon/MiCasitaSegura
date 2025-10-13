@@ -45,21 +45,55 @@
             }
 
             /* 🔵 Encabezado */
+            /* 🔵 Encabezado */
             .chat-header {
                 background: linear-gradient(45deg, #0d6efd, #0a58ca);
                 color: white;
-                padding: 26px 40px;
+                padding: 24px 35px;
                 border-radius: 25px 25px 0 0;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
+                box-shadow: 0 3px 10px rgba(0,0,0,0.2);
             }
 
             .chat-header h4 {
                 margin: 0;
                 font-weight: 600;
-                font-size: 1.8rem;
+                font-size: 1.7rem;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
+
+            /* 🟣 Botón Volver estilizado */
+            .btn-volver {
+                background-color: rgba(255, 255, 255, 0.2);
+                color: #fff;
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                border-radius: 50px;
+                padding: 10px 18px;
+                font-size: 1rem;
+                font-weight: 500;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.3s ease;
+            }
+
+            .btn-volver i {
+                font-size: 1.2rem;
+            }
+
+            .btn-volver:hover {
+                background-color: #fff;
+                color: #0d6efd;
+                border-color: #fff;
+                transform: translateY(-2px);
+                box-shadow: 0 3px 8px rgba(255,255,255,0.3);
+            }
+
 
             /* 🗨️ Cuerpo del chat */
             .chat-body {
@@ -237,9 +271,10 @@
                     </h4>
                 </div>
                 <a href="<%=request.getContextPath()%>/ControladorConversacion?accion=listar"
-                   class="btn btn-light btn-sm">
-                    <i class="bi bi-arrow-left"></i> Volver
+                   class="btn-volver">
+                    <i class="bi bi-arrow-left-circle"></i> Volver
                 </a>
+
             </div>
 
             <div class="chat-body" id="chatBody">

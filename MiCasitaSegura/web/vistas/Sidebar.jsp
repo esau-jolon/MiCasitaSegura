@@ -187,12 +187,14 @@
                         <i class="bi bi-door-open"></i><span> REGISTRAR VISITANTE</span>
                     </a>
                 </li>
-
+                
+                
                 <li>
-                    <a href="<%=request.getContextPath()%>/ControladorConversacion?accion=listar" target="contentFrame">
+                    <a href="<%=request.getContextPath()%>/vistas/Comunicacion/MenuComunicacion.jsp" target="contentFrame">
                         <i class="bi bi-chat-dots"></i><span> COMUNICACIÓN INTERNA</span>
                     </a>
                 </li>
+
 
 
                 <li>

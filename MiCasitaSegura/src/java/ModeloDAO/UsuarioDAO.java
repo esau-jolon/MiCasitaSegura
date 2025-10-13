@@ -17,9 +17,12 @@ public class UsuarioDAO implements UsuarioCrud {
 
     public Usuarios login(String correo, String contrasena) {
         Usuarios u = null;
-        String sql = "SELECT u.*, r.nombre_rol "
+
+        String sql = "SELECT u.*, r.nombre_rol, c.numero_casa AS numeroCasa, l.codigo_lote AS codigoLote "
                 + "FROM usuarios u "
                 + "INNER JOIN roles r ON u.rol_id = r.id_rol "
+                + "LEFT JOIN casas c ON u.numero_casa_id = c.id_casa "
+                + "LEFT JOIN lotes l ON u.lote_id = l.id_lote "
                 + "WHERE u.correo=? AND u.contrasena=? AND u.estado=1";
 
         try (Connection con = Conexion.getConnection();
@@ -42,7 +45,11 @@ public class UsuarioDAO implements UsuarioCrud {
                     u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
                     u.setEstado(rs.getBoolean("estado"));
 
-                    // Auditoría
+                    // 🏠 Campos descriptivos
+                    u.setNumeroCasa(rs.getObject("numeroCasa") != null ? rs.getInt("numeroCasa") : null);
+                    u.setCodigoLote(rs.getString("codigoLote"));
+
+                    // 🕒 Auditoría
                     u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);
                     u.setModificadoPor(rs.getObject("ModificadoPor") != null ? rs.getInt("ModificadoPor") : null);
                     u.setFechaCreacion(rs.getTimestamp("FechaCreacion"));
@@ -52,7 +59,9 @@ public class UsuarioDAO implements UsuarioCrud {
 
         } catch (Exception e) {
             e.printStackTrace();
+            System.err.println("[ERROR] Falló login(): " + e.getMessage());
         }
+
         return u;
     }
 
@@ -621,6 +630,60 @@ public class UsuarioDAO implements UsuarioCrud {
             e.printStackTrace();
         }
         return existe;
+    }
+
+    public List<Usuarios> listarPorRolActivo(String nombreRol) {
+        List<Usuarios> lista = new ArrayList<>();
+
+        String sql = "SELECT u.*, r.nombre_rol, c.numeroCasa, l.codigoLote "
+                + "FROM usuarios u "
+                + "INNER JOIN roles r ON u.rol_id = r.id_rol "
+                + "LEFT JOIN casas c ON u.numero_casa_id = c.idCasa "
+                + "LEFT JOIN lotes l ON u.lote_id = l.idLote "
+                + "WHERE r.nombre_rol = ? AND u.estado = 1";
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setString(1, nombreRol);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Usuarios u = new Usuarios();
+                    u.setIdUsuario(rs.getInt("id_usuario"));
+                    u.setDpi(rs.getString("dpi"));
+                    u.setNombre(rs.getString("nombre"));
+                    u.setApellidos(rs.getString("apellidos"));
+                    u.setCorreo(rs.getString("correo"));
+                    u.setContrasena(rs.getString("contrasena"));
+                    u.setRolId(rs.getInt("rol_id"));
+                    u.setNumeroCasaId(rs.getObject("numero_casa_id") != null ? rs.getInt("numero_casa_id") : null);
+                    u.setLoteId(rs.getObject("lote_id") != null ? rs.getInt("lote_id") : null);
+                    u.setEstado(rs.getBoolean("estado"));
+
+                    // 🔹 Rol (desde tabla Roles)
+                    u.setNombreRol(rs.getString("nombre_rol"));
+
+                    // 🔹 Nuevos campos descriptivos (JOIN con Casas y Lotes)
+                    u.setNumeroCasa(rs.getObject("numeroCasa") != null ? rs.getInt("numeroCasa") : null);
+                    u.setCodigoLote(rs.getString("codigoLote"));
+
+                    // 🔹 Auditoría
+                    u.setCreadoPor(rs.getObject("CreadoPor") != null ? rs.getInt("CreadoPor") : null);
+                    u.setModificadoPor(rs.getObject("ModificadoPor") != null ? rs.getInt("ModificadoPor") : null);
+                    u.setFechaCreacion(rs.getTimestamp("FechaCreacion"));
+                    u.setFechaModificacion(rs.getTimestamp("FechaModificacion"));
+
+                    lista.add(u);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("[ERROR] listarPorRolActivo(" + nombreRol + "): " + e.getMessage());
+        }
+
+        return lista;
     }
 
 }

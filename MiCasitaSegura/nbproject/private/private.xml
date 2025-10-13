@@ -3,11 +3,10 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/EstadosPagoDAO.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/Conversacion.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorConversacion.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/ConversacionDAO.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Comunicacion/Incidentes.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Comunicacion/NuevoIncidente.jsp</file>
             <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Comunicacion/Conversaciones.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Comunicacion/MenuComunicacion.jsp</file>
         </group>
     </open-files>
 </project-private>

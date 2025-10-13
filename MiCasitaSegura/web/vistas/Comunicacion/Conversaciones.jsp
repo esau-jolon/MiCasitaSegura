@@ -173,7 +173,7 @@
 
             <% if ("Residente".equalsIgnoreCase(usuarioSesion.getNombreRol())) { %>
             <a href="<%=request.getContextPath()%>/ControladorConversacion?accion=crear" class="btn-nueva">
-                <i class="bi bi-plus-circle"></i> Nueva conversación
+                <i class="bi bi-plus-circle"></i> Crear Nueva Conversación
             </a>
             <% } %>
 

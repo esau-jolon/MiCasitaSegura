@@ -15,7 +15,8 @@ public class Usuarios {
     private Integer loteId;       // puede ser null
     private boolean estado;
     private String nombreRol;
-
+    private Integer numeroCasa;   // número real de casa
+    private String codigoLote;    // código real del lote
     // 🔹 Nuevos campos de auditoría
     private Integer creadoPor;          // id del usuario que creó
     private Integer modificadoPor;      // id del usuario que modificó
@@ -39,6 +40,23 @@ public class Usuarios {
         this.loteId = loteId;
         this.estado = estado;
         this.creadoPor = creadoPor;
+    }
+
+// Getters y setters
+    public Integer getNumeroCasa() {
+        return numeroCasa;
+    }
+
+    public void setNumeroCasa(Integer numeroCasa) {
+        this.numeroCasa = numeroCasa;
+    }
+
+    public String getCodigoLote() {
+        return codigoLote;
+    }
+
+    public void setCodigoLote(String codigoLote) {
+        this.codigoLote = codigoLote;
     }
 
     // Getters y Setters
