@@ -10,11 +10,18 @@ public class Conversacion {
     private Timestamp fechaCreacion;
     private String estado;
 
-    // 🔹 Auditoría (si deseas usarla en el futuro)
+    // 🔹 Auditoría
     private Integer creadoPor;
     private Integer modificadoPor;
     private Timestamp fechaModificacion;
 
+    // 🔹 Nuevos campos (nombres de residente y agente)
+    private String nombreResidente;
+    private String apellidoResidente;
+    private String nombreAgente;
+    private String apellidoAgente;
+
+    // 🔹 Constructores
     public Conversacion() {
     }
 
@@ -24,7 +31,7 @@ public class Conversacion {
         this.estado = estado;
     }
 
-    // Getters y Setters
+    // 🔹 Getters y Setters principales
     public int getIdConversacion() {
         return idConversacion;
     }
@@ -87,5 +94,51 @@ public class Conversacion {
 
     public void setFechaModificacion(Timestamp fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
+    }
+
+    // 🔹 Nuevos getters y setters para nombres
+    public String getNombreResidente() {
+        return nombreResidente;
+    }
+
+    public void setNombreResidente(String nombreResidente) {
+        this.nombreResidente = nombreResidente;
+    }
+
+    public String getApellidoResidente() {
+        return apellidoResidente;
+    }
+
+    public void setApellidoResidente(String apellidoResidente) {
+        this.apellidoResidente = apellidoResidente;
+    }
+
+    public String getNombreAgente() {
+        return nombreAgente;
+    }
+
+    public void setNombreAgente(String nombreAgente) {
+        this.nombreAgente = nombreAgente;
+    }
+
+    public String getApellidoAgente() {
+        return apellidoAgente;
+    }
+
+    public void setApellidoAgente(String apellidoAgente) {
+        this.apellidoAgente = apellidoAgente;
+    }
+
+    // 🔹 Métodos auxiliares (útiles para mostrar en JSP)
+    public String getNombreCompletoResidente() {
+        String nombre = (nombreResidente != null ? nombreResidente : "");
+        String apellido = (apellidoResidente != null ? apellidoResidente : "");
+        return (nombre + " " + apellido).trim();
+    }
+
+    public String getNombreCompletoAgente() {
+        String nombre = (nombreAgente != null ? nombreAgente : "");
+        String apellido = (apellidoAgente != null ? apellidoAgente : "");
+        return (nombre + " " + apellido).trim();
     }
 }
