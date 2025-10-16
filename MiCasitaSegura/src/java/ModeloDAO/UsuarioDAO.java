@@ -313,14 +313,15 @@ public class UsuarioDAO implements UsuarioCrud {
                         }
 
                         // 📩 Mensaje EXACTO solicitado
-                        String mensaje = "¡Hola!\n"
-                                + "Se ha generado exitosamente tu código QR de acceso al residencial. "
-                                + "A continuación, encontrarás los detalles de tu registro:\n"
-                                + "Nombre del Residente: " + nombre + " " + apellidos + "\n"
-                                + "Validez del código QR: Permanente\n"
-                                + "Instrucciones importantes:\n"
-                                + "Guarda este correo o el código QR adjunto.\n"
-                                + "Preséntalo al llegar al residencial para que el personal de seguridad lo escanee y valide tu acceso.";
+                        String mensaje = "<p>¡Hola!</p>"
+                                + "<p>Se ha generado exitosamente tu <b>código QR</b> de acceso al residencial.</p>"
+                                + "<p><b>Detalles de tu registro:</b><br>"
+                                + "Nombre del residente: <b>" + nombre + " " + apellidos + "</b><br>"
+                                + "Validez del código QR: Permanente</p>"
+                                + "<p><b>Instrucciones importantes:</b><br>"
+                                + "Guarda este correo o el código QR adjunto.<br>"
+                                + "Preséntalo al llegar al residencial para que el personal de seguridad lo escanee y valide tu acceso.</p>"
+                                + "<hr><small>Mensaje automático del sistema <b>Mi Casita Segura</b></small>";
 
                         EmailSender.enviarConAdjunto(
                                 correo,

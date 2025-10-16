@@ -20,7 +20,7 @@ import javax.servlet.http.*;
 @WebServlet("/ControladorReporteMantenimiento")
 public class ControladorReporteMantenimiento extends HttpServlet {
 
-    // ✅ Ruta correcta según tu estructura de carpetas
+    // ✅ Ruta principal para listado
     private static final String INDEX_VISTA = "vistas/ReporteMantenimiento/Index.jsp";
 
     private final ReporteMantenimientoDAO reporteDAO = new ReporteMantenimientoDAO();
@@ -49,27 +49,24 @@ public class ControladorReporteMantenimiento extends HttpServlet {
         }
 
         switch (accion.toLowerCase()) {
+
             case "listar": {
                 List<ReporteMantenimiento> lista = reporteDAO.listar();
                 List<TipoInconveniente> tipos = tipoDAO.listar();
 
                 request.setAttribute("listaReportes", lista);
                 request.setAttribute("tiposInconveniente", tipos);
-                request.setAttribute("mostrarForm", false);
-
                 request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
                 break;
             }
 
             case "nuevo": {
-                List<ReporteMantenimiento> lista = reporteDAO.listar();
                 List<TipoInconveniente> tipos = tipoDAO.listar();
-
-                request.setAttribute("listaReportes", lista);
                 request.setAttribute("tiposInconveniente", tipos);
-                request.setAttribute("mostrarForm", true);
 
-                request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
+                // 👇 Abrir directamente la vista addEdit.jsp
+                RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
+                rd.forward(request, response);
                 break;
             }
 
@@ -112,26 +109,26 @@ public class ControladorReporteMantenimiento extends HttpServlet {
 
         try {
             switch (accion.toLowerCase()) {
+
                 case "guardar": {
                     int idTipo = Integer.parseInt(request.getParameter("idTipoInconveniente"));
                     String fechaHoraStr = request.getParameter("fechaHoraIncidente");
                     String descripcion = request.getParameter("descripcion");
 
-                    // 🔸 RN2: Validación de campos obligatorios
+                    // 🔸 Validación de campos (RN2)
                     if (idTipo <= 0 || fechaHoraStr == null || fechaHoraStr.isEmpty()
                             || descripcion == null || descripcion.trim().isEmpty()) {
 
                         request.setAttribute("error", "Debe completar todos los campos del formulario.");
                         request.setAttribute("tiposInconveniente", tipoDAO.listar());
-                        request.setAttribute("listaReportes", reporteDAO.listar());
-                        request.setAttribute("mostrarForm", true);
-                        request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
+                        RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
+                        rd.forward(request, response);
                         return;
                     }
 
                     Timestamp fechaHora = Timestamp.valueOf(fechaHoraStr.replace("T", " ") + ":00");
 
-                    // 🧱 Crear el reporte de mantenimiento
+                    // 🧱 Crear reporte
                     ReporteMantenimiento r = new ReporteMantenimiento();
                     r.setIdTipoInconveniente(idTipo);
                     r.setIdResidente(usuarioSesion.getIdUsuario());
@@ -144,7 +141,6 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                     if (exito) {
                         // 🔹 RN3: Notificar a administradores
                         List<Usuarios> admins = usuarioDAO.listarPorRolActivo("Administrador");
-
                         TipoInconveniente tipo = tipoDAO.listar()
                                 .stream()
                                 .filter(t -> t.getIdTipoInconveniente() == idTipo)
@@ -177,14 +173,13 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                     } else {
                         request.setAttribute("error", "No se pudo guardar el reporte. Intente nuevamente.");
                         request.setAttribute("tiposInconveniente", tipoDAO.listar());
-                        request.setAttribute("listaReportes", reporteDAO.listar());
-                        request.setAttribute("mostrarForm", true);
-                        request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
+                        RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
+                        rd.forward(request, response);
                     }
                     break;
                 }
 
-                case "actualizar": { // opcional (para futuras ediciones)
+                case "actualizar": {
                     int idReporte = Integer.parseInt(request.getParameter("idReporte"));
                     int idTipo = Integer.parseInt(request.getParameter("idTipoInconveniente"));
                     String fechaHoraStr = request.getParameter("fechaHoraIncidente");
@@ -195,9 +190,8 @@ public class ControladorReporteMantenimiento extends HttpServlet {
 
                         request.setAttribute("error", "Debe completar todos los campos para actualizar.");
                         request.setAttribute("tiposInconveniente", tipoDAO.listar());
-                        request.setAttribute("listaReportes", reporteDAO.listar());
-                        request.setAttribute("mostrarForm", true);
-                        request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
+                        RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
+                        rd.forward(request, response);
                         return;
                     }
 
@@ -217,9 +211,8 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                     } else {
                         request.setAttribute("error", "No se pudo actualizar el reporte.");
                         request.setAttribute("tiposInconveniente", tipoDAO.listar());
-                        request.setAttribute("listaReportes", reporteDAO.listar());
-                        request.setAttribute("mostrarForm", true);
-                        request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
+                        RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
+                        rd.forward(request, response);
                     }
                     break;
                 }
@@ -232,9 +225,8 @@ public class ControladorReporteMantenimiento extends HttpServlet {
             e.printStackTrace();
             request.setAttribute("error", "Ocurrió un error: " + e.getMessage());
             request.setAttribute("tiposInconveniente", tipoDAO.listar());
-            request.setAttribute("listaReportes", reporteDAO.listar());
-            request.setAttribute("mostrarForm", true);
-            request.getRequestDispatcher(INDEX_VISTA).forward(request, response);
+            RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
+            rd.forward(request, response);
         }
     }
 }

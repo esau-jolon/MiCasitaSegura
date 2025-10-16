@@ -10,11 +10,11 @@ public class ReporteMantenimientoDAO {
     // 🔹 Crear un nuevo reporte de mantenimiento
     public boolean crearReporte(ReporteMantenimiento r) {
         String sql = "INSERT INTO ReporteMantenimiento "
-                + "(id_tipo_inconveniente, id_residente, descripcion, fecha_hora_incidente, creado_por) "
+                + "(IdTipoInconveniente, IdResidente, Descripcion, FechaHoraIncidente, CreadoPor) "
                 + "VALUES (?, ?, ?, ?, ?)";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, r.getIdTipoInconveniente());
             ps.setInt(2, r.getIdResidente());
@@ -25,6 +25,7 @@ public class ReporteMantenimientoDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
+            System.err.println("Error al crear reporte: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -33,31 +34,33 @@ public class ReporteMantenimientoDAO {
     // 🔹 Listar todos los reportes (para administrador o mantenimiento)
     public List<ReporteMantenimiento> listar() {
         List<ReporteMantenimiento> lista = new ArrayList<>();
-        String sql = "SELECT r.*, t.Nombre AS nombre_tipo_inconveniente, "
-                + "u.nombre AS nombreResidente, u.apellidos AS apellidoResidente "
+
+        String sql = "SELECT r.*, t.Nombre AS NombreTipoInconveniente, "
+                + "u.Nombre AS NombreResidente, u.Apellidos AS ApellidoResidente "
                 + "FROM ReporteMantenimiento r "
-                + "INNER JOIN TipoInconveniente t ON r.id_tipo_inconveniente = t.id_tipo_inconveniente "
-                + "INNER JOIN Usuarios u ON r.id_residente = u.id_usuario "
-                + "ORDER BY r.fecha_creacion DESC";
+                + "INNER JOIN TipoInconveniente t ON r.IdTipoInconveniente = t.IdTipoInconveniente "
+                + "INNER JOIN Usuarios u ON r.IdResidente = u.IdUsuario "
+                + "ORDER BY r.FechaCreacion DESC";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 ReporteMantenimiento r = new ReporteMantenimiento();
-                r.setIdReporte(rs.getInt("id_reporte"));
-                r.setIdTipoInconveniente(rs.getInt("id_tipo_inconveniente"));
-                r.setIdResidente(rs.getInt("id_residente"));
-                r.setDescripcion(rs.getString("descripcion"));
-                r.setFechaHoraIncidente(rs.getTimestamp("fecha_hora_incidente"));
-                r.setNombreTipoInconveniente(rs.getString("nombre_tipo_inconveniente"));
-                r.setNombreResidente(rs.getString("nombreResidente"));
-                r.setApellidoResidente(rs.getString("apellidoResidente"));
+                r.setIdReporte(rs.getInt("IdReporte"));
+                r.setIdTipoInconveniente(rs.getInt("IdTipoInconveniente"));
+                r.setIdResidente(rs.getInt("IdResidente"));
+                r.setDescripcion(rs.getString("Descripcion"));
+                r.setFechaHoraIncidente(rs.getTimestamp("FechaHoraIncidente"));
+                r.setNombreTipoInconveniente(rs.getString("NombreTipoInconveniente"));
+                r.setNombreResidente(rs.getString("NombreResidente"));
+                r.setApellidoResidente(rs.getString("ApellidoResidente"));
                 lista.add(r);
             }
 
         } catch (SQLException e) {
+            System.err.println("Error al listar reportes: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -66,30 +69,31 @@ public class ReporteMantenimientoDAO {
     // 🔹 Listar reportes por residente (para vista del usuario)
     public List<ReporteMantenimiento> listarPorResidente(int idResidente) {
         List<ReporteMantenimiento> lista = new ArrayList<>();
-        String sql = "SELECT r.*, t.Nombre AS nombre_tipo_inconveniente "
+        String sql = "SELECT r.*, t.Nombre AS NombreTipoInconveniente "
                 + "FROM ReporteMantenimiento r "
-                + "INNER JOIN TipoInconveniente t ON r.id_tipo_inconveniente = t.id_tipo_inconveniente "
-                + "WHERE r.id_residente = ? "
-                + "ORDER BY r.fecha_hora_incidente DESC";
+                + "INNER JOIN TipoInconveniente t ON r.IdTipoInconveniente = t.IdTipoInconveniente "
+                + "WHERE r.IdResidente = ? "
+                + "ORDER BY r.FechaHoraIncidente DESC";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idResidente);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     ReporteMantenimiento r = new ReporteMantenimiento();
-                    r.setIdReporte(rs.getInt("id_reporte"));
-                    r.setIdTipoInconveniente(rs.getInt("id_tipo_inconveniente"));
-                    r.setIdResidente(rs.getInt("id_residente"));
-                    r.setDescripcion(rs.getString("descripcion"));
-                    r.setFechaHoraIncidente(rs.getTimestamp("fecha_hora_incidente"));
-                    r.setNombreTipoInconveniente(rs.getString("nombre_tipo_inconveniente"));
+                    r.setIdReporte(rs.getInt("IdReporte"));
+                    r.setIdTipoInconveniente(rs.getInt("IdTipoInconveniente"));
+                    r.setIdResidente(rs.getInt("IdResidente"));
+                    r.setDescripcion(rs.getString("Descripcion"));
+                    r.setFechaHoraIncidente(rs.getTimestamp("FechaHoraIncidente"));
+                    r.setNombreTipoInconveniente(rs.getString("NombreTipoInconveniente"));
                     lista.add(r);
                 }
             }
 
         } catch (SQLException e) {
+            System.err.println("Error al listar por residente: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -98,12 +102,13 @@ public class ReporteMantenimientoDAO {
     // 🔹 Actualizar un reporte existente
     public boolean actualizarReporte(ReporteMantenimiento r) {
         String sql = "UPDATE ReporteMantenimiento SET "
-                + "id_tipo_inconveniente = ?, descripcion = ?, "
-                + "fecha_hora_incidente = ?, modificado_por = ? "
-                + "WHERE id_reporte = ?";
+                + "IdTipoInconveniente = ?, Descripcion = ?, "
+                + "FechaHoraIncidente = ?, ModificadoPor = ?, "
+                + "FechaModificacion = CURRENT_TIMESTAMP "
+                + "WHERE IdReporte = ?";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, r.getIdTipoInconveniente());
             ps.setString(2, r.getDescripcion());
@@ -114,6 +119,7 @@ public class ReporteMantenimientoDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
+            System.err.println("Error al actualizar reporte: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -121,15 +127,16 @@ public class ReporteMantenimientoDAO {
 
     // 🔹 Eliminar un reporte (opcional)
     public boolean eliminarReporte(int idReporte) {
-        String sql = "DELETE FROM ReporteMantenimiento WHERE id_reporte = ?";
+        String sql = "DELETE FROM ReporteMantenimiento WHERE IdReporte = ?";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idReporte);
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
+            System.err.println("Error al eliminar reporte: " + e.getMessage());
             e.printStackTrace();
         }
         return false;

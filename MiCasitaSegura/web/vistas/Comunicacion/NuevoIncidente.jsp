@@ -23,88 +23,116 @@
 
         <style>
             body {
-                background-color: #f0f2f5;
+                background-color: #eef1f6;
                 font-family: 'Segoe UI', Tahoma, sans-serif;
                 margin: 0;
                 padding: 0;
-                animation: fadeIn 0.7s ease-in;
+                animation: fadeIn 0.6s ease-in;
+                font-size: 18px; /* ✅ Texto base grande */
             }
 
             @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(15px); }
+                from { opacity: 0; transform: translateY(10px); }
                 to { opacity: 1; transform: translateY(0); }
             }
 
+            /* 📦 Contenedor principal */
             .container-form {
-                width: 95%;
-                max-width: 850px;
-                margin: 60px auto;
+                width: 90%;
+                max-width: 950px; /* 🔽 Reducido de 1200px */
+                margin: 70px auto;
                 background: #fff;
-                border-radius: 20px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+                border-radius: 25px;
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
                 overflow: hidden;
+                transition: all 0.3s ease;
             }
 
+            .container-form:hover {
+                box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
+            }
+
+            /* 🔴 Encabezado */
             .header-form {
-                background: linear-gradient(45deg, #dc3545, #bb2d3b);
+                background: linear-gradient(90deg, #b71c1c, #e53935);
                 color: #fff;
-                padding: 25px 40px;
+                padding: 30px 55px; /* 🔽 menos alto */
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                justify-content: flex-start;
+                gap: 15px;
+                border-radius: 25px 25px 0 0;
+            }
+
+            .header-form i {
+                font-size: 2.3rem;
             }
 
             .header-form h4 {
                 font-weight: 700;
                 margin: 0;
-                font-size: 1.5rem;
+                font-size: 2rem;
+                letter-spacing: 0.5px;
             }
 
+            /* 🧾 Cuerpo del formulario */
             .form-body {
-                padding: 40px 50px;
+                padding: 55px 70px; /* 🔽 menos padding */
             }
 
             label {
-                font-weight: 600;
-                color: #333;
+                font-weight: 700;
+                color: #1e1e1e;
+                margin-bottom: 10px;
+                display: block;
+                font-size: 1.3rem; /* ✅ Letras grandes */
             }
 
             .form-select, .form-control {
-                border-radius: 10px;
-                padding: 10px 14px;
-                border: 1px solid #ccc;
+                border-radius: 12px;
+                padding: 14px 18px;
+                border: 1px solid #bfbfbf;
+                font-size: 1.2rem; /* ✅ Texto de input grande */
                 transition: all 0.2s ease-in-out;
+                height: auto;
             }
 
             .form-select:focus, .form-control:focus {
-                border-color: #dc3545;
-                box-shadow: 0 0 0 0.2rem rgba(220,53,69,0.25);
+                border-color: #b71c1c;
+                box-shadow: 0 0 0 0.25rem rgba(183, 28, 28, 0.25);
             }
 
             textarea {
                 resize: none;
+                min-height: 150px;
             }
 
             small {
                 color: #6c757d;
+                font-size: 1rem;
             }
 
+            /* 🎨 Botones */
             .btn-danger {
-                background: linear-gradient(45deg, #dc3545, #bb2d3b);
+                background: linear-gradient(45deg, #dc3545, #b71c1c);
                 border: none;
-                border-radius: 8px;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 1.2rem;
+                padding: 14px 40px;
                 transition: all 0.3s ease;
-                font-weight: 600;
             }
 
             .btn-danger:hover {
-                background: #c82333;
+                background: #a51818;
                 transform: translateY(-2px);
             }
 
             .btn-secondary {
-                border-radius: 8px;
-                font-weight: 600;
+                border-radius: 10px;
+                font-weight: 700;
+                font-size: 1.2rem;
+                padding: 14px 40px;
             }
 
             .btn-secondary:hover {
@@ -113,15 +141,48 @@
 
             .footer-buttons {
                 text-align: center;
-                margin-top: 40px;
+                margin-top: 55px;
             }
 
-            @media (max-width: 768px) {
+            /* 📱 Responsive */
+            @media (max-width: 992px) {
+                .container-form {
+                    width: 95%;
+                }
+
                 .form-body {
+                    padding: 35px;
+                }
+
+                .header-form {
+                    flex-direction: column;
+                    text-align: center;
                     padding: 25px;
+                }
+
+                .header-form h4 {
+                    font-size: 1.8rem;
+                }
+
+                label {
+                    font-size: 1.1rem;
+                }
+
+                .form-select, .form-control {
+                    font-size: 1rem;
+                    padding: 12px;
+                }
+
+                .btn-danger, .btn-secondary {
+                    font-size: 1rem;
+                    padding: 12px 30px;
                 }
             }
         </style>
+
+
+
+
     </head>
 
     <body>

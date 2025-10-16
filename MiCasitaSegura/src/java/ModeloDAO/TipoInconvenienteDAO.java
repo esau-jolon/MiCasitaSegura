@@ -9,10 +9,10 @@ public class TipoInconvenienteDAO {
 
     // 🔹 Crear un nuevo tipo de inconveniente
     public boolean crear(TipoInconveniente t) {
-        String sql = "INSERT INTO TipoInconveniente (nombre, estado, creado_por) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO tipoinconveniente (nombre, estado, creadopor) VALUES (?, ?, ?)";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, t.getNombre());
             ps.setBoolean(2, true); // por defecto activo
@@ -29,19 +29,24 @@ public class TipoInconvenienteDAO {
     // 🔹 Listar todos los tipos de inconveniente
     public List<TipoInconveniente> listar() {
         List<TipoInconveniente> lista = new ArrayList<>();
-        String sql = "SELECT * FROM TipoInconveniente ORDER BY id_tipo_inconveniente DESC";
+        String sql = "SELECT * FROM tipoinconveniente ORDER BY idtipoinconveniente DESC";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 TipoInconveniente t = new TipoInconveniente();
-                t.setIdTipoInconveniente(rs.getInt("id_tipo_inconveniente"));
+                t.setIdTipoInconveniente(rs.getInt("idtipoinconveniente"));
                 t.setNombre(rs.getString("nombre"));
                 t.setEstado(rs.getBoolean("estado"));
-                t.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
-                t.setFechaModificacion(rs.getTimestamp("fecha_modificacion"));
+
+                // Campos opcionales (solo si existen en tu esquema)
+                try {
+                    t.setFechaCreacion(rs.getTimestamp("fechacreacion"));
+                    t.setFechaModificacion(rs.getTimestamp("fechamodificacion"));
+                } catch (SQLException ignored) {}
+
                 lista.add(t);
             }
 
@@ -54,20 +59,23 @@ public class TipoInconvenienteDAO {
     // 🔹 Obtener un tipo por ID
     public TipoInconveniente obtenerPorId(int id) {
         TipoInconveniente t = null;
-        String sql = "SELECT * FROM TipoInconveniente WHERE id_tipo_inconveniente = ?";
+        String sql = "SELECT * FROM tipoinconveniente WHERE idtipoinconveniente = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     t = new TipoInconveniente();
-                    t.setIdTipoInconveniente(rs.getInt("id_tipo_inconveniente"));
+                    t.setIdTipoInconveniente(rs.getInt("idtipoinconveniente"));
                     t.setNombre(rs.getString("nombre"));
                     t.setEstado(rs.getBoolean("estado"));
-                    t.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
-                    t.setFechaModificacion(rs.getTimestamp("fecha_modificacion"));
+
+                    try {
+                        t.setFechaCreacion(rs.getTimestamp("fechacreacion"));
+                        t.setFechaModificacion(rs.getTimestamp("fechamodificacion"));
+                    } catch (SQLException ignored) {}
                 }
             }
 
@@ -79,12 +87,12 @@ public class TipoInconvenienteDAO {
 
     // 🔹 Actualizar un tipo de inconveniente
     public boolean actualizar(TipoInconveniente t) {
-        String sql = "UPDATE TipoInconveniente "
-                + "SET nombre = ?, modificado_por = ?, fecha_modificacion = CURRENT_TIMESTAMP "
-                + "WHERE id_tipo_inconveniente = ?";
+        String sql = "UPDATE tipoinconveniente "
+                   + "SET nombre = ?, modificadopor = ?, fechamodificacion = CURRENT_TIMESTAMP "
+                   + "WHERE idtipoinconveniente = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, t.getNombre());
             ps.setInt(2, t.getModificadoPor());
@@ -100,12 +108,12 @@ public class TipoInconvenienteDAO {
 
     // 🔹 Cambiar el estado (activar / desactivar)
     public boolean cambiarEstado(int id, boolean estado, int modificadoPor) {
-        String sql = "UPDATE TipoInconveniente "
-                + "SET estado = ?, modificado_por = ?, fecha_modificacion = CURRENT_TIMESTAMP "
-                + "WHERE id_tipo_inconveniente = ?";
+        String sql = "UPDATE tipoinconveniente "
+                   + "SET estado = ?, modificadopor = ?, fechamodificacion = CURRENT_TIMESTAMP "
+                   + "WHERE idtipoinconveniente = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setBoolean(1, estado);
             ps.setInt(2, modificadoPor);
@@ -121,10 +129,10 @@ public class TipoInconvenienteDAO {
 
     // 🔹 Eliminar tipo (opcional)
     public boolean eliminar(int id) {
-        String sql = "DELETE FROM TipoInconveniente WHERE id_tipo_inconveniente = ?";
+        String sql = "DELETE FROM tipoinconveniente WHERE idtipoinconveniente = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
