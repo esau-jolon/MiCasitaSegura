@@ -635,11 +635,11 @@ public class UsuarioDAO implements UsuarioCrud {
     public List<Usuarios> listarPorRolActivo(String nombreRol) {
         List<Usuarios> lista = new ArrayList<>();
 
-        String sql = "SELECT u.*, r.nombre_rol, c.numeroCasa, l.codigoLote "
+        String sql = "SELECT u.*, r.nombre_rol, c.numero_casa AS numeroCasa, l.codigo_lote AS codigoLote "
                 + "FROM usuarios u "
                 + "INNER JOIN roles r ON u.rol_id = r.id_rol "
-                + "LEFT JOIN casas c ON u.numero_casa_id = c.idCasa "
-                + "LEFT JOIN lotes l ON u.lote_id = l.idLote "
+                + "LEFT JOIN casas c ON u.numero_casa_id = c.id_casa "
+                + "LEFT JOIN lotes l ON u.lote_id = l.id_lote "
                 + "WHERE r.nombre_rol = ? AND u.estado = 1";
 
         try (Connection con = Conexion.getConnection();
