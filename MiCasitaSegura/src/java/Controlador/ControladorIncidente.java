@@ -100,9 +100,10 @@ public class ControladorIncidente extends HttpServlet {
                 boolean exito = incidenteDAO.crearIncidente(inc);
 
                 if (exito) {
-                    // 🔹 RN4: Enviar correo y notificación a guardias
+                    // 🔹 Obtener lista de guardias activos
                     List<Usuarios> guardias = usuarioDAO.listarPorRolActivo("Guardia");
 
+                    // 🔹 Obtener tipo de incidente
                     TipoIncidente tipo = tipoDAO.listar()
                             .stream()
                             .filter(t -> t.getIdTipoIncidente() == idTipo)
@@ -110,29 +111,44 @@ public class ControladorIncidente extends HttpServlet {
                             .orElse(null);
 
                     String asunto = "Reporte de incidente";
-                    String cuerpo = "Se le informa que el residente " + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos()
-                            + ", que vive en casa #" + (usuarioSesion.getNumeroCasa() != null ? usuarioSesion.getNumeroCasa() : "N/A")
-                            + ", ha reportado un incidente.\n\n"
-                            + "📌 Tipo: " + (tipo != null ? tipo.getNombre() : "Desconocido") + "\n"
-                            + "🕒 Fecha y hora: " + fechaHoraStr.replace("T", " ") + "\n"
-                            + "📝 Descripción: " + descripcion + "\n\n"
-                            + "Por favor, tomar las acciones correspondientes.";
 
-                    // 📧 Enviar correo y registrar notificación para cada guardia activo
-                    for (Usuarios g : guardias) {
-                        EmailSender.enviarConAdjunto(g.getCorreo(), asunto, cuerpo, null);
+                    // 💌 Cuerpo en formato HTML (bonito y con saltos de línea)
+                    String cuerpo = ""
+                            + "<p>Se le informa que el residente <b>" + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() + "</b>,<br>"
+                            + "que vive en casa #" + (usuarioSesion.getNumeroCasa() != null ? usuarioSesion.getNumeroCasa() : "N/A")
+                            + ", ha reportado un incidente.</p>"
+                            + "<p>"
+                            + "📌 <b>Tipo:</b> " + (tipo != null ? tipo.getNombre() : "Desconocido") + "<br>"
+                            + "🕒 <b>Fecha y hora:</b> " + fechaHoraStr.replace("T", " ") + "<br>"
+                            + "📝 <b>Descripción:</b> " + descripcion
+                            + "</p>"
+                            + "<p style='margin-top:10px; font-style:italic;'>Por favor, tomar las acciones correspondientes.</p>";
 
-                        Notificacion n = new Notificacion();
-                        n.setIdGuardia(g.getIdUsuario());
-                        n.setIdIncidente(inc.getIdIncidente());
-                        n.setAsunto(asunto);
-                        n.setCuerpo(cuerpo);
-                        n.setCreadoPor(usuarioSesion.getIdUsuario());
-                        notificacionDAO.registrar(n);
-                    }
+                    // 🚀 Enviar correos y registrar notificaciones en segundo plano
+                    new Thread(() -> {
+                        for (Usuarios g : guardias) {
+                            try {
+                                EmailSender.enviarConAdjunto(g.getCorreo(), asunto, cuerpo, null);
 
+                                Notificacion n = new Notificacion();
+                                n.setIdGuardia(g.getIdUsuario());
+                                n.setIdIncidente(inc.getIdIncidente());
+                                n.setAsunto(asunto);
+                                n.setCuerpo(cuerpo);
+                                n.setCreadoPor(usuarioSesion.getIdUsuario());
+                                notificacionDAO.registrar(n);
+
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                                System.err.println("[ERROR] Falló el envío de correo a " + g.getCorreo());
+                            }
+                        }
+                    }).start();
+
+                    // ✅ Redirigir rápido sin esperar los correos
                     response.sendRedirect("ControladorIncidente?accion=listar&success=true");
                     return;
+
                 } else {
                     request.setAttribute("error", "No se pudo crear el incidente. Intente nuevamente.");
                     request.setAttribute("tiposIncidente", tipoDAO.listar());
@@ -147,4 +163,5 @@ public class ControladorIncidente extends HttpServlet {
             }
         }
     }
+
 }
