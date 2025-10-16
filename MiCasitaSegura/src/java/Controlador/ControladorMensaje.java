@@ -102,7 +102,6 @@ public class ControladorMensaje extends HttpServlet {
                     return;
                 }
 
-                // Crear y guardar el mensaje
                 Mensaje mensaje = new Mensaje();
                 mensaje.setIdConversacion(idConversacion);
                 mensaje.setIdEmisor(usuarioSesion.getIdUsuario());
@@ -112,16 +111,48 @@ public class ControladorMensaje extends HttpServlet {
                 boolean enviado = mensajeDAO.enviarMensaje(mensaje);
 
                 if (enviado) {
-                    // 🔹 Enviar notificación en tiempo real (WebSocket)
+                    // 🔹 Enviar mensaje en tiempo real (WebSocket)
                     ChatWebSocket.enviarMensajeEnTiempoReal(
                             String.valueOf(idReceptor),
-                            "{\"from\":\"" + usuarioSesion.getIdUsuario() +
-                            "\", \"to\":\"" + idReceptor +
-                            "\", \"text\":\"" + contenido.replace("\"", "\\\"") + "\"}"
+                            "{\"from\":\"" + usuarioSesion.getIdUsuario()
+                            + "\", \"to\":\"" + idReceptor
+                            + "\", \"text\":\"" + contenido.replace("\"", "\\\"") + "\"}"
                     );
+
+                    new Thread(() -> {
+                        try {
+                            Usuarios receptor = usuarioDAO.obtenerPorId(idReceptor);
+                            if (receptor != null && receptor.getCorreo() != null && !receptor.getCorreo().isEmpty()) {
+
+                                String asunto = "📨 Notificación de mensaje";
+
+                                String cuerpo = ""
+                                        + "<div style='font-family:Segoe UI, Arial, sans-serif; color:#333; padding:20px;'>"
+                                        + "    <h2 style='color:#0d6efd;'>💬 Nuevo mensaje recibido</h2>"
+                                        + "    <p style='font-size:16px;'>"
+                                        + "        👤 El usuario <b>" + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() + "</b> le ha enviado un mensaje."
+                                        + "    </p>"
+                                        + "    <p style='font-size:15px;'>"
+                                        + "        📬 Favor ingresar al apartado de <b>Consulta General</b> para revisar su conversación con este usuario."
+                                        + "    </p>"
+                                        + "    <hr style='border:none; border-top:1px solid #ddd; margin:20px 0;'>"
+                                        + "    <p style='font-size:13px; color:#666;'>"
+                                        + "        ⚙️ Mensaje automático del sistema <b>Mi Casita Segura</b> 🏡"
+                                        + "    </p>"
+                                        + "</div>";
+
+                                EmailSender.enviarConAdjunto(receptor.getCorreo(), asunto, cuerpo, null);
+                                System.out.println("📩 Notificación enviada a " + receptor.getCorreo());
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            System.err.println("[ERROR] No se pudo enviar notificación de mensaje.");
+                        }
+                    }).start();
 
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write("Mensaje enviado con éxito");
+
                 } else {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     response.getWriter().write("Error al enviar el mensaje.");
@@ -137,4 +168,5 @@ public class ControladorMensaje extends HttpServlet {
             response.getWriter().write("Error al procesar mensaje: " + ex.getMessage());
         }
     }
+
 }
