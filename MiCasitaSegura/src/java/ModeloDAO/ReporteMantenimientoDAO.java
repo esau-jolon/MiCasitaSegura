@@ -25,7 +25,7 @@ public class ReporteMantenimientoDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al crear reporte: " + e.getMessage());
+            System.err.println("❌ Error al crear reporte: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
@@ -36,10 +36,10 @@ public class ReporteMantenimientoDAO {
         List<ReporteMantenimiento> lista = new ArrayList<>();
 
         String sql = "SELECT r.*, t.Nombre AS NombreTipoInconveniente, "
-                + "u.Nombre AS NombreResidente, u.Apellidos AS ApellidoResidente "
+                + "u.nombre AS NombreResidente, u.apellidos AS ApellidoResidente "
                 + "FROM ReporteMantenimiento r "
                 + "INNER JOIN TipoInconveniente t ON r.IdTipoInconveniente = t.IdTipoInconveniente "
-                + "INNER JOIN Usuarios u ON r.IdResidente = u.IdUsuario "
+                + "INNER JOIN Usuarios u ON r.IdResidente = u.id_usuario "
                 + "ORDER BY r.FechaCreacion DESC";
 
         try (Connection con = Conexion.getConnection();
@@ -60,7 +60,7 @@ public class ReporteMantenimientoDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error al listar reportes: " + e.getMessage());
+            System.err.println("❌ Error al listar reportes: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -93,7 +93,7 @@ public class ReporteMantenimientoDAO {
             }
 
         } catch (SQLException e) {
-            System.err.println("Error al listar por residente: " + e.getMessage());
+            System.err.println("❌ Error al listar reportes por residente: " + e.getMessage());
             e.printStackTrace();
         }
         return lista;
@@ -119,13 +119,13 @@ public class ReporteMantenimientoDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al actualizar reporte: " + e.getMessage());
+            System.err.println("❌ Error al actualizar reporte: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
     }
 
-    // 🔹 Eliminar un reporte (opcional)
+    // 🔹 Eliminar un reporte
     public boolean eliminarReporte(int idReporte) {
         String sql = "DELETE FROM ReporteMantenimiento WHERE IdReporte = ?";
 
@@ -136,9 +136,10 @@ public class ReporteMantenimientoDAO {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al eliminar reporte: " + e.getMessage());
+            System.err.println("❌ Error al eliminar reporte: " + e.getMessage());
             e.printStackTrace();
         }
         return false;
     }
 }
+

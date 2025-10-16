@@ -20,9 +20,10 @@ import javax.servlet.http.*;
 @WebServlet("/ControladorReporteMantenimiento")
 public class ControladorReporteMantenimiento extends HttpServlet {
 
-    // ✅ Ruta principal para listado
+    // ✅ Vista principal
     private static final String INDEX_VISTA = "vistas/ReporteMantenimiento/Index.jsp";
 
+    // ✅ DAOs
     private final ReporteMantenimientoDAO reporteDAO = new ReporteMantenimientoDAO();
     private final TipoInconvenienteDAO tipoDAO = new TipoInconvenienteDAO();
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
@@ -50,8 +51,18 @@ public class ControladorReporteMantenimiento extends HttpServlet {
 
         switch (accion.toLowerCase()) {
 
+            // 🔹 LISTAR REPORTES
             case "listar": {
-                List<ReporteMantenimiento> lista = reporteDAO.listar();
+                List<ReporteMantenimiento> lista;
+
+                // 🔸 Si el usuario es residente, mostrar solo los suyos
+                if ("Residente".equalsIgnoreCase(usuarioSesion.getNombreRol())) {
+                    lista = reporteDAO.listarPorResidente(usuarioSesion.getIdUsuario());
+                } else {
+                    // 🔸 Si es admin o guardia, mostrar todos
+                    lista = reporteDAO.listar();
+                }
+
                 List<TipoInconveniente> tipos = tipoDAO.listar();
 
                 request.setAttribute("listaReportes", lista);
@@ -60,16 +71,16 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                 break;
             }
 
+            // 🔹 NUEVO REPORTE
             case "nuevo": {
                 List<TipoInconveniente> tipos = tipoDAO.listar();
                 request.setAttribute("tiposInconveniente", tipos);
-
-                // 👇 Abrir directamente la vista addEdit.jsp
                 RequestDispatcher rd = request.getRequestDispatcher("vistas/ReporteMantenimiento/addEdit.jsp");
                 rd.forward(request, response);
                 break;
             }
 
+            // 🔹 ELIMINAR REPORTE
             case "eliminar": {
                 String idStr = request.getParameter("id");
                 if (idStr != null && !idStr.isEmpty()) {
@@ -87,6 +98,7 @@ public class ControladorReporteMantenimiento extends HttpServlet {
         }
     }
 
+    // 🔹 POST → guardar o actualizar
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -110,12 +122,13 @@ public class ControladorReporteMantenimiento extends HttpServlet {
         try {
             switch (accion.toLowerCase()) {
 
+                // 🔹 GUARDAR NUEVO REPORTE
                 case "guardar": {
                     int idTipo = Integer.parseInt(request.getParameter("idTipoInconveniente"));
                     String fechaHoraStr = request.getParameter("fechaHoraIncidente");
                     String descripcion = request.getParameter("descripcion");
 
-                    // 🔸 Validación de campos (RN2)
+                    // Validación
                     if (idTipo <= 0 || fechaHoraStr == null || fechaHoraStr.isEmpty()
                             || descripcion == null || descripcion.trim().isEmpty()) {
 
@@ -128,7 +141,7 @@ public class ControladorReporteMantenimiento extends HttpServlet {
 
                     Timestamp fechaHora = Timestamp.valueOf(fechaHoraStr.replace("T", " ") + ":00");
 
-                    // 🧱 Crear reporte
+                    // 🧱 Crear objeto reporte
                     ReporteMantenimiento r = new ReporteMantenimiento();
                     r.setIdTipoInconveniente(idTipo);
                     r.setIdResidente(usuarioSesion.getIdUsuario());
@@ -139,7 +152,7 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                     boolean exito = reporteDAO.crearReporte(r);
 
                     if (exito) {
-                        // 🔹 RN3: Notificar a administradores
+                        // 🔔 Notificar a administradores
                         List<Usuarios> admins = usuarioDAO.listarPorRolActivo("Administrador");
                         TipoInconveniente tipo = tipoDAO.listar()
                                 .stream()
@@ -147,26 +160,27 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                                 .findFirst()
                                 .orElse(null);
 
-                        String asunto = "Reporte de mantenimiento";
+                        String asunto = "Nuevo reporte de mantenimiento";
                         String cuerpo = "El residente " + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos()
-                                + " ha ingresado un reporte de error del sistema.\n\n"
-                                + "Detalle del reporte:\n"
-                                + "• Tipo inconveniente: " + (tipo != null ? tipo.getNombre() : "Desconocido") + "\n"
+                                + " ha ingresado un reporte de mantenimiento.\n\n"
+                                + "📋 Detalle del reporte:\n"
+                                + "• Tipo de inconveniente: " + (tipo != null ? tipo.getNombre() : "Desconocido") + "\n"
                                 + "• Descripción: " + descripcion + "\n"
-                                + "• Fecha y hora de incidente: " + fechaHoraStr.replace('T', ' ') + "\n\n"
+                                + "• Fecha y hora del incidente: " + fechaHoraStr.replace('T', ' ') + "\n\n"
                                 + "Por favor, tomar las acciones correspondientes.";
 
                         for (Usuarios a : admins) {
                             EmailSender.enviarConAdjunto(a.getCorreo(), asunto, cuerpo, null);
 
                             Notificacion n = new Notificacion();
-                            n.setIdGuardia(a.getIdUsuario()); // o IdAdministrador según tu modelo
+                            n.setIdGuardia(a.getIdUsuario());
                             n.setAsunto(asunto);
                             n.setCuerpo(cuerpo);
                             n.setCreadoPor(usuarioSesion.getIdUsuario());
                             notificacionDAO.registrar(n);
                         }
 
+                        // 🔄 Redirigir nuevamente al listado
                         response.sendRedirect("ControladorReporteMantenimiento?accion=listar&success=true");
                         return;
 
@@ -179,6 +193,7 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                     break;
                 }
 
+                // 🔹 ACTUALIZAR REPORTE EXISTENTE
                 case "actualizar": {
                     int idReporte = Integer.parseInt(request.getParameter("idReporte"));
                     int idTipo = Integer.parseInt(request.getParameter("idTipoInconveniente"));

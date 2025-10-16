@@ -196,9 +196,10 @@
                 </li>
 
                 <li>
-                    <a href="<%=request.getContextPath()%>/vistas/ReporteMantenimiento/Index.jsp" target="contentFrame">
+                    <a href="<%=request.getContextPath()%>/ControladorReporteMantenimiento?accion=listar" target="contentFrame">
                         <i class="bi bi-tools"></i><span> REPORTES DE MANTENIMIENTO</span>
                     </a>
+
                 </li>
 
 

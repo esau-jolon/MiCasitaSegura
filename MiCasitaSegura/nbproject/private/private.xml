@@ -3,9 +3,13 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Comunicacion/NuevoIncidente.jsp</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/MensajeDAO.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorMensaje.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Usuarios/addEdit.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/ReporteMantenimientoDAO.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/TipoInconveniente.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/ReporteMantenimiento/Index.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorReporteMantenimiento.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/ReporteMantenimiento/addEdit.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/TipoInconvenienteDAO.java</file>
         </group>
     </open-files>
 </project-private>
