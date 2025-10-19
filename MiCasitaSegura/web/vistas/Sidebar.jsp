@@ -202,6 +202,13 @@
 
                 </li>
 
+                <li>
+                    <a href="<%=request.getContextPath()%>/ControladorReserva?accion=listar" target="contentFrame">
+                        <i class="bi bi-calendar-week"></i><span> RESERVAS DE ÁREAS COMUNES</span>
+                    </a>
+                </li>
+
+
 
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorPago?accion=listar" target="contentFrame">
