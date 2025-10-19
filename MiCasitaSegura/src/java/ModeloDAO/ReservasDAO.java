@@ -172,4 +172,32 @@ public class ReservasDAO {
             return false;
         }
     }
+
+    public boolean existeReservaEnHorario(int idArea, java.sql.Date fecha, java.sql.Time horaInicio, java.sql.Time horaFin) {
+        String sql = "SELECT COUNT(*) FROM reservas "
+                + "WHERE IdArea = ? AND FechaReserva = ? "
+                + "AND ((HoraInicio < ? AND HoraFin > ?) OR (HoraInicio < ? AND HoraFin > ?)) "
+                + "AND IdEstadoReserva != 3"; // 3 = Cancelada
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, idArea);
+            ps.setDate(2, fecha);
+            ps.setTime(3, horaFin);
+            ps.setTime(4, horaInicio);
+            ps.setTime(5, horaFin);
+            ps.setTime(6, horaInicio);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("❌ Error al verificar horario de reserva: " + e.getMessage());
+        }
+        return false;
+    }
+
 }
