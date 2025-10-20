@@ -143,10 +143,12 @@
                             </td>
                             <td>
                                 <% if (r.getNombreEstado().equalsIgnoreCase("Pendiente")) {%>
-                                <a href="ControladorReserva?accion=cancelar&id=<%= r.getIdReserva()%>"
-                                   class="btn btn-danger btn-sm">
+                                <button type="button" 
+                                        class="btn btn-danger btn-sm btn-cancelar" 
+                                        data-id="<%= r.getIdReserva()%>">
                                     <i class="bi bi-x-circle"></i> Cancelar
-                                </a>
+                                </button>
+
                                 <% } else { %>
                                 <span class="text-muted">N/A</span>
                                 <% } %>
@@ -193,6 +195,36 @@
             text: 'La reserva fue confirmada y se notificó al residente.'
         });
         <% }%>
+
+
     </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const botonesCancelar = document.querySelectorAll(".btn-cancelar");
+
+            botonesCancelar.forEach(boton => {
+                boton.addEventListener("click", function () {
+                    const idReserva = this.getAttribute("data-id");
+
+                    Swal.fire({
+                        title: "¿Desea cancelar la reserva?",
+                        text: "Esta acción no se puede deshacer.",
+                        icon: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#d33",
+                        cancelButtonColor: "#6c757d",
+                        confirmButtonText: "Sí, cancelar",
+                        cancelButtonText: "No, mantener"
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = "ControladorReserva?accion=cancelar&id=" + idReserva;
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
 
 </html>
