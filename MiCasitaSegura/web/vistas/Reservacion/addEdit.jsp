@@ -174,6 +174,17 @@
                 <% } %>
 
                 <form action="ControladorReserva" method="post" class="needs-validation" novalidate>
+
+                    <%
+                        String nombreUsuario = (String) request.getAttribute("nombreUsuario");
+                    %>
+
+                    <div class="mb-3">
+                        <label class="form-label">Residente</label>
+                        <input type="text" class="form-control" value="<%= nombreUsuario != null ? nombreUsuario : ""%>" readonly>
+                    </div>
+
+
                     <div class="mb-3">
                         <label class="form-label">Área Común</label>
                         <select name="idArea" class="form-select" required>
