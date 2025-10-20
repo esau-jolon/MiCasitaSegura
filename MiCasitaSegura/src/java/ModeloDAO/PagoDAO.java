@@ -21,8 +21,8 @@ public class PagoDAO {
                 + "WHERE p.activo = TRUE";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Pagos p = new Pagos();
@@ -57,7 +57,7 @@ public class PagoDAO {
         Pagos p = null;
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
 
@@ -91,7 +91,7 @@ public class PagoDAO {
                 + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, p.getIdUsuario());
             ps.setInt(2, p.getIdTipoPago());
@@ -102,11 +102,17 @@ public class PagoDAO {
             ps.setDouble(7, p.getTotal());
             ps.setString(8, p.getObservaciones());
 
-            if (p.getMesPagado() != null) ps.setInt(9, p.getMesPagado());
-            else ps.setNull(9, Types.INTEGER);
+            if (p.getMesPagado() != null) {
+                ps.setInt(9, p.getMesPagado());
+            } else {
+                ps.setNull(9, Types.INTEGER);
+            }
 
-            if (p.getAnioPagado() != null) ps.setInt(10, p.getAnioPagado());
-            else ps.setNull(10, Types.INTEGER);
+            if (p.getAnioPagado() != null) {
+                ps.setInt(10, p.getAnioPagado());
+            } else {
+                ps.setNull(10, Types.INTEGER);
+            }
 
             ps.setBoolean(11, p.isActivo()); // ✅ Nuevo campo
 
@@ -124,7 +130,7 @@ public class PagoDAO {
                 + "WHERE id_pago=?";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, p.getIdUsuario());
             ps.setInt(2, p.getIdTipoPago());
@@ -151,7 +157,7 @@ public class PagoDAO {
     public boolean eliminarLogico(int idPago) {
         String sql = "UPDATE Pagos SET activo = FALSE WHERE id_pago = ?";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idPago);
             return ps.executeUpdate() > 0;
@@ -165,7 +171,7 @@ public class PagoDAO {
     public boolean restaurar(int idPago) {
         String sql = "UPDATE Pagos SET activo = TRUE WHERE id_pago = ?";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idPago);
             return ps.executeUpdate() > 0;
@@ -180,7 +186,7 @@ public class PagoDAO {
         String sql = "UPDATE Pagos SET id_estado_pago = (SELECT id_estado_pago FROM EstadosPago WHERE descripcion='Cancelado' LIMIT 1) WHERE id_pago=? AND activo=TRUE";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
@@ -193,7 +199,7 @@ public class PagoDAO {
     // 🔹 Obtener el mes siguiente (sin cambios)
     public String obtenerMesSiguiente(int idUsuario) {
         String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"};
 
         String sqlUltimoPago = "SELECT MAX(fecha_pago) AS ultima FROM Pagos WHERE id_usuario=? AND id_tipo_pago=1 AND activo=TRUE";
         String sqlFechaCreacion = "SELECT FechaCreacion FROM Usuarios WHERE id_usuario=?";
@@ -230,4 +236,21 @@ public class PagoDAO {
 
         return meses[new java.util.Date().getMonth()];
     }
+
+    // 🔹 Cambiar estado de un pago (por ID de estado)
+    public boolean cambiarEstado(int idPago, int nuevoEstadoId) {
+        String sql = "UPDATE Pagos SET id_estado_pago = ? WHERE id_pago = ? AND activo = TRUE";
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, nuevoEstadoId); // Ej. 2 = Realizado, 3 = Cancelado
+            ps.setInt(2, idPago);
+
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 }

@@ -37,7 +37,6 @@ public class ControladorPago extends HttpServlet {
         Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
 
         if ("listar".equalsIgnoreCase(action)) {
-            // ✅ Listar solo los pagos activos
             List<Pagos> lista = dao.listar();
             request.setAttribute("pagos", lista);
             acceso = listar;
@@ -75,7 +74,6 @@ public class ControladorPago extends HttpServlet {
             acceso = listar;
 
         } else if ("eliminar".equalsIgnoreCase(action)) {
-            // ✅ Nuevo: eliminación lógica (activo = FALSE)
             int id = Integer.parseInt(request.getParameter("id"));
             boolean eliminado = dao.eliminarLogico(id);
 
@@ -85,6 +83,30 @@ public class ControladorPago extends HttpServlet {
                 request.setAttribute("mensajeError", "No se pudo eliminar el pago.");
             }
 
+            request.setAttribute("pagos", dao.listar());
+            acceso = listar;
+
+            // ✅ Nuevo: Confirmar pago (estado = 2)
+        } else if ("confirmar".equalsIgnoreCase(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean actualizado = dao.cambiarEstado(id, 2); // Estado Realizado
+            if (actualizado) {
+                request.setAttribute("mensaje", "Pago confirmado exitosamente.");
+            } else {
+                request.setAttribute("mensajeError", "No se pudo confirmar el pago.");
+            }
+            request.setAttribute("pagos", dao.listar());
+            acceso = listar;
+
+            // ❌ Nuevo: Cancelar pago (estado = 3)
+        } else if ("cancelarPago".equalsIgnoreCase(action)) {
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean actualizado = dao.cambiarEstado(id, 3); // Estado Cancelado
+            if (actualizado) {
+                request.setAttribute("mensaje", "Pago cancelado correctamente.");
+            } else {
+                request.setAttribute("mensajeError", "No se pudo cancelar el pago.");
+            }
             request.setAttribute("pagos", dao.listar());
             acceso = listar;
 
@@ -138,22 +160,18 @@ public class ControladorPago extends HttpServlet {
                     throw new IllegalArgumentException("Debe ingresar observaciones del pago.");
                 }
 
-                // Número de tarjeta
                 if (numTarjeta == null || !numTarjeta.matches("\\d{12,19}")) {
                     throw new IllegalArgumentException("Número de tarjeta inválido. Solo se permiten entre 12 y 19 dígitos.");
                 }
 
-                // CVV
                 if (cvv == null || !cvv.matches("\\d{3,4}")) {
                     throw new IllegalArgumentException("CVV inválido. Debe tener 3 o 4 dígitos numéricos.");
                 }
 
-                // Nombre del titular
                 if (nombreTitular == null || nombreTitular.trim().isEmpty()) {
                     throw new IllegalArgumentException("Debe ingresar el nombre del titular de la tarjeta.");
                 }
 
-                // === Validar fecha de vencimiento (MM/YYYY) ===
                 if (fechaVenc == null || fechaVenc.trim().isEmpty()) {
                     throw new IllegalArgumentException("Debe indicar la fecha de vencimiento de la tarjeta.");
                 }
@@ -191,7 +209,7 @@ public class ControladorPago extends HttpServlet {
                 p.setMora(mora);
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
-                p.setActivo(true); // ✅ nuevo campo activo al crear
+                p.setActivo(true);
 
                 // Guardar mes/año si aplica
                 if (idTipoPago == 1) {
@@ -235,7 +253,7 @@ public class ControladorPago extends HttpServlet {
                 p.setMora(mora);
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
-                p.setActivo(true); // ✅ al editar se mantiene activo
+                p.setActivo(true);
 
                 if (idTipoPago == 1) {
                     String mesPagadoStr = request.getParameter("mesPagado");

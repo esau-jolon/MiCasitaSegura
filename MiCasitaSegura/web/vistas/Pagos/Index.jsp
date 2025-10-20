@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="Modelo.Pagos" %>
+<%@ page import="Modelo.Usuarios" %>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -179,89 +180,26 @@
             }
 
             /* --- Estados --- */
-            .status-realizado {
-                background: linear-gradient(135deg, #4ade80, #22c55e);
-                color: white;
-                padding: .5rem 1rem;
-                border-radius: 50px;
-                font-weight: 600;
-            }
-
-            .status-cancelado {
-                background: linear-gradient(135deg, #f87171, #ef4444);
-                color: white;
-                padding: .5rem 1rem;
-                border-radius: 50px;
-                font-weight: 600;
-            }
-
-            .status-pendiente {
-                background: linear-gradient(135deg, #facc15, #fbbf24);
-                color: #1a1a1a;
-                padding: .5rem 1rem;
-                border-radius: 50px;
-                font-weight: 600;
-            }
+            .status-realizado { background: linear-gradient(135deg, #4ade80, #22c55e); color: white; padding: .5rem 1rem; border-radius: 50px; font-weight: 600; }
+            .status-cancelado { background: linear-gradient(135deg, #f87171, #ef4444); color: white; padding: .5rem 1rem; border-radius: 50px; font-weight: 600; }
+            .status-pendiente { background: linear-gradient(135deg, #facc15, #fbbf24); color: #1a1a1a; padding: .5rem 1rem; border-radius: 50px; font-weight: 600; }
 
             /* --- Botones de acción --- */
-            .action-buttons {
-                display: flex;
-                flex-wrap: wrap;
-                gap: .5rem;
-                justify-content: center;
-            }
+            .action-buttons { display: flex; flex-wrap: wrap; gap: .5rem; justify-content: center; }
 
-            .btn-action {
-                padding: .6rem 1rem;
-                border-radius: 12px;
-                font-size: .85rem;
-                font-weight: 500;
-                border: none;
-                transition: transform .2s ease-in-out;
-                text-decoration: none;
-                display: inline-flex;
-                align-items: center;
-                gap: .5rem;
-                min-width: 90px;
-                justify-content: center;
-            }
-
-            .btn-edit {
-                background: linear-gradient(135deg, #fbbf24, #f59e0b);
-                color: white;
-            }
-
-            .btn-cancel {
-                background: linear-gradient(135deg, #f87171, #ef4444);
-                color: white;
-            }
-
-            .btn-delete {
-                background: linear-gradient(135deg, #6b7280, #374151);
-                color: white;
-            }
+            .btn-action { padding: .6rem 1rem; border-radius: 12px; font-size: .85rem; font-weight: 500; border: none; transition: transform .2s ease-in-out; text-decoration: none; display: inline-flex; align-items: center; gap: .5rem; min-width: 90px; justify-content: center; }
+            .btn-edit { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: white; }
+            .btn-cancel { background: linear-gradient(135deg, #f87171, #ef4444); color: white; }
+            .btn-delete { background: linear-gradient(135deg, #6b7280, #374151); color: white; }
+            .btn-confirm { background: linear-gradient(135deg, #4ade80, #22c55e); color: white; }
+            .btn-cancel-pay { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; }
 
             .btn-action:hover { transform: scale(1.05); }
 
-            /* --- Deshabilitado --- */
-            .disabled-action {
-                opacity: 0.5;
-                pointer-events: none;
-                cursor: not-allowed;
-            }
+            .disabled-action { opacity: 0.5; pointer-events: none; cursor: not-allowed; }
 
-            /* --- Estado vacío --- */
-            .empty-state {
-                text-align: center;
-                padding: 4rem 2rem;
-                color: #a0a0a0;
-            }
-
-            .empty-icon {
-                font-size: 4rem;
-                margin-bottom: 1rem;
-                opacity: 0.5;
-            }
+            .empty-state { text-align: center; padding: 4rem 2rem; color: #a0a0a0; }
+            .empty-icon { font-size: 4rem; margin-bottom: 1rem; opacity: 0.5; }
         </style>
     </head>
     <body>
@@ -293,6 +231,9 @@
                             <tbody>
                                 <%
                                     List<Pagos> lista = (List<Pagos>) request.getAttribute("pagos");
+                                    Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
+                                    boolean esAdmin = (usuarioSesion != null && "Administrador".equalsIgnoreCase(usuarioSesion.getNombreRol()));
+
                                     if (lista != null && !lista.isEmpty()) {
                                         for (Pagos p : lista) {
                                             String estado = p.getNombreEstadoPago();
@@ -316,29 +257,43 @@
                                     <td>#<%= p.getIdPago()%></td>
                                     <td><%= p.getNombreUsuario()%></td>
                                     <td><%= p.getNombreTipoPago()%></td>
-                                    <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(p.getFechaPago()) %></td>
+                                    <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(p.getFechaPago())%></td>
                                     <td><%= (p.getMesPagado() != null && p.getAnioPagado() != null) ? p.getMesPagado() + "/" + p.getAnioPagado() : "-"%></td>
                                     <td>Q <%= p.getMonto()%></td>
                                     <td>Q <%= p.getMora()%></td>
                                     <td><strong>Q <%= p.getTotal()%></strong></td>
                                     <td><%= p.getObservaciones() != null ? p.getObservaciones() : "-"%></td>
                                     <td>
-                                        <span class="<%= claseEstado %>">
-                                            <i class="bi <%= icono %>"></i> <%= estado %>
+                                        <span class="<%= claseEstado%>">
+                                            <i class="bi <%= icono%>"></i> <%= estado%>
                                         </span>
                                     </td>
                                     <td>
                                         <div class="action-buttons">
                                             <a href="${pageContext.request.contextPath}/ControladorPago?accion=edit&id=<%= p.getIdPago()%>"
-                                               class="btn-action btn-edit <%= deshabilitar ? "disabled-action" : "" %>"
-                                               title="<%= deshabilitar ? "No se puede editar un pago realizado" : "" %>">
+                                               class="btn-action btn-edit <%= deshabilitar ? "disabled-action" : ""%>"
+                                               title="<%= deshabilitar ? "No se puede editar un pago realizado" : ""%>">
                                                 <i class="bi bi-pencil-square"></i> Editar
                                             </a>
-                                    
-                                            <!-- ✅ Nuevo botón Eliminar -->
+
+                                            <% if (esAdmin) {%>
+                                            <!-- 🟢 Confirmar pago -->
+                                            <button type="button" class="btn-action btn-confirm"
+                                                    onclick="confirmarPago(<%= p.getIdPago()%>, <%= p.getTotal()%>)">
+                                                <i class="bi bi-check2-circle"></i> Confirmar
+                                            </button>
+
+                                            <!-- 🔴 Cancelar pago -->
+                                            <button type="button" class="btn-action btn-cancel-pay"
+                                                    onclick="cancelarPago(<%= p.getIdPago()%>, <%= p.getTotal()%>)">
+                                                <i class="bi bi-x-circle"></i> Cancelar
+                                            </button>
+                                            <% }%>
+
+                                            <!-- 🗑️ Eliminar -->
                                             <button type="button"
                                                     class="btn-action btn-delete"
-                                                    onclick="confirmarEliminacion(<%= p.getIdPago() %>, <%= p.getTotal() %>)">
+                                                    onclick="confirmarEliminacion(<%= p.getIdPago()%>, <%= p.getTotal()%>)">
                                                 <i class="bi bi-trash"></i> Eliminar
                                             </button>
                                         </div>
@@ -352,7 +307,7 @@
                                         No hay pagos registrados aún
                                     </td>
                                 </tr>
-                                <% } %>
+                                <% }%>
                             </tbody>
                         </table>
                     </div>
@@ -361,14 +316,50 @@
         </div>
 
         <script>
-            // ✅ SweetAlert2 Confirmación de eliminación lógica
+            // 🟢 Confirmar pago (estado 2)
+            function confirmarPago(idPago, total) {
+                Swal.fire({
+                    title: '¿Procesar este pago?',
+                    text: "Total: Q" + total.toFixed(2),
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#22c55e',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<%=request.getContextPath()%>/ControladorPago?accion=confirmar&id=' + idPago;
+                    }
+                });
+            }
+
+            // 🔴 Cancelar pago (estado 3)
+            function cancelarPago(idPago, total) {
+                Swal.fire({
+                    title: '¿Deseas cancelar este pago?',
+                    text: "Total: Q" + total.toFixed(2),
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Sí, cancelar',
+                    cancelButtonText: 'Volver'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<%=request.getContextPath()%>/ControladorPago?accion=cancelarPago&id=' + idPago;
+                    }
+                });
+            }
+
+            // 🗑️ Eliminar lógico
             function confirmarEliminacion(idPago, total) {
                 Swal.fire({
                     title: '¿Deseas eliminar este pago?',
                     text: "Total: Q" + total.toFixed(2),
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
+                    confirmButtonColor: '#6b7280',
                     cancelButtonColor: '#d33',
                     confirmButtonText: 'Sí, eliminar',
                     cancelButtonText: 'Cancelar'
