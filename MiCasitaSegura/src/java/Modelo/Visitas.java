@@ -15,6 +15,11 @@ public class Visitas {
     private Integer intentosPermitidos; // aplica a 'Por intentos'
     private boolean estado;
 
+    // 🔹 Campos de auditoría
+    private Date fechaCreacion;
+    private Integer modificadoPor;
+    private Date fechaModificacion;
+
     public Visitas() {
     }
 
@@ -32,7 +37,9 @@ public class Visitas {
         this.estado = estado;
     }
 
+    // ======================
     // Getters & Setters
+    // ======================
     public int getIdVisita() {
         return idVisita;
     }
@@ -111,5 +118,29 @@ public class Visitas {
 
     public void setEstado(boolean estado) {
         this.estado = estado;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Integer getModificadoPor() {
+        return modificadoPor;
+    }
+
+    public void setModificadoPor(Integer modificadoPor) {
+        this.modificadoPor = modificadoPor;
+    }
+
+    public Date getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Date fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
 }

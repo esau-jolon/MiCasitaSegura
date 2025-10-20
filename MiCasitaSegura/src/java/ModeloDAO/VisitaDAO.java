@@ -71,7 +71,6 @@ public class VisitaDAO {
         return v;
     }
 
-// 🔹 Agregar nueva visita + generar QR y enviar notificaciones (RN4–RN7)
     public boolean add(Visitas v) {
         // 🔸 RN4: Validar intentos permitidos
         if ("Por intentos".equalsIgnoreCase(v.getTipoVisita()) && v.getIntentosPermitidos() <= 1) {
@@ -81,7 +80,6 @@ public class VisitaDAO {
         // 🔸 RN5: Validar fecha de visita (no puede ser pasada)
         if ("Visita".equalsIgnoreCase(v.getTipoVisita())) {
             java.sql.Date hoy = new java.sql.Date(System.currentTimeMillis());
-
             java.util.Calendar calVisita = java.util.Calendar.getInstance();
             calVisita.setTime(v.getFechaVisita());
             java.util.Calendar calHoy = java.util.Calendar.getInstance();
@@ -102,9 +100,9 @@ public class VisitaDAO {
             }
         }
 
-        // 🔸 Inserción principal
-        String sql = "INSERT INTO Visitas(nombre_visitante, dpi_visitante, correo_visitante, id_residente, id_usuario_creador, tipo_visita, fecha_visita, intentos_permitidos, estado) "
-                + "VALUES(?,?,?,?,?,?,?,?,?)";
+        // 🔸 Inserción principal con auditoría
+        String sql = "INSERT INTO Visitas(nombre_visitante, dpi_visitante, correo_visitante, id_residente, id_usuario_creador, tipo_visita, fecha_visita, intentos_permitidos, estado, fecha_creacion) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,NOW())";
 
         try (Connection con = Conexion.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -120,7 +118,6 @@ public class VisitaDAO {
             ps.setBoolean(9, v.isEstado());
             ps.executeUpdate();
 
-            // 🔹 Obtener ID generado
             int idVisita = 0;
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
@@ -128,7 +125,6 @@ public class VisitaDAO {
                 }
             }
 
-            // 🔹 Generar QR y correos
             if (idVisita > 0) {
                 final int idVisitaFinal = idVisita;
 
@@ -137,7 +133,6 @@ public class VisitaDAO {
                         String codigo = "VIS-" + idVisitaFinal;
                         byte[] qrBytes = QRGenerator.generarQR(codigo, 250, 250);
 
-                        // 🔸 Insertar registro QR
                         String sqlQR = "INSERT INTO Codigos_QR(codigo, fecha_inicio, fecha_fin, intentos_disponibles, id_visita, estado) "
                                 + "VALUES(?, NOW(), ?, ?, ?, 1)";
                         try (PreparedStatement psQR = con2.prepareStatement(sqlQR)) {
@@ -154,7 +149,6 @@ public class VisitaDAO {
                             psQR.executeUpdate();
                         }
 
-                        // 🔹 Obtener correo del residente
                         String correoResidente = null;
                         try (PreparedStatement psRes = con2.prepareStatement(
                                 "SELECT correo FROM Usuarios WHERE id_usuario = ?")) {
@@ -166,50 +160,71 @@ public class VisitaDAO {
                             }
                         }
 
-                        // 🔹 Fecha y hora actual
                         String fecha = new java.text.SimpleDateFormat("dd/MM/yyyy").format(new java.util.Date());
                         String hora = new java.text.SimpleDateFormat("HH:mm").format(new java.util.Date());
                         String validez = v.getTipoVisita().equalsIgnoreCase("Visita")
-                                ? ("hasta " + v.getFechaVisita())
-                                : (v.getIntentosPermitidos() + " intentos");
+                                ? ("hasta el <b>" + v.getFechaVisita() + "</b>")
+                                : ("<b>" + v.getIntentosPermitidos() + " intentos disponibles</b>");
 
-                        // 🔸 RN7: Notificación al visitante
+                        // ========= CORREO VISITANTE =========
                         if (v.getCorreoVisitante() != null && !v.getCorreoVisitante().isEmpty()) {
-                            String mensajeVisitante
-                                    = "¡Hola!\n\n"
-                                    + "Se ha generado exitosamente tu código QR de acceso al residencial.\n\n"
-                                    + "A continuación, encontrarás los detalles de tu registro:\n\n"
-                                    + "Nombre del visitante: " + v.getNombreVisitante() + "\n"
-                                    + "Validez del código QR: " + validez + "\n\n"
-                                    + "Instrucciones importantes:\n"
-                                    + "• Guarda este correo o el código QR adjunto.\n"
-                                    + "• Preséntalo al llegar al residencial para que el personal de seguridad lo escanee.\n\n"
-                                    + "¡Gracias por coordinar tu visita con anticipación!";
+                            StringBuilder htmlVisitante = new StringBuilder();
+                            htmlVisitante.append("<html><body style='font-family:Arial,sans-serif;background-color:#f6f8fb;padding:20px;'>")
+                                    .append("<div style='max-width:600px;margin:auto;background:white;border-radius:10px;padding:25px;box-shadow:0 2px 6px rgba(0,0,0,0.1);'>")
+                                    .append("<h2 style='color:#2C3E50;text-align:center;'>🏡 Confirmación de Registro de Visita</h2>")
+                                    .append("<p>Estimado/a <b>").append(v.getNombreVisitante()).append("</b>,</p>")
+                                    .append("<p>Se ha generado exitosamente tu <b>código QR de acceso</b> al residencial.<br>")
+                                    .append("A continuación, te compartimos los detalles:</p>")
+                                    .append("<table style='width:100%;border-collapse:collapse;margin-top:10px;'>")
+                                    .append("<tr><td><b>🔹 Tipo de visita:</b></td><td>").append(v.getTipoVisita()).append("</td></tr>")
+                                    .append("<tr><td><b>🔹 Fecha de registro:</b></td><td>").append(fecha).append(" ").append(hora).append("</td></tr>")
+                                    .append("<tr><td><b>🔹 Validez:</b></td><td>").append(validez).append("</td></tr>")
+                                    .append("</table>")
+                                    .append("<p style='margin-top:15px;font-size:14px;'>")
+                                    .append("🔸 Guarda este correo o el código QR adjunto.<br>")
+                                    .append("🔸 Preséntalo al llegar al residencial para que el personal de seguridad lo escanee.<br>")
+                                    .append("🔸 Este código es personal e intransferible.</p>")
+                                    .append("<div style='text-align:center;margin-top:25px;'>")
+                                    .append("<p><b>¡Gracias por coordinar tu visita con anticipación!</b></p>")
+                                    .append("<p style='font-size:13px;color:#555;'>Residencial Mi Casita Segura</p>")
+                                    .append("</div></div></body></html>");
 
                             EmailSender.enviarConAdjunto(
                                     v.getCorreoVisitante(),
-                                    "Notificación de accesos creados",
-                                    mensajeVisitante,
+                                    "🟢 Código QR de acceso al residencial",
+                                    htmlVisitante.toString(),
                                     qrBytes
                             );
-                            System.out.println("[INFO] Correo enviado al visitante: " + v.getCorreoVisitante());
+                            System.out.println("[INFO] Correo HTML enviado al visitante: " + v.getCorreoVisitante());
                         }
 
-                        // 🔸 RN6: Notificación al residente
+                        // ========= CORREO RESIDENTE =========
                         if (correoResidente != null && !correoResidente.isEmpty()) {
-                            String mensajeResidente
-                                    = "El código QR fue generado exitosamente para la persona " + v.getNombreVisitante()
-                                    + " el día " + fecha + " a las " + hora + " para acceder al condominio.\n"
-                                    + "Este código tiene una validez de " + validez + ".\n\n"
-                                    + "En caso de cualquier irregularidad, por favor contacte al administrador del sistema.";
+                            StringBuilder htmlResidente = new StringBuilder();
+                            htmlResidente.append("<html><body style='font-family:Arial,sans-serif;background-color:#f6f8fb;padding:20px;'>")
+                                    .append("<div style='max-width:600px;margin:auto;background:white;border-radius:10px;padding:25px;box-shadow:0 2px 6px rgba(0,0,0,0.1);'>")
+                                    .append("<h2 style='color:#2C3E50;text-align:center;'>📩 Notificación de nueva visita registrada</h2>")
+                                    .append("<p>Estimado residente,<br>se ha registrado una nueva visita a su residencia:</p>")
+                                    .append("<table style='width:100%;border-collapse:collapse;margin-top:10px;'>")
+                                    .append("<tr><td><b>👤 Visitante:</b></td><td>").append(v.getNombreVisitante()).append("</td></tr>")
+                                    .append("<tr><td><b>📅 Fecha de registro:</b></td><td>").append(fecha).append(" ").append(hora).append("</td></tr>")
+                                    .append("<tr><td><b>📋 Tipo de visita:</b></td><td>").append(v.getTipoVisita()).append("</td></tr>")
+                                    .append("<tr><td><b>⏱ Validez:</b></td><td>").append(validez).append("</td></tr>")
+                                    .append("</table>")
+                                    .append("<p style='margin-top:15px;font-size:14px;'>Se ha generado un código QR de acceso para el visitante, adjunto a este correo.<br>")
+                                    .append("Si no reconoce esta solicitud, comuníquese inmediatamente con el administrador del sistema.</p>")
+                                    .append("<div style='text-align:center;margin-top:25px;'>")
+                                    .append("<p><b>Atentamente,<br>Administración del sistema Mi Casita Segura</b></p>")
+                                    .append("<p style='font-size:13px;color:#555;'>Mensaje generado automáticamente, por favor no responder.</p>")
+                                    .append("</div></div></body></html>");
 
                             EmailSender.enviarConAdjunto(
                                     correoResidente,
-                                    "Notificación de accesos creados",
-                                    mensajeResidente,
+                                    "📢 Nueva visita registrada",
+                                    htmlResidente.toString(),
                                     qrBytes
                             );
-                            System.out.println("[INFO] Correo enviado al residente: " + correoResidente);
+                            System.out.println("[INFO] Correo HTML enviado al residente: " + correoResidente);
                         } else {
                             System.out.println("[WARN] No se encontró correo del residente para id_residente=" + v.getIdResidente());
                         }

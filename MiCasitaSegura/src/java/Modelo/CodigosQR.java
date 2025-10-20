@@ -28,6 +28,5 @@ public class CodigosQR {
         this.estado = estado;
     }
 
-    // Getters y Setters ...
 }
 
