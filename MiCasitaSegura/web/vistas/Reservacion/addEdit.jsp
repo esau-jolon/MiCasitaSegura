@@ -16,7 +16,6 @@
         <script src="<%=request.getContextPath()%>/Scripts/bootstrap.bundle.min.js"></script>
 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
         <style>
             body {
                 background: linear-gradient(135deg, #eef2f3, #cfd9df);
@@ -30,7 +29,7 @@
 
             .card {
                 width: 100%;
-                max-width: 1100px; /* 🔹 Aumentado: formulario más ancho */
+                max-width: 1100px;
                 border: none;
                 border-radius: 32px;
                 overflow: hidden;
@@ -43,7 +42,7 @@
                 color: #fff;
                 text-align: center;
                 font-weight: 700;
-                font-size: 1.9rem; /* 🔹 Letras del título más grandes */
+                font-size: 1.9rem;
                 text-transform: uppercase;
                 letter-spacing: 1px;
                 padding: 2rem 1.5rem;
@@ -52,28 +51,54 @@
 
             .card-body {
                 background: #fff;
-                padding: 3.5rem 4.5rem; /* 🔹 Más aire interno */
+                padding: 3.5rem 4.5rem;
             }
 
             label {
                 font-weight: 600;
                 color: #222;
                 margin-bottom: 0.7rem;
-                font-size: 1.2rem; /* 🔹 Texto más grande */
+                font-size: 1.2rem;
             }
 
+            /* 🔹 Campos normales (inputs y textarea) */
             .form-control,
-            .form-select,
             textarea {
                 border-radius: 16px;
                 border: 1px solid #bbb;
                 transition: all 0.3s ease;
-                padding: 1.2rem 1.5rem; /* 🔹 Campos más altos */
-                font-size: 1.15rem; /* 🔹 Letra más grande */
+                font-size: 1.15rem;
+                padding: 1rem 1.5rem;
+                height: 56px;
+                line-height: 1.5;
+                width: 100%;
             }
 
-            .form-control:focus,
+            /* 🔹 Select compacto y más angosto */
+            .form-select {
+                border-radius: 14px;
+                border: 1px solid #bbb;
+                transition: all 0.3s ease;
+                font-size: 1.05rem;
+                padding: 0.6rem 1.2rem;
+                height: 44px;               /* 🔻 menos alto */
+                width: 85%;                 /* 🔻 más angosto */
+                background-color: #fff;
+                appearance: none;
+                background-image: url('data:image/svg+xml;utf8,<svg fill="%23667eea" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 5l6 6 6-6"/></svg>');
+                background-repeat: no-repeat;
+                background-position: right 1.2rem center;
+                background-size: 0.9rem;
+            }
+
+            /* 🔹 Centrado del select */
+            .form-select-container {
+                display: flex;
+                justify-content: center;
+            }
+
             .form-select:focus,
+            .form-control:focus,
             textarea:focus {
                 border-color: #667eea;
                 box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
@@ -81,9 +106,11 @@
 
             textarea {
                 resize: none;
-                min-height: 140px; /* 🔹 Más espacio para observaciones */
+                min-height: 140px;
+                height: auto;
             }
 
+            /* 🔹 Botones */
             .btn-success {
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 border: none;
@@ -113,13 +140,13 @@
             }
 
             .text-center {
-                margin-top: 3rem; /* 🔹 Más separación entre formulario y botones */
+                margin-top: 3rem;
             }
 
             .text-center button,
             .text-center a {
-                min-width: 200px; /* 🔹 Botones grandes */
-                margin: 0 15px; /* 🔹 Separación entre botones */
+                min-width: 200px;
+                margin: 0 15px;
             }
 
             @keyframes fadeIn {
@@ -141,9 +168,15 @@
                     font-size: 1rem;
                 }
 
-                .form-control,
+                .form-control {
+                    font-size: 1rem;
+                    height: 50px;
+                }
+
                 .form-select {
                     font-size: 1rem;
+                    height: 42px;
+                    width: 100%;
                 }
 
                 .text-center button,
@@ -152,6 +185,20 @@
                     margin: 0 8px;
                 }
             }
+
+            /* 🔹 Mejora de separación entre campos */
+            .mb-3 {
+                margin-bottom: 2.3rem !important;  /* 🔻 más espacio entre cada grupo */
+            }
+
+            label.form-label {
+                display: block;
+                font-weight: 250;
+                color: #222;
+                margin-bottom: 0.5rem;  /* 🔻 más espacio entre label y campo */
+                font-size: 1.2rem;
+            }
+
         </style>
 
 
@@ -161,6 +208,7 @@
         <%
             List<AreasComunes> areas = (List<AreasComunes>) request.getAttribute("listaAreas");
             String error = (String) request.getAttribute("error");
+            String nombreUsuario = (String) request.getAttribute("nombreUsuario");
         %>
 
         <div class="card">
@@ -171,20 +219,18 @@
             <div class="card-body">
                 <% if (error != null) {%>
                 <div class="alert alert-danger text-center"><%= error%></div>
-                <% } %>
+                <% }%>
 
                 <form action="ControladorReserva" method="post" class="needs-validation" novalidate>
 
-                    <%
-                        String nombreUsuario = (String) request.getAttribute("nombreUsuario");
-                    %>
-
+                    <!-- 🔹 Campo del residente -->
                     <div class="mb-3">
                         <label class="form-label">Residente</label>
-                        <input type="text" class="form-control" value="<%= nombreUsuario != null ? nombreUsuario : ""%>" readonly>
+                        <input type="text" class="form-control" 
+                               value="<%= nombreUsuario != null ? nombreUsuario : ""%>" readonly> </input>
                     </div>
 
-
+                    <!-- 🔹 Selector de área común -->
                     <div class="mb-3">
                         <label class="form-label">Área Común</label>
                         <select name="idArea" class="form-select" required>
@@ -192,16 +238,18 @@
                             <% if (areas != null) {
                                     for (AreasComunes a : areas) {%>
                             <option value="<%= a.getIdArea()%>"><%= a.getNombre()%></option>
-                            <% }
+                            <%  }
                                 }%>
                         </select>
                     </div>
 
+                    <!-- 🔹 Fecha de reserva -->
                     <div class="mb-3">
                         <label class="form-label">Fecha de Reserva</label>
                         <input type="date" name="fechaReserva" class="form-control" required>
                     </div>
 
+                    <!-- 🔹 Horarios -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Hora Inicio</label>
@@ -213,11 +261,13 @@
                         </div>
                     </div>
 
+                    <!-- 🔹 Observaciones -->
                     <div class="mb-3">
                         <label class="form-label">Observaciones</label>
                         <textarea name="observaciones" class="form-control" rows="3" placeholder="Opcional..."></textarea>
                     </div>
 
+                    <!-- 🔹 Botones -->
                     <div class="text-center mt-4">
                         <button type="submit" name="accion" value="guardar" class="btn btn-success me-2 px-4">
                             <i class="bi bi-check-circle"></i> Guardar
