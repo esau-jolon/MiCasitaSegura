@@ -141,12 +141,12 @@
             <% if (conversaciones != null && !conversaciones.isEmpty()) { %>
             <ul class="chat-list">
                 <% for (Conversacion c : conversaciones) {
-                       String nombreContacto;
-                       if ("Residente".equalsIgnoreCase(usuarioSesion.getNombreRol())) {
-                           nombreContacto = c.getNombreCompletoAgente(); // residente ve al guardia
-                       } else {
-                           nombreContacto = c.getNombreCompletoResidente(); // guardia ve al residente
-                       }
+                        String nombreContacto;
+                        if ("Residente".equalsIgnoreCase(usuarioSesion.getNombreRol())) {
+                            nombreContacto = c.getNombreCompletoAgente(); // residente ve al guardia
+                        } else {
+                            nombreContacto = c.getNombreCompletoResidente(); // guardia ve al residente
+                        }
                 %>
                 <li class="chat-item" onclick="abrirChat(<%=c.getIdConversacion()%>)">
                     <div class="chat-info">
@@ -154,15 +154,15 @@
                             <i class="bi bi-person-fill"></i>
                         </div>
                         <div>
-                            <div class="chat-name"><%= nombreContacto %></div>
+                            <div class="chat-name"><%= nombreContacto%></div>
                             <div class="chat-date">
                                 <i class="bi bi-clock"></i>
-                                <%= new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(c.getFechaCreacion()) %>
+                                <%= new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(c.getFechaCreacion())%>
                             </div>
                         </div>
                     </div>
                     <div class="chat-meta">
-                        <span class="badge bg-primary"><%= c.getEstado() %></span>
+                        <span class="badge bg-primary"><%= c.getEstado()%></span>
                     </div>
                 </li>
                 <% } %>
@@ -171,13 +171,21 @@
             <p class="no-conv">No tienes conversaciones registradas aún.</p>
             <% } %>
 
-            <% if ("Residente".equalsIgnoreCase(usuarioSesion.getNombreRol())) { %>
+            <% if ("Residente".equalsIgnoreCase(usuarioSesion.getNombreRol())) {%>
             <a href="<%=request.getContextPath()%>/ControladorConversacion?accion=crear" class="btn-nueva">
                 <i class="bi bi-plus-circle"></i> Crear Nueva Conversación
             </a>
-            <% } %>
+            <% }%>
+
+
+            <a href="<%=request.getContextPath()%>/vistas/Comunicacion/MenuComunicacion.jsp" class="btn-regresar">
+                <i class="bi bi-arrow-left"></i> Regresar al Menú
+            </a>
+
 
         </div>
+
+
 
         <script>
             function abrirChat(idConversacion) {

@@ -23,6 +23,8 @@
                 color: #fff;
                 min-height: 100vh;
             }
+
+            /* 🔹 Título principal */
             .page-title {
                 font-size: 2.5rem;
                 text-align: center;
@@ -33,6 +35,8 @@
                 margin-top: 2rem;
                 margin-bottom: 1rem;
             }
+
+            /* 🔹 Contenedor principal */
             .main-card {
                 background: rgba(255, 255, 255, 0.05);
                 border-radius: 20px;
@@ -41,59 +45,154 @@
                 box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
                 overflow: hidden;
             }
+
+            /* 🔹 Encabezado */
             .card-header {
-                background: linear-gradient(135deg, #38bdf8, #6366f1);
-                padding: 1.5rem 2rem;
+                background: linear-gradient(90deg, #38bdf8, #4f46e5);
+                padding: 1.2rem 2rem;
                 font-weight: 600;
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
                 color: white;
+                border-bottom: 1px solid rgba(255,255,255,0.15);
             }
+
+            /* 🔹 Botón Registrar Paquete */
             .btn-add {
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 border: none;
-                border-radius: 12px;
-                padding: 0.8rem 1.6rem;
+                border-radius: 10px;
+                padding: 0.7rem 1.6rem;
                 color: white;
                 font-weight: 600;
                 text-decoration: none;
-                box-shadow: 0 8px 20px rgba(74,222,128,0.3);
+                box-shadow: 0 4px 14px rgba(74,222,128,0.35);
+                transition: transform 0.2s ease;
             }
+
+            .btn-add:hover {
+                transform: translateY(-2px);
+            }
+
+            /* 🔹 Formulario de búsqueda */
             .search-form {
-                background: rgba(255, 255, 255, 0.07);
+                background: rgba(255, 255, 255, 0.08);
                 padding: 1rem 1.5rem;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.12);
             }
-            .search-form .form-control, .search-form .form-select {
-                border-radius: 10px;
+
+            .search-form .form-control,
+            .search-form .form-select {
+                border-radius: 12px;
+                background: rgba(255,255,255,0.15);
+                border: 1px solid rgba(255,255,255,0.25);
+                color: #fff;
+                transition: all 0.25s ease-in-out;
             }
+
+            .search-form .form-control::placeholder {
+                color: rgba(255,255,255,0.7);
+            }
+
+            .search-form .form-control:focus,
+            .search-form .form-select:focus {
+                background: rgba(255,255,255,0.25);
+                border-color: #38bdf8;
+                box-shadow: 0 0 0 0.2rem rgba(56,189,248,0.25);
+                color: #fff;
+            }
+
+            /* 🔹 Estilo para SELECT (corregido para tema oscuro) */
+            .search-form select.form-select {
+                background-color: rgba(255, 255, 255, 0.12);
+                color: #fff;
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                appearance: none;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                background-image:
+                    linear-gradient(45deg, transparent 50%, #38bdf8 50%),
+                    linear-gradient(135deg, #38bdf8 50%, transparent 50%);
+                background-position:
+                    calc(100% - 18px) calc(1.1em),
+                    calc(100% - 13px) calc(1.1em);
+                background-size: 5px 5px, 5px 5px;
+                background-repeat: no-repeat;
+                padding-right: 2rem;
+                transition: all 0.3s ease;
+            }
+
+            .search-form select.form-select:hover {
+                background-color: rgba(255, 255, 255, 0.18);
+                border-color: #60a5fa;
+            }
+
+            .search-form select.form-select:focus {
+                background-color: rgba(255, 255, 255, 0.22);
+                border-color: #38bdf8;
+                box-shadow: 0 0 0 0.2rem rgba(56,189,248,0.25);
+            }
+
+            /* 🔹 Opciones del menú desplegable */
+            option {
+                background-color: #1e293b;
+                color: #fff;
+            }
+
+            option:hover {
+                background-color: #2563eb;
+            }
+
+            /* 🔹 Tabla moderna */
             .modern-table {
                 width: 100%;
                 color: #fff;
                 border-collapse: separate;
                 border-spacing: 0;
             }
+
             .modern-table th, .modern-table td {
                 text-align: center;
                 padding: 1rem;
             }
+
             .modern-table tbody tr:hover {
                 background: rgba(255,255,255,0.08);
             }
+
+            /* 🔹 Etiquetas de estado */
             .status-pendiente {
                 background: linear-gradient(135deg, #fbbf24, #f59e0b);
                 color: white;
                 border-radius: 20px;
                 padding: 5px 12px;
             }
+
             .status-entregado {
                 background: linear-gradient(135deg, #22c55e, #15803d);
                 color: white;
                 border-radius: 20px;
                 padding: 5px 12px;
             }
+
+            /* 🔹 Botón de búsqueda */
+            .btn-primary {
+                background: linear-gradient(135deg, #38bdf8, #4f46e5);
+                border: none;
+                border-radius: 10px;
+                color: #fff;
+                font-weight: 600;
+                box-shadow: 0 4px 10px rgba(59,130,246,0.3);
+                transition: transform 0.2s ease;
+            }
+
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                background: linear-gradient(135deg, #60a5fa, #6366f1);
+            }
         </style>
+
     </head>
     <body>
 

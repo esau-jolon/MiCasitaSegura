@@ -209,7 +209,7 @@
                 </li>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorPaqueteria?accion=listar" target="contentFrame">
-                        <i class="bi bi-box-seam"></i><span> Registrar Paquetería</span>
+                        <i class="bi bi-box-seam"></i><span> REGISTRAR PAQUETERÍA</span>
                     </a>
                 </li>
 
