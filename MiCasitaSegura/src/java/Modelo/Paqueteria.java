@@ -19,24 +19,25 @@ public class Paqueteria {
     private Timestamp fechaCreacion;
     private Timestamp fechaModificacion;
 
-    // 🔹 Datos adicionales (para mostrar nombres)
+    // 🔹 Datos adicionales (para vistas)
     private String nombreResidente;
     private String apellidoResidente;
     private String nombreAgente;
     private String apellidoAgente;
 
-    // 🔹 Constructores
     public Paqueteria() {
     }
 
-    public Paqueteria(String numeroGuia, int idResidente, int idAgenteRegistro) {
+    public Paqueteria(String numeroGuia, int idResidente, int idAgenteRegistro, int creadoPor) {
         this.numeroGuia = numeroGuia;
         this.idResidente = idResidente;
         this.idAgenteRegistro = idAgenteRegistro;
+        this.creadoPor = creadoPor;
         this.entregado = false;
+        this.activo = 1;
     }
 
-    // 🔹 Getters y Setters
+    // === Getters & Setters ===
     public int getIdPaquete() {
         return idPaquete;
     }
@@ -93,6 +94,14 @@ public class Paqueteria {
         this.entregado = entregado;
     }
 
+    public int getActivo() {
+        return activo;
+    }
+
+    public void setActivo(int activo) {
+        this.activo = activo;
+    }
+
     public Integer getCreadoPor() {
         return creadoPor;
     }
@@ -125,15 +134,6 @@ public class Paqueteria {
         this.fechaModificacion = fechaModificacion;
     }
 
-    public int getActivo() {
-        return activo;
-    }
-
-    public void setActivo(int activo) {
-        this.activo = activo;
-    }
-
-    // 🔹 Datos de nombres para vistas
     public String getNombreResidente() {
         return nombreResidente;
     }
@@ -168,12 +168,12 @@ public class Paqueteria {
 
     // 🔹 Métodos auxiliares
     public String getNombreCompletoResidente() {
-        return (nombreResidente != null ? nombreResidente : "") + " " +
-               (apellidoResidente != null ? apellidoResidente : "");
+        return (nombreResidente != null ? nombreResidente : "") + " "
+                + (apellidoResidente != null ? apellidoResidente : "");
     }
 
     public String getNombreCompletoAgente() {
-        return (nombreAgente != null ? nombreAgente : "") + " " +
-               (apellidoAgente != null ? apellidoAgente : "");
+        return (nombreAgente != null ? nombreAgente : "") + " "
+                + (apellidoAgente != null ? apellidoAgente : "");
     }
 }
