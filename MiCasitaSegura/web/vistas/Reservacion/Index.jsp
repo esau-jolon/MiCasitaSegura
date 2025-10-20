@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="Modelo.Reservas" %>
+<%@ page import="Modelo.Usuarios" %>
 
 <!DOCTYPE html>
 <html lang="es">
@@ -109,6 +110,8 @@
                     <tbody>
                         <%
                             List<Reservas> lista = (List<Reservas>) request.getAttribute("listaReservas");
+                            Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
+                            String rol = (usuarioSesion != null) ? usuarioSesion.getNombreRol() : "";
                             if (lista != null && !lista.isEmpty()) {
                                 for (Reservas r : lista) {
                         %>
@@ -121,7 +124,6 @@
                                 String fechaFormateada = (r.getFechaReserva() != null) ? formatoFecha.format(r.getFechaReserva()) : "—";
                             %>
                             <td><%= fechaFormateada%></td>
-
                             <td><%= r.getHoraInicio()%></td>
                             <td><%= r.getHoraFin()%></td>
                             <td>
@@ -142,89 +144,88 @@
                                 <span class="<%= claseEstado%>"><%= r.getNombreEstado()%></span>
                             </td>
                             <td>
-                                <% if (r.getNombreEstado().equalsIgnoreCase("Pendiente")) {%>
-                                <button type="button" 
-                                        class="btn btn-danger btn-sm btn-cancelar" 
-                                        data-id="<%= r.getIdReserva()%>">
+                                <% if (r.getNombreEstado().equalsIgnoreCase("Pendiente")) {
+                            if ("Administrador".equalsIgnoreCase(rol)) {%>
+                                <button type="button" class="btn btn-success btn-sm btn-confirmar" data-id="<%= r.getIdReserva()%>">
+                                    <i class="bi bi-check-circle"></i> Confirmar
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm btn-cancelar" data-id="<%= r.getIdReserva()%>">
                                     <i class="bi bi-x-circle"></i> Cancelar
                                 </button>
-
-                                <% } else { %>
+                                <% } else {%>
+                                <button type="button" class="btn btn-danger btn-sm btn-cancelar" data-id="<%= r.getIdReserva()%>">
+                                    <i class="bi bi-x-circle"></i> Cancelar
+                                </button>
+                                <% }
+                        } else { %>
                                 <span class="text-muted">N/A</span>
                                 <% } %>
                             </td>
                         </tr>
-                        <%
-                            }
-                        } else {
-                        %>
+                        <% }
+            } else { %>
                         <tr>
-                            <td colspan="7" class="text-center text-secondary py-4">
+                            <td colspan="8" class="text-center text-secondary py-4">
                                 <i class="bi bi-calendar-x" style="font-size:2rem;"></i><br>
                                 No hay reservas registradas.
                             </td>
                         </tr>
-                        <%
-                            }
-                        %>
+                        <% }%>
                     </tbody>
                 </table>
             </div>
         </div>
 
-    </body>
+        <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
 
-    <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
-    <script>
-        <% if (request.getParameter("success") != null) { %>
-        Swal.fire({
-            icon: 'success',
-            title: 'Reserva creada con éxito',
-            text: 'Su solicitud ha sido registrada correctamente.'
-        });
-        <% } else if (request.getParameter("cancelada") != null) { %>
-        Swal.fire({
-            icon: 'warning',
-            title: 'Reserva cancelada',
-            text: 'La reserva ha sido cancelada correctamente.'
-        });
-        <% } else if (request.getParameter("confirmada") != null) { %>
-        Swal.fire({
-            icon: 'info',
-            title: 'Reserva confirmada',
-            text: 'La reserva fue confirmada y se notificó al residente.'
-        });
-        <% }%>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
 
+                // 🟥 CANCELAR RESERVA
+                const botonesCancelar = document.querySelectorAll(".btn-cancelar");
+                botonesCancelar.forEach(boton => {
+                    boton.addEventListener("click", function () {
+                        const idReserva = this.getAttribute("data-id");
+                        Swal.fire({
+                            title: "¿Desea cancelar la reserva?",
+                            text: "Esta acción no se puede deshacer.",
+                            icon: "warning",
+                            showCancelButton: true,
+                            confirmButtonColor: "#d33",
+                            cancelButtonColor: "#6c757d",
+                            confirmButtonText: "Sí, cancelar",
+                            cancelButtonText: "No, mantener"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "ControladorReserva?accion=cancelar&id=" + idReserva;
+                            }
+                        });
+                    });
+                });
 
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const botonesCancelar = document.querySelectorAll(".btn-cancelar");
-
-            botonesCancelar.forEach(boton => {
-                boton.addEventListener("click", function () {
-                    const idReserva = this.getAttribute("data-id");
-
-                    Swal.fire({
-                        title: "¿Desea cancelar la reserva?",
-                        text: "Esta acción no se puede deshacer.",
-                        icon: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#d33",
-                        cancelButtonColor: "#6c757d",
-                        confirmButtonText: "Sí, cancelar",
-                        cancelButtonText: "No, mantener"
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = "ControladorReserva?accion=cancelar&id=" + idReserva;
-                        }
+                // 🟩 CONFIRMAR RESERVA (solo admin)
+                const botonesConfirmar = document.querySelectorAll(".btn-confirmar");
+                botonesConfirmar.forEach(boton => {
+                    boton.addEventListener("click", function () {
+                        const idReserva = this.getAttribute("data-id");
+                        Swal.fire({
+                            title: "¿Confirmar esta reserva?",
+                            text: "El residente será notificado por correo electrónico.",
+                            icon: "question",
+                            showCancelButton: true,
+                            confirmButtonColor: "#198754",
+                            cancelButtonColor: "#6c757d",
+                            confirmButtonText: "Sí, confirmar",
+                            cancelButtonText: "Cancelar"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.href = "ControladorReserva?accion=confirmar&id=" + idReserva;
+                            }
+                        });
                     });
                 });
             });
-        });
-    </script>
+        </script>
 
-
+    </body>
 </html>
