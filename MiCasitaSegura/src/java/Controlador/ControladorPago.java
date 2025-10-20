@@ -86,10 +86,11 @@ public class ControladorPago extends HttpServlet {
             request.setAttribute("pagos", dao.listar());
             acceso = listar;
 
-            // ✅ Nuevo: Confirmar pago (estado = 2)
         } else if ("confirmar".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            boolean actualizado = dao.cambiarEstado(id, 2); // Estado Realizado
+            int idUsuario = usuarioSesion != null ? usuarioSesion.getIdUsuario() : 0;
+
+            boolean actualizado = dao.cambiarEstado(id, 2, idUsuario); // ✅ ahora envía quién cambió
             if (actualizado) {
                 request.setAttribute("mensaje", "Pago confirmado exitosamente.");
             } else {
@@ -98,10 +99,11 @@ public class ControladorPago extends HttpServlet {
             request.setAttribute("pagos", dao.listar());
             acceso = listar;
 
-            // ❌ Nuevo: Cancelar pago (estado = 3)
         } else if ("cancelarPago".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
-            boolean actualizado = dao.cambiarEstado(id, 3); // Estado Cancelado
+            int idUsuario = usuarioSesion != null ? usuarioSesion.getIdUsuario() : 0;
+
+            boolean actualizado = dao.cambiarEstado(id, 3, idUsuario); // ✅ guarda quién canceló
             if (actualizado) {
                 request.setAttribute("mensaje", "Pago cancelado correctamente.");
             } else {
@@ -210,6 +212,7 @@ public class ControladorPago extends HttpServlet {
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
                 p.setActivo(true);
+                p.setCreadoPor(usuarioSesion.getIdUsuario()); // ✅ Auditoría
 
                 // Guardar mes/año si aplica
                 if (idTipoPago == 1) {
@@ -254,6 +257,7 @@ public class ControladorPago extends HttpServlet {
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
                 p.setActivo(true);
+                p.setModificadoPor(usuarioSesion.getIdUsuario()); // ✅ Auditoría
 
                 if (idTipoPago == 1) {
                     String mesPagadoStr = request.getParameter("mesPagado");

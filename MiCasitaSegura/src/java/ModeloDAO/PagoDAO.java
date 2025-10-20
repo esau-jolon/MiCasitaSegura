@@ -37,7 +37,13 @@ public class PagoDAO {
                 p.setObservaciones(rs.getString("observaciones"));
                 p.setMesPagado(rs.getObject("mes_pagado", Integer.class));
                 p.setAnioPagado(rs.getObject("anio_pagado", Integer.class));
-                p.setActivo(rs.getBoolean("activo")); // ✅ Nuevo
+                p.setActivo(rs.getBoolean("activo"));
+
+                // 🧾 Auditoría
+                p.setCreadoPor(rs.getInt("creado_por"));
+                p.setModificadoPor(rs.getObject("modificado_por", Integer.class));
+                p.setFechaCreacion(rs.getDate("fecha_creacion"));
+                p.setFechaModificacion(rs.getDate("fecha_modificacion"));
 
                 p.setNombreUsuario(rs.getString("nombreUsuario"));
                 p.setNombreTipoPago(rs.getString("nombreTipoPago"));
@@ -76,6 +82,10 @@ public class PagoDAO {
                     p.setMesPagado(rs.getObject("mes_pagado", Integer.class));
                     p.setAnioPagado(rs.getObject("anio_pagado", Integer.class));
                     p.setActivo(rs.getBoolean("activo"));
+                    p.setCreadoPor(rs.getInt("creado_por"));
+                    p.setModificadoPor(rs.getObject("modificado_por", Integer.class));
+                    p.setFechaCreacion(rs.getDate("fecha_creacion"));
+                    p.setFechaModificacion(rs.getDate("fecha_modificacion"));
                 }
             }
         } catch (Exception e) {
@@ -87,8 +97,9 @@ public class PagoDAO {
     // 🔹 Agregar pago
     public boolean add(Pagos p) {
         String sql = "INSERT INTO Pagos("
-                + "id_usuario, id_tipo_pago, id_estado_pago, fecha_pago, monto, mora, total, observaciones, mes_pagado, anio_pagado, activo) "
-                + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+                + "id_usuario, id_tipo_pago, id_estado_pago, fecha_pago, monto, mora, total, observaciones, "
+                + "mes_pagado, anio_pagado, activo, creado_por) "
+                + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = Conexion.getConnection();
                 PreparedStatement ps = con.prepareStatement(sql)) {
@@ -101,20 +112,10 @@ public class PagoDAO {
             ps.setDouble(6, p.getMora());
             ps.setDouble(7, p.getTotal());
             ps.setString(8, p.getObservaciones());
-
-            if (p.getMesPagado() != null) {
-                ps.setInt(9, p.getMesPagado());
-            } else {
-                ps.setNull(9, Types.INTEGER);
-            }
-
-            if (p.getAnioPagado() != null) {
-                ps.setInt(10, p.getAnioPagado());
-            } else {
-                ps.setNull(10, Types.INTEGER);
-            }
-
-            ps.setBoolean(11, p.isActivo()); // ✅ Nuevo campo
+            ps.setObject(9, p.getMesPagado(), Types.INTEGER);
+            ps.setObject(10, p.getAnioPagado(), Types.INTEGER);
+            ps.setBoolean(11, p.isActivo());
+            ps.setInt(12, p.getCreadoPor());
 
             return ps.executeUpdate() > 0;
 
@@ -126,7 +127,9 @@ public class PagoDAO {
 
     // 🔹 Editar pago
     public boolean edit(Pagos p) {
-        String sql = "UPDATE Pagos SET id_usuario=?, id_tipo_pago=?, id_estado_pago=?, fecha_pago=?, monto=?, mora=?, total=?, observaciones=?, mes_pagado=?, anio_pagado=?, activo=? "
+        String sql = "UPDATE Pagos SET "
+                + "id_usuario=?, id_tipo_pago=?, id_estado_pago=?, fecha_pago=?, monto=?, mora=?, total=?, observaciones=?, "
+                + "mes_pagado=?, anio_pagado=?, activo=?, modificado_por=? "
                 + "WHERE id_pago=?";
 
         try (Connection con = Conexion.getConnection();
@@ -143,7 +146,8 @@ public class PagoDAO {
             ps.setObject(9, p.getMesPagado(), Types.INTEGER);
             ps.setObject(10, p.getAnioPagado(), Types.INTEGER);
             ps.setBoolean(11, p.isActivo());
-            ps.setInt(12, p.getIdPago());
+            ps.setObject(12, p.getModificadoPor(), Types.INTEGER);
+            ps.setInt(13, p.getIdPago());
 
             return ps.executeUpdate() > 0;
 
@@ -196,6 +200,29 @@ public class PagoDAO {
         return false;
     }
 
+    // 🔹 Cambiar estado de un pago (por ID de estado y usuario que modifica)
+    public boolean cambiarEstado(int idPago, int nuevoEstadoId, int idUsuarioModifica) {
+        String sql = "UPDATE Pagos "
+                + "SET id_estado_pago = ?, "
+                + "modificado_por = ?, "
+                + "fecha_modificacion = CURRENT_TIMESTAMP "
+                + "WHERE id_pago = ? AND activo = TRUE";
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, nuevoEstadoId);
+            ps.setInt(2, idUsuarioModifica); // 👈 guarda quién hizo el cambio
+            ps.setInt(3, idPago);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // 🔹 Obtener el mes siguiente (sin cambios)
     public String obtenerMesSiguiente(int idUsuario) {
         String[] meses = {"Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -236,21 +263,4 @@ public class PagoDAO {
 
         return meses[new java.util.Date().getMonth()];
     }
-
-    // 🔹 Cambiar estado de un pago (por ID de estado)
-    public boolean cambiarEstado(int idPago, int nuevoEstadoId) {
-        String sql = "UPDATE Pagos SET id_estado_pago = ? WHERE id_pago = ? AND activo = TRUE";
-        try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
-
-            ps.setInt(1, nuevoEstadoId); // Ej. 2 = Realizado, 3 = Cancelado
-            ps.setInt(2, idPago);
-
-            return ps.executeUpdate() > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
 }

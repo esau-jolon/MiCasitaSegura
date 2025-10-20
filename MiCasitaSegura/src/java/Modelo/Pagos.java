@@ -16,16 +16,21 @@ public class Pagos {
 
     private Integer mesPagado;
     private Integer anioPagado;
+    private boolean activo;
 
-    private boolean activo; // ✅ Nuevo campo de borrado lógico
+    // 🧾 Campos de auditoría
+    private int creadoPor;
+    private Integer modificadoPor;
+    private Date fechaCreacion;
+    private Date fechaModificacion;
 
-    // 🔹 Campos adicionales (no persistentes directamente)
+    // 🔹 Campos no persistentes (para mostrar en la vista)
     private String nombreUsuario;
     private String nombreTipoPago;
     private String nombreEstadoPago;
 
     public Pagos() {
-        this.activo = true; // por defecto activo
+        this.activo = true;
     }
 
     // ======= Getters y Setters =======
@@ -125,6 +130,38 @@ public class Pagos {
         this.activo = activo;
     }
 
+    public int getCreadoPor() {
+        return creadoPor;
+    }
+
+    public void setCreadoPor(int creadoPor) {
+        this.creadoPor = creadoPor;
+    }
+
+    public Integer getModificadoPor() {
+        return modificadoPor;
+    }
+
+    public void setModificadoPor(Integer modificadoPor) {
+        this.modificadoPor = modificadoPor;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public Date getFechaModificacion() {
+        return fechaModificacion;
+    }
+
+    public void setFechaModificacion(Date fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
+    }
+
     public String getNombreUsuario() {
         return nombreUsuario;
     }
@@ -164,9 +201,10 @@ public class Pagos {
                 + ", mesPagado=" + mesPagado
                 + ", anioPagado=" + anioPagado
                 + ", activo=" + activo
-                + ", nombreUsuario='" + nombreUsuario + '\''
-                + ", nombreTipoPago='" + nombreTipoPago + '\''
-                + ", nombreEstadoPago='" + nombreEstadoPago + '\''
+                + ", creadoPor=" + creadoPor
+                + ", modificadoPor=" + modificadoPor
+                + ", fechaCreacion=" + fechaCreacion
+                + ", fechaModificacion=" + fechaModificacion
                 + '}';
     }
 }
