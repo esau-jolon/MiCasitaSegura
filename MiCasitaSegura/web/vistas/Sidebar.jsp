@@ -207,7 +207,11 @@
                         <i class="bi bi-calendar-week"></i><span> RESERVAS DE ÁREAS COMUNES</span>
                     </a>
                 </li>
-
+                <li>
+                    <a href="<%=request.getContextPath()%>/ControladorPaqueteria?accion=listar" target="contentFrame">
+                        <i class="bi bi-box-seam"></i><span> Registrar Paquetería</span>
+                    </a>
+                </li>
 
 
                 <li>

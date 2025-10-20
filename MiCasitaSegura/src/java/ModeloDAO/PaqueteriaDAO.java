@@ -12,7 +12,7 @@ public class PaqueteriaDAO {
     public boolean registrarPaquete(Paqueteria p, int usuarioId) {
         String sql = "INSERT INTO paqueteria (NumeroGuia, IdResidente, IdAgenteRegistro, CreadoPor) VALUES (?, ?, ?, ?)";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, p.getNumeroGuia());
             ps.setInt(2, p.getIdResidente());
@@ -34,7 +34,7 @@ public class PaqueteriaDAO {
     public boolean marcarEntregado(int idPaquete, int usuarioId) {
         String sql = "UPDATE paqueteria SET Entregado = 1, FechaEntrega = NOW(), ModificadoPor = ? WHERE IdPaquete = ?";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, usuarioId);
             ps.setInt(2, idPaquete);
@@ -50,20 +50,20 @@ public class PaqueteriaDAO {
         return false;
     }
 
-    // 🔹 Listar paquetes activos con nombres
+    // 🔹 Listar paquetes activos con información adicional
     public List<Paqueteria> listarPaquetes() {
         List<Paqueteria> lista = new ArrayList<>();
-        String sql = "SELECT p.*, " +
-                     "r.nombre AS nombreResidente, r.apellidos AS apellidoResidente, " +
-                     "a.nombre AS nombreAgente, a.apellidos AS apellidoAgente " +
-                     "FROM paqueteria p " +
-                     "LEFT JOIN usuarios r ON p.IdResidente = r.id_usuario " +
-                     "LEFT JOIN usuarios a ON p.IdAgenteRegistro = a.id_usuario " +
-                     "WHERE p.Activo = 1 ORDER BY p.FechaRecepcion DESC";
+        String sql = "SELECT p.*, "
+                + "r.nombre AS nombreResidente, r.apellidos AS apellidoResidente, "
+                + "a.nombre AS nombreAgente, a.apellidos AS apellidoAgente "
+                + "FROM paqueteria p "
+                + "LEFT JOIN usuarios r ON p.IdResidente = r.id_usuario "
+                + "LEFT JOIN usuarios a ON p.IdAgenteRegistro = a.id_usuario "
+                + "WHERE p.Activo = 1 ORDER BY p.FechaRecepcion DESC";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Paqueteria p = new Paqueteria();
@@ -91,12 +91,12 @@ public class PaqueteriaDAO {
         return lista;
     }
 
-    // 🔹 Obtener paquete por ID
+    // 🔹 Obtener un paquete por ID
     public Paqueteria obtenerPorId(int idPaquete) {
         Paqueteria p = null;
         String sql = "SELECT * FROM paqueteria WHERE IdPaquete = ?";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idPaquete);
             ResultSet rs = ps.executeQuery();
@@ -122,11 +122,11 @@ public class PaqueteriaDAO {
         return p;
     }
 
-    // 🔹 Eliminación lógica
+    // 🔹 Eliminación lógica (borrado suave)
     public boolean eliminar(int idPaquete, int usuarioId) {
         String sql = "UPDATE paqueteria SET Activo = 0, ModificadoPor = ? WHERE IdPaquete = ?";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, usuarioId);
             ps.setInt(2, idPaquete);
@@ -146,7 +146,7 @@ public class PaqueteriaDAO {
     private void registrarAccion(int usuarioId, String accion) {
         String sql = "INSERT INTO auditoria (usuario_id, accion) VALUES (?, ?)";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setInt(1, usuarioId);
             ps.setString(2, accion);
             ps.executeUpdate();

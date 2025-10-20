@@ -11,7 +11,7 @@ public class Paqueteria {
     private Timestamp fechaRecepcion;
     private Timestamp fechaEntrega;
     private boolean entregado;
-    private int activo;
+    private int activo; // 1 = activo, 0 = eliminado
 
     // 🔹 Auditoría
     private Integer creadoPor;
@@ -19,12 +19,13 @@ public class Paqueteria {
     private Timestamp fechaCreacion;
     private Timestamp fechaModificacion;
 
-    // 🔹 Datos adicionales (para vistas)
+    // 🔹 Datos adicionales (para mostrar nombres)
     private String nombreResidente;
     private String apellidoResidente;
     private String nombreAgente;
     private String apellidoAgente;
 
+    // 🔹 Constructores
     public Paqueteria() {
     }
 

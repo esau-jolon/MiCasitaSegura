@@ -687,4 +687,46 @@ public class UsuarioDAO implements UsuarioCrud {
         return lista;
     }
 
+    public List<Usuarios> listarResidentesPaqueteria() {
+        List<Usuarios> lista = new ArrayList<>();
+
+        String sql = "SELECT "
+                + "u.id_usuario, "
+                + "u.nombre, "
+                + "u.apellidos, "
+                + "u.correo, "
+                + "c.numero_casa AS numeroCasa, "
+                + "l.codigo_lote AS codigoLote "
+                + "FROM usuarios u "
+                + "LEFT JOIN casas c ON u.numero_casa_id = c.id_casa "
+                + "LEFT JOIN lotes l ON u.lote_id = l.id_lote "
+                + "WHERE u.rol_id = 1 AND u.estado = 1 "
+                + "ORDER BY u.apellidos, u.nombre";
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Usuarios u = new Usuarios();
+                u.setIdUsuario(rs.getInt("id_usuario"));
+                u.setNombre(rs.getString("nombre"));
+                u.setApellidos(rs.getString("apellidos"));
+                u.setCorreo(rs.getString("correo"));
+
+                // 🏠 Campos descriptivos del JOIN
+                u.setNumeroCasa(rs.getObject("numeroCasa") != null ? rs.getInt("numeroCasa") : null);
+                u.setCodigoLote(rs.getString("codigoLote"));
+
+                lista.add(u);
+            }
+
+        } catch (Exception e) {
+            System.err.println("[ERROR] listarResidentesPaqueteria(): " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return lista;
+    }
+
 }
