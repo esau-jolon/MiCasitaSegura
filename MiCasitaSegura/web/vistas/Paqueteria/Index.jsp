@@ -24,7 +24,6 @@
                 min-height: 100vh;
             }
 
-            /* 🔹 Título principal */
             .page-title {
                 font-size: 2.5rem;
                 text-align: center;
@@ -36,7 +35,6 @@
                 margin-bottom: 1rem;
             }
 
-            /* 🔹 Contenedor principal */
             .main-card {
                 background: rgba(255, 255, 255, 0.05);
                 border-radius: 20px;
@@ -46,7 +44,6 @@
                 overflow: hidden;
             }
 
-            /* 🔹 Encabezado */
             .card-header {
                 background: linear-gradient(90deg, #38bdf8, #4f46e5);
                 padding: 1.2rem 2rem;
@@ -58,7 +55,6 @@
                 border-bottom: 1px solid rgba(255,255,255,0.15);
             }
 
-            /* 🔹 Botón Registrar Paquete */
             .btn-add {
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 border: none;
@@ -75,7 +71,6 @@
                 transform: translateY(-2px);
             }
 
-            /* 🔹 Formulario de búsqueda */
             .search-form {
                 background: rgba(255, 255, 255, 0.08);
                 padding: 1rem 1.5rem;
@@ -103,48 +98,6 @@
                 color: #fff;
             }
 
-            /* 🔹 Estilo para SELECT (corregido para tema oscuro) */
-            .search-form select.form-select {
-                background-color: rgba(255, 255, 255, 0.12);
-                color: #fff;
-                border: 1px solid rgba(255, 255, 255, 0.25);
-                appearance: none;
-                -webkit-appearance: none;
-                -moz-appearance: none;
-                background-image:
-                    linear-gradient(45deg, transparent 50%, #38bdf8 50%),
-                    linear-gradient(135deg, #38bdf8 50%, transparent 50%);
-                background-position:
-                    calc(100% - 18px) calc(1.1em),
-                    calc(100% - 13px) calc(1.1em);
-                background-size: 5px 5px, 5px 5px;
-                background-repeat: no-repeat;
-                padding-right: 2rem;
-                transition: all 0.3s ease;
-            }
-
-            .search-form select.form-select:hover {
-                background-color: rgba(255, 255, 255, 0.18);
-                border-color: #60a5fa;
-            }
-
-            .search-form select.form-select:focus {
-                background-color: rgba(255, 255, 255, 0.22);
-                border-color: #38bdf8;
-                box-shadow: 0 0 0 0.2rem rgba(56,189,248,0.25);
-            }
-
-            /* 🔹 Opciones del menú desplegable */
-            option {
-                background-color: #1e293b;
-                color: #fff;
-            }
-
-            option:hover {
-                background-color: #2563eb;
-            }
-
-            /* 🔹 Tabla moderna */
             .modern-table {
                 width: 100%;
                 color: #fff;
@@ -161,7 +114,6 @@
                 background: rgba(255,255,255,0.08);
             }
 
-            /* 🔹 Etiquetas de estado */
             .status-pendiente {
                 background: linear-gradient(135deg, #fbbf24, #f59e0b);
                 color: white;
@@ -176,7 +128,6 @@
                 padding: 5px 12px;
             }
 
-            /* 🔹 Botón de búsqueda */
             .btn-primary {
                 background: linear-gradient(135deg, #38bdf8, #4f46e5);
                 border: none;
@@ -191,10 +142,47 @@
                 transform: translateY(-2px);
                 background: linear-gradient(135deg, #60a5fa, #6366f1);
             }
-        </style>
 
+            .btn-clear {
+                background: linear-gradient(135deg, #9ca3af, #6b7280);
+                border: none;
+                border-radius: 10px;
+                color: #fff;
+                font-weight: 600;
+                box-shadow: 0 4px 10px rgba(156,163,175,0.3);
+                transition: transform 0.2s ease;
+            }
+
+            .btn-clear:hover {
+                transform: translateY(-2px);
+                background: linear-gradient(135deg, #d1d5db, #9ca3af);
+            }
+        </style>
     </head>
     <body>
+
+        <%
+            List<Paqueteria> lista = (List<Paqueteria>) request.getAttribute("paquetes");
+            String mensaje = (String) request.getAttribute("mensaje");
+
+            // ✅ Determina si hay resultados en general
+            boolean hayResultados = (lista != null && !lista.isEmpty());
+
+            // ✅ Determina si hay paquetes pendientes
+            boolean hayPendientes = false;
+            if (lista != null) {
+                for (Paqueteria p : lista) {
+                    if (!p.isEntregado()) {
+                        hayPendientes = true;
+                        break;
+                    }
+                }
+            }
+
+            // ✅ Saber si es búsqueda o vista general
+            String accion = request.getParameter("accion");
+            boolean esBusqueda = (accion != null && accion.equals("buscar"));
+        %>
 
         <h1 class="page-title">Gestión de Paquetería</h1>
 
@@ -206,7 +194,8 @@
                 </a>
             </div>
 
-            <!-- 🔍 Formulario de búsqueda RN03 -->
+            <% if (esBusqueda ? hayResultados : hayPendientes) { %>
+            <!-- 🔍 Formulario de búsqueda -->
             <form action="ControladorPaqueteria" method="get" class="search-form">
                 <input type="hidden" name="accion" value="buscar">
                 <div class="row g-2 align-items-center">
@@ -218,19 +207,23 @@
                         <input type="text" name="nombreResidente" value="${param.nombreResidente != null ? param.nombreResidente : ''}"
                                class="form-control" placeholder="Nombre del residente...">
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <select name="estado" class="form-select">
                             <option value="">-- Todos los estados --</option>
                             <option value="pendiente" ${param.estado == 'pendiente' ? 'selected' : ''}>Pendiente</option>
                             <option value="entregado" ${param.estado == 'entregado' ? 'selected' : ''}>Entregado</option>
                         </select>
                     </div>
-                    <div class="col-md-1 text-end">
-                        <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search"></i></button>
+                    <div class="col-md-2 d-flex gap-2">
+                        <button class="btn btn-primary w-50" type="submit"><i class="bi bi-search"></i></button>
+                        <button type="button" class="btn btn-clear w-50" onclick="window.location.href = 'ControladorPaqueteria?accion=listar'">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
                     </div>
                 </div>
             </form>
 
+            <!-- 🧾 Tabla de resultados -->
             <div class="table-responsive">
                 <table class="modern-table">
                     <thead>
@@ -245,12 +238,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <%
-                            List<Paqueteria> lista = (List<Paqueteria>) request.getAttribute("paquetes");
-                            String mensaje = (String) request.getAttribute("mensaje");
-                            if (lista != null && !lista.isEmpty()) {
-                                for (Paqueteria p : lista) {
-                        %>
+                        <% for (Paqueteria p : lista) {%>
                         <tr>
                             <td>#<%= p.getIdPaquete()%></td>
                             <td><%= p.getNumeroGuia()%></td>
@@ -277,18 +265,19 @@
                                 <% } %>
                             </td>
                         </tr>
-                        <% }
-                        } else {%>
-                        <tr>
-                            <td colspan="7" class="text-center text-secondary py-4">
-                                <i class="bi bi-inbox" style="font-size:2rem;"></i><br>
-                                <%= (mensaje != null ? mensaje : "No hay paquetería pendiente de entregar.")%>
-                            </td>
-                        </tr>
-                        <% }%>
+                        <% } %>
                     </tbody>
                 </table>
             </div>
+            <% } else {%>
+            <!-- 📦 Mensaje cuando no hay paquetes -->
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size:3rem; color:#94a3b8;"></i>
+                <h4 class="mt-3 text-secondary">
+                    <%= (mensaje != null ? mensaje : (esBusqueda ? "No se encontraron resultados para la búsqueda" : "No hay paquetería pendiente de entregar"))%>
+                </h4>
+            </div>
+            <% }%>
         </div>
 
         <script>
