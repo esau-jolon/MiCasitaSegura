@@ -225,7 +225,7 @@
 
                     <!-- 🔹 Campo del residente -->
                     <div class="mb-3">
-                        <label class="form-label">Residente</label>
+                        <label class="form-label">Persona que reserva</label>
                         <input type="text" class="form-control" 
                                value="<%= nombreUsuario != null ? nombreUsuario : ""%>" readonly> </input>
                     </div>

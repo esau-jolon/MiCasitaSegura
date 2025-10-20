@@ -13,7 +13,7 @@ public class ReservasDAO {
                 + "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, r.getIdArea());
             ps.setInt(2, r.getIdResidente());
@@ -42,7 +42,7 @@ public class ReservasDAO {
                 + "WHERE r.IdReserva = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idReserva);
             ResultSet rs = ps.executeQuery();
@@ -80,11 +80,11 @@ public class ReservasDAO {
                 + "INNER JOIN estado_reserva e ON r.IdEstadoReserva = e.IdEstadoReserva "
                 + "INNER JOIN usuarios u ON r.IdResidente = u.id_usuario "
                 + "WHERE r.Activo = TRUE "
-                + "ORDER BY r.FechaReserva DESC";
+                + "ORDER BY r.IdReserva ASC"; // ✅ De menor a mayor ID
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 Reservas r = new Reservas();
@@ -116,10 +116,10 @@ public class ReservasDAO {
                 + "INNER JOIN areas_comunes a ON r.IdArea = a.IdArea "
                 + "INNER JOIN estado_reserva e ON r.IdEstadoReserva = e.IdEstadoReserva "
                 + "WHERE r.IdResidente = ? AND r.Activo = TRUE "
-                + "ORDER BY r.FechaReserva DESC";
+                + "ORDER BY r.IdReserva ASC"; // ✅ De menor a mayor ID
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idResidente);
             ResultSet rs = ps.executeQuery();
@@ -146,7 +146,7 @@ public class ReservasDAO {
         String sql = "UPDATE reservas SET IdEstadoReserva = 2, ModificadoPor = ?, FechaModificacion = CURRENT_TIMESTAMP WHERE IdReserva = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, usuario);
             ps.setInt(2, idReserva);
@@ -162,7 +162,7 @@ public class ReservasDAO {
         String sql = "UPDATE reservas SET IdEstadoReserva = 3, ModificadoPor = ?, FechaModificacion = CURRENT_TIMESTAMP WHERE IdReserva = ?";
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, usuario);
             ps.setInt(2, idReserva);
@@ -173,6 +173,7 @@ public class ReservasDAO {
         }
     }
 
+    // 🔹 Verificar conflictos de horario
     public boolean existeReservaEnHorario(int idArea, java.sql.Date fecha, java.sql.Time horaInicio, java.sql.Time horaFin) {
         String sql = "SELECT COUNT(*) FROM reservas "
                 + "WHERE IdArea = ? AND FechaReserva = ? "
@@ -180,7 +181,7 @@ public class ReservasDAO {
                 + "AND IdEstadoReserva != 3"; // 3 = Cancelada
 
         try (Connection con = Conexion.getConnection();
-                PreparedStatement ps = con.prepareStatement(sql)) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idArea);
             ps.setDate(2, fecha);
@@ -199,5 +200,4 @@ public class ReservasDAO {
         }
         return false;
     }
-
 }

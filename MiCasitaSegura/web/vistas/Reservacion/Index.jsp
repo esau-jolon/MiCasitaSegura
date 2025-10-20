@@ -98,7 +98,8 @@
                         <tr>
                             <th>ID</th>
                             <th>Área</th>
-                            <th>Fecha</th>
+                            <th>Persona Que Reserva</th>
+                            <th>Fecha Reservada</th>
                             <th>Hora Inicio</th>
                             <th>Hora Fin</th>
                             <th>Estado</th>
@@ -114,7 +115,13 @@
                         <tr>
                             <td>#<%= r.getIdReserva()%></td>
                             <td><%= r.getNombreArea()%></td>
-                            <td><%= r.getFechaReserva()%></td>
+                            <td><%= (r.getNombreResidente() != null ? r.getNombreResidente() + " " + r.getApellidoResidente() : "—")%></td>
+                            <%
+                                java.text.SimpleDateFormat formatoFecha = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                                String fechaFormateada = (r.getFechaReserva() != null) ? formatoFecha.format(r.getFechaReserva()) : "—";
+                            %>
+                            <td><%= fechaFormateada%></td>
+
                             <td><%= r.getHoraInicio()%></td>
                             <td><%= r.getHoraFin()%></td>
                             <td>
@@ -168,23 +175,23 @@
     <script src="<%=request.getContextPath()%>/Scripts/sweetalert2.all.min.js"></script>
     <script>
         <% if (request.getParameter("success") != null) { %>
-    Swal.fire({
-        icon: 'success',
-        title: 'Reserva creada con éxito',
-        text: 'Su solicitud ha sido registrada correctamente.'
-    });
+        Swal.fire({
+            icon: 'success',
+            title: 'Reserva creada con éxito',
+            text: 'Su solicitud ha sido registrada correctamente.'
+        });
         <% } else if (request.getParameter("cancelada") != null) { %>
-    Swal.fire({
-        icon: 'warning',
-        title: 'Reserva cancelada',
-        text: 'La reserva ha sido cancelada correctamente.'
-    });
+        Swal.fire({
+            icon: 'warning',
+            title: 'Reserva cancelada',
+            text: 'La reserva ha sido cancelada correctamente.'
+        });
         <% } else if (request.getParameter("confirmada") != null) { %>
-    Swal.fire({
-        icon: 'info',
-        title: 'Reserva confirmada',
-        text: 'La reserva fue confirmada y se notificó al residente.'
-    });
+        Swal.fire({
+            icon: 'info',
+            title: 'Reserva confirmada',
+            text: 'La reserva fue confirmada y se notificó al residente.'
+        });
         <% }%>
     </script>
 
