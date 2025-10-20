@@ -154,4 +154,72 @@ public class PaqueteriaDAO {
             e.printStackTrace();
         }
     }
+
+    public List<Paqueteria> buscarPaquetes(String numeroGuia, String nombreResidente, String estado) {
+        List<Paqueteria> lista = new ArrayList<>();
+
+        // ✅ Consulta SQL clara y compatible con Java 8
+        StringBuilder sql = new StringBuilder(
+                "SELECT p.*, u.nombre AS nombreResidente, u.apellidos AS apellidoResidente "
+                + "FROM paqueteria p "
+                + "INNER JOIN usuarios u ON p.IdResidente = u.id_usuario "
+                + "WHERE 1=1 "
+        );
+
+        // 🔍 Filtros dinámicos
+        if (numeroGuia != null && !numeroGuia.trim().isEmpty()) {
+            sql.append(" AND p.NumeroGuia LIKE ? ");
+        }
+        if (nombreResidente != null && !nombreResidente.trim().isEmpty()) {
+            sql.append(" AND (u.nombre LIKE ? OR u.apellidos LIKE ?) ");
+        }
+        if (estado != null && !estado.trim().isEmpty()) {
+            if (estado.equalsIgnoreCase("pendiente")) {
+                sql.append(" AND p.Entregado = 0 ");
+            } else if (estado.equalsIgnoreCase("entregado")) {
+                sql.append(" AND p.Entregado = 1 ");
+            }
+        }
+
+        sql.append(" ORDER BY p.FechaRecepcion DESC ");
+
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql.toString())) {
+
+            int index = 1;
+
+            if (numeroGuia != null && !numeroGuia.trim().isEmpty()) {
+                ps.setString(index++, "%" + numeroGuia + "%");
+            }
+            if (nombreResidente != null && !nombreResidente.trim().isEmpty()) {
+                ps.setString(index++, "%" + nombreResidente + "%");
+                ps.setString(index++, "%" + nombreResidente + "%");
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Paqueteria p = new Paqueteria();
+                    p.setIdPaquete(rs.getInt("IdPaquete"));
+                    p.setNumeroGuia(rs.getString("NumeroGuia"));
+                    p.setIdResidente(rs.getInt("IdResidente"));
+                    p.setFechaRecepcion(rs.getTimestamp("FechaRecepcion"));
+                    p.setFechaEntrega(rs.getTimestamp("FechaEntrega"));
+                    p.setEntregado(rs.getBoolean("Entregado"));
+
+                    // 🏠 Nombres del residente
+                    p.setNombreResidente(rs.getString("nombreResidente"));
+                    p.setApellidoResidente(rs.getString("apellidoResidente"));
+
+                    lista.add(p);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("[ERROR] buscarPaquetes(): " + e.getMessage());
+        }
+
+        return lista;
+    }
+
 }

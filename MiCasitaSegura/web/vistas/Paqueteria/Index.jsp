@@ -60,6 +60,14 @@
                 text-decoration: none;
                 box-shadow: 0 8px 20px rgba(74,222,128,0.3);
             }
+            .search-form {
+                background: rgba(255, 255, 255, 0.07);
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .search-form .form-control, .search-form .form-select {
+                border-radius: 10px;
+            }
             .modern-table {
                 width: 100%;
                 color: #fff;
@@ -99,6 +107,31 @@
                 </a>
             </div>
 
+            <!-- 🔍 Formulario de búsqueda RN03 -->
+            <form action="ControladorPaqueteria" method="get" class="search-form">
+                <input type="hidden" name="accion" value="buscar">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-4">
+                        <input type="text" name="numeroGuia" value="${param.numeroGuia != null ? param.numeroGuia : ''}"
+                               class="form-control" placeholder="Número de guía...">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" name="nombreResidente" value="${param.nombreResidente != null ? param.nombreResidente : ''}"
+                               class="form-control" placeholder="Nombre del residente...">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="estado" class="form-select">
+                            <option value="">-- Todos los estados --</option>
+                            <option value="pendiente" ${param.estado == 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                            <option value="entregado" ${param.estado == 'entregado' ? 'selected' : ''}>Entregado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1 text-end">
+                        <button class="btn btn-primary w-100" type="submit"><i class="bi bi-search"></i></button>
+                    </div>
+                </div>
+            </form>
+
             <div class="table-responsive">
                 <table class="modern-table">
                     <thead>
@@ -115,6 +148,7 @@
                     <tbody>
                         <%
                             List<Paqueteria> lista = (List<Paqueteria>) request.getAttribute("paquetes");
+                            String mensaje = (String) request.getAttribute("mensaje");
                             if (lista != null && !lista.isEmpty()) {
                                 for (Paqueteria p : lista) {
                         %>
@@ -145,11 +179,11 @@
                             </td>
                         </tr>
                         <% }
-                    } else { %>
+                        } else {%>
                         <tr>
                             <td colspan="7" class="text-center text-secondary py-4">
                                 <i class="bi bi-inbox" style="font-size:2rem;"></i><br>
-                                No hay paquetería pendiente de entregar.
+                                <%= (mensaje != null ? mensaje : "No hay paquetería pendiente de entregar.")%>
                             </td>
                         </tr>
                         <% }%>
@@ -162,8 +196,7 @@
             document.addEventListener("DOMContentLoaded", function () {
 
                 // ✅ Entregar paquete
-                const entregarBtns = document.querySelectorAll(".btn-entregar");
-                entregarBtns.forEach(btn => {
+                document.querySelectorAll(".btn-entregar").forEach(btn => {
                     btn.addEventListener("click", function () {
                         const id = this.getAttribute("data-id");
                         Swal.fire({
@@ -184,8 +217,7 @@
                 });
 
                 // ❌ Eliminar paquete
-                const eliminarBtns = document.querySelectorAll(".btn-eliminar");
-                eliminarBtns.forEach(btn => {
+                document.querySelectorAll(".btn-eliminar").forEach(btn => {
                     btn.addEventListener("click", function () {
                         const id = this.getAttribute("data-id");
                         Swal.fire({

@@ -65,10 +65,28 @@ public class ControladorPaqueteria extends HttpServlet {
                 break;
             }
 
+            // 🔹 BUSCAR (RN03)
+            case "buscar": {
+                String numeroGuia = request.getParameter("numeroGuia");
+                String nombreResidente = request.getParameter("nombreResidente");
+                String estado = request.getParameter("estado");
+
+                List<Paqueteria> listaFiltrada = paqueteriaDAO.buscarPaquetes(numeroGuia, nombreResidente, estado);
+                request.setAttribute("paquetes", listaFiltrada);
+                request.setAttribute("numeroGuia", numeroGuia);
+                request.setAttribute("nombreResidente", nombreResidente);
+                request.setAttribute("estado", estado);
+
+                if (listaFiltrada == null || listaFiltrada.isEmpty()) {
+                    request.setAttribute("mensaje", "No se encontraron resultados con los criterios de búsqueda.");
+                }
+                acceso = INDEX;
+                break;
+            }
+
             // 🔹 NUEVO (form)
             case "add": {
                 request.setAttribute("paquete", null);
-                // Cargar residentes con datos descriptivos para autocompletar (casa, lote, correo)
                 request.setAttribute("catalogoResidentes", usuarioDAO.listarResidentesPaqueteria());
                 acceso = ADD_EDIT;
                 break;
@@ -81,7 +99,6 @@ public class ControladorPaqueteria extends HttpServlet {
                     boolean exito = paqueteriaDAO.marcarEntregado(id, usuarioSesion.getIdUsuario());
 
                     if (exito) {
-                        // Volvemos a leer el paquete para tomar FechaEntrega/NumeroGuia
                         Paqueteria p = paqueteriaDAO.obtenerPorId(id);
                         Usuarios residente = usuarioDAO.obtenerPorId(p.getIdResidente());
 
@@ -94,33 +111,26 @@ public class ControladorPaqueteria extends HttpServlet {
                                     : SDF_FECHA.format(new Timestamp(System.currentTimeMillis()));
                             final String agenteNombre = usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos();
 
-                            // 📧 Correo enriquecido (HTML) RN2
+                            // 📧 Correo enriquecido (HTML)
                             final String asunto = "Entrega de Paquetería";
                             final String cuerpoHtml
                                     = "<div style='font-family:Segoe UI, Arial, sans-serif; font-size:14px; color:#111;'>"
-                                    + "  <h2 style='color:#16a34a; margin-bottom:8px;'>✅ Paquetería entregada</h2>"
-                                    + "  <p>Estimado(a) <b>" + nombreResidente + "</b>,</p>"
-                                    + "  <p>Se confirma la <b>entrega</b> de su paquete.</p>"
-                                    + "  <table style='border-collapse:collapse; width:100%; margin:12px 0;'>"
-                                    + "    <tr>"
-                                    + "      <td style='border:1px solid #e5e7eb; padding:8px; background:#f8fafc; width:220px;'>Número de guía</td>"
-                                    + "      <td style='border:1px solid #e5e7eb; padding:8px;'>" + (numeroGuia != null ? numeroGuia : "N/D") + "</td>"
-                                    + "    </tr>"
-                                    + "    <tr>"
-                                    + "      <td style='border:1px solid #e5e7eb; padding:8px; background:#f8fafc;'>Fecha y hora de entrega</td>"
-                                    + "      <td style='border:1px solid #e5e7eb; padding:8px;'>" + fechaEntregaStr + "</td>"
-                                    + "    </tr>"
-                                    + "    <tr>"
-                                    + "      <td style='border:1px solid #e5e7eb; padding:8px; background:#f8fafc;'>Entregado por</td>"
-                                    + "      <td style='border:1px solid #e5e7eb; padding:8px;'>" + agenteNombre + "</td>"
-                                    + "    </tr>"
-                                    + "  </table>"
-                                    + "  <p style='margin-top:16px;'>Gracias por utilizar <b>Mi Casita Segura</b>.</p>"
-                                    + "  <hr style='border:none; border-top:1px solid #e5e7eb; margin:16px 0;'>"
-                                    + "  <small style='color:#64748b;'>Este es un mensaje automático, por favor no responder.</small>"
+                                    + "<h2 style='color:#16a34a; margin-bottom:8px;'>✅ Paquetería entregada</h2>"
+                                    + "<p>Estimado(a) <b>" + nombreResidente + "</b>,</p>"
+                                    + "<p>Se confirma la <b>entrega</b> de su paquete.</p>"
+                                    + "<table style='border-collapse:collapse; width:100%; margin:12px 0;'>"
+                                    + "<tr><td style='background:#f8fafc; border:1px solid #e5e7eb; padding:8px;'>Número de guía</td>"
+                                    + "<td style='border:1px solid #e5e7eb; padding:8px;'>" + (numeroGuia != null ? numeroGuia : "N/D") + "</td></tr>"
+                                    + "<tr><td style='background:#f8fafc; border:1px solid #e5e7eb; padding:8px;'>Fecha y hora de entrega</td>"
+                                    + "<td style='border:1px solid #e5e7eb; padding:8px;'>" + fechaEntregaStr + "</td></tr>"
+                                    + "<tr><td style='background:#f8fafc; border:1px solid #e5e7eb; padding:8px;'>Entregado por</td>"
+                                    + "<td style='border:1px solid #e5e7eb; padding:8px;'>" + agenteNombre + "</td></tr>"
+                                    + "</table>"
+                                    + "<p style='margin-top:16px;'>Gracias por utilizar <b>Mi Casita Segura</b>.</p>"
+                                    + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:16px 0;'>"
+                                    + "<small style='color:#64748b;'>Este es un mensaje automático, por favor no responder.</small>"
                                     + "</div>";
 
-                            // Enviar en un hilo separado para no bloquear la respuesta
                             new Thread(() -> {
                                 try {
                                     EmailSender.enviarConAdjunto(correoDest, asunto, cuerpoHtml, null);
@@ -187,7 +197,6 @@ public class ControladorPaqueteria extends HttpServlet {
                 String numeroGuia = request.getParameter("numeroGuia");
                 int idResidente = Integer.parseInt(request.getParameter("idResidente"));
 
-                // Validación
                 if (numeroGuia == null || numeroGuia.trim().isEmpty() || idResidente <= 0) {
                     request.setAttribute("errorMensaje", "Debe completar todos los campos obligatorios.");
                     request.setAttribute("catalogoResidentes", usuarioDAO.listarResidentesPaqueteria());
@@ -196,7 +205,6 @@ public class ControladorPaqueteria extends HttpServlet {
                     return;
                 }
 
-                // Crear entidad
                 Paqueteria p = new Paqueteria();
                 p.setNumeroGuia(numeroGuia.trim());
                 p.setIdResidente(idResidente);
@@ -206,7 +214,7 @@ public class ControladorPaqueteria extends HttpServlet {
                 boolean exito = paqueteriaDAO.registrarPaquete(p, usuarioSesion.getIdUsuario());
 
                 if (exito) {
-                    // 📧 Correo de aviso (asíncrono) al residente indicando que su paquete fue recibido en garita
+                    // 📧 Correo al residente (asíncrono)
                     Usuarios residente = usuarioDAO.obtenerPorId(idResidente);
                     if (residente != null && residente.getCorreo() != null) {
                         final String correoDest = residente.getCorreo();
@@ -217,23 +225,19 @@ public class ControladorPaqueteria extends HttpServlet {
                         final String asunto = "Paquetería recibida en garita";
                         final String cuerpoHtml
                                 = "<div style='font-family:Segoe UI, Arial, sans-serif; font-size:14px; color:#111;'>"
-                                + "  <h2 style='color:#0284c7; margin-bottom:8px;'>📦 Paquete recibido</h2>"
-                                + "  <p>Estimado(a) <b>" + nombreResidente + "</b>,</p>"
-                                + "  <p>Se ha registrado la recepción de un paquete a su nombre.</p>"
-                                + "  <table style='border-collapse:collapse; width:100%; margin:12px 0;'>"
-                                + "    <tr>"
-                                + "      <td style='border:1px solid #e5e7eb; padding:8px; background:#f8fafc; width:220px;'>Número de guía</td>"
-                                + "      <td style='border:1px solid #e5e7eb; padding:8px;'>" + (numeroGuiaFinal != null ? numeroGuiaFinal : "N/D") + "</td>"
-                                + "    </tr>"
-                                + "    <tr>"
-                                + "      <td style='border:1px solid #e5e7eb; padding:8px; background:#f8fafc;'>Fecha de recepción</td>"
-                                + "      <td style='border:1px solid #e5e7eb; padding:8px;'>" + fechaRecepStr + "</td>"
-                                + "    </tr>"
-                                + "  </table>"
-                                + "  <p style='margin-top:16px;'>Podrá reclamarlo en la garita de seguridad. "
-                                + "  <br>Gracias por utilizar <b>Mi Casita Segura</b>.</p>"
-                                + "  <hr style='border:none; border-top:1px solid #e5e7eb; margin:16px 0;'>"
-                                + "  <small style='color:#64748b;'>Este es un mensaje automático, por favor no responder.</small>"
+                                + "<h2 style='color:#0284c7; margin-bottom:8px;'>📦 Paquete recibido</h2>"
+                                + "<p>Estimado(a) <b>" + nombreResidente + "</b>,</p>"
+                                + "<p>Se ha registrado la recepción de un paquete a su nombre.</p>"
+                                + "<table style='border-collapse:collapse; width:100%; margin:12px 0;'>"
+                                + "<tr><td style='background:#f8fafc; border:1px solid #e5e7eb; padding:8px;'>Número de guía</td>"
+                                + "<td style='border:1px solid #e5e7eb; padding:8px;'>" + numeroGuiaFinal + "</td></tr>"
+                                + "<tr><td style='background:#f8fafc; border:1px solid #e5e7eb; padding:8px;'>Fecha de recepción</td>"
+                                + "<td style='border:1px solid #e5e7eb; padding:8px;'>" + fechaRecepStr + "</td></tr>"
+                                + "</table>"
+                                + "<p style='margin-top:16px;'>Podrá reclamarlo en la garita de seguridad.<br>"
+                                + "Gracias por utilizar <b>Mi Casita Segura</b>.</p>"
+                                + "<hr style='border:none; border-top:1px solid #e5e7eb; margin:16px 0;'>"
+                                + "<small style='color:#64748b;'>Este es un mensaje automático, por favor no responder.</small>"
                                 + "</div>";
 
                         new Thread(() -> {
