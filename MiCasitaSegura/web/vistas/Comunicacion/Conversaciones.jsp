@@ -127,6 +127,24 @@
                 background: #0a58ca;
                 color: #fff;
             }
+
+            /* 🔹 Botón de regresar */
+            .btn-regresar {
+                display: inline-block;
+                background: linear-gradient(45deg, #6c757d, #495057);
+                color: #fff;
+                font-weight: 600;
+                border-radius: 10px;
+                padding: 10px 24px;
+                text-decoration: none;
+                transition: all 0.3s ease;
+            }
+
+            .btn-regresar:hover {
+                background: linear-gradient(45deg, #495057, #343a40);
+                transform: translateY(-2px);
+                color: #fff;
+            }
         </style>
     </head>
 
@@ -177,15 +195,13 @@
             </a>
             <% }%>
 
-
-            <a href="<%=request.getContextPath()%>/vistas/Comunicacion/MenuComunicacion.jsp" class="btn-regresar">
-                <i class="bi bi-arrow-left"></i> Regresar al Menú
-            </a>
-
-
+            <!-- 🔹 Botón de regresar al menú -->
+            <div style="text-align:center; padding:15px; background:#f8f9fa;">
+                <a href="<%=request.getContextPath()%>/vistas/Comunicacion/MenuComunicacion.jsp" class="btn-regresar">
+                    <i class="bi bi-arrow-left-circle"></i> Regresar al Menú
+                </a>
+            </div>
         </div>
-
-
 
         <script>
             function abrirChat(idConversacion) {

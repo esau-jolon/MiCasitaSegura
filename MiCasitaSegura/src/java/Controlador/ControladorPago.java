@@ -37,6 +37,7 @@ public class ControladorPago extends HttpServlet {
         Usuarios usuarioSesion = (Usuarios) session.getAttribute("usuario");
 
         if ("listar".equalsIgnoreCase(action)) {
+            // ✅ Listar solo los pagos activos
             List<Pagos> lista = dao.listar();
             request.setAttribute("pagos", lista);
             acceso = listar;
@@ -70,6 +71,20 @@ public class ControladorPago extends HttpServlet {
         } else if ("cancelar".equalsIgnoreCase(action)) {
             int id = Integer.parseInt(request.getParameter("id"));
             dao.cancelar(id);
+            request.setAttribute("pagos", dao.listar());
+            acceso = listar;
+
+        } else if ("eliminar".equalsIgnoreCase(action)) {
+            // ✅ Nuevo: eliminación lógica (activo = FALSE)
+            int id = Integer.parseInt(request.getParameter("id"));
+            boolean eliminado = dao.eliminarLogico(id);
+
+            if (eliminado) {
+                request.setAttribute("mensaje", "El pago fue eliminado correctamente.");
+            } else {
+                request.setAttribute("mensajeError", "No se pudo eliminar el pago.");
+            }
+
             request.setAttribute("pagos", dao.listar());
             acceso = listar;
 
@@ -176,6 +191,7 @@ public class ControladorPago extends HttpServlet {
                 p.setMora(mora);
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
+                p.setActivo(true); // ✅ nuevo campo activo al crear
 
                 // Guardar mes/año si aplica
                 if (idTipoPago == 1) {
@@ -219,6 +235,7 @@ public class ControladorPago extends HttpServlet {
                 p.setMora(mora);
                 p.setTotal(monto + mora);
                 p.setObservaciones(observaciones);
+                p.setActivo(true); // ✅ al editar se mantiene activo
 
                 if (idTipoPago == 1) {
                     String mesPagadoStr = request.getParameter("mesPagado");

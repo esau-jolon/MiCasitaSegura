@@ -16,19 +16,14 @@ public class Incidente {
     private Timestamp fechaCreacion;
     private Timestamp fechaModificacion;
 
-    // 🔹 Campos auxiliares (para mostrar en vistas)
+    // Estado lógico
+    private boolean activo;
+
+    // Campos auxiliares (para vistas)
     private String nombreTipo;
     private String nombreResidente;
     private String apellidoResidente;
-    private String nombreTipoIncidente; // para mostrar en la vista
-
-    public String getNombreTipoIncidente() {
-        return nombreTipoIncidente;
-    }
-
-    public void setNombreTipoIncidente(String nombreTipoIncidente) {
-        this.nombreTipoIncidente = nombreTipoIncidente;
-    }
+    private String nombreTipoIncidente;
 
     public Incidente() {
     }
@@ -105,6 +100,14 @@ public class Incidente {
         this.fechaModificacion = fechaModificacion;
     }
 
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
     public String getNombreTipo() {
         return nombreTipo;
     }
@@ -127,5 +130,13 @@ public class Incidente {
 
     public void setApellidoResidente(String apellidoResidente) {
         this.apellidoResidente = apellidoResidente;
+    }
+
+    public String getNombreTipoIncidente() {
+        return nombreTipoIncidente;
+    }
+
+    public void setNombreTipoIncidente(String nombreTipoIncidente) {
+        this.nombreTipoIncidente = nombreTipoIncidente;
     }
 }

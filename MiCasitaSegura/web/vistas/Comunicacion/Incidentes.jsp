@@ -132,6 +132,21 @@
                 background: #5c636a;
             }
 
+            .btn-eliminar {
+                background: linear-gradient(135deg, #f87171, #ef4444);
+                border: none;
+                color: white;
+                padding: 8px 14px;
+                border-radius: 6px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+            }
+
+            .btn-eliminar:hover {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                transform: translateY(-2px);
+            }
+
             .footer-actions {
                 text-align: center;
                 margin-bottom: 40px;
@@ -177,19 +192,35 @@
                     <thead>
                         <tr>
                             <th style="width:5%;">#</th>
-                            <th style="width:25%;">Tipo</th>
-                            <th style="width:25%;">Fecha y Hora</th>
-                            <th style="width:45%;">Descripción</th>
+                            <th style="width:20%;">Tipo</th>
+                            <th style="width:20%;">Fecha y Hora</th>
+                            <th style="width:40%;">Descripción</th>
+                                <% if ("Administrador".equalsIgnoreCase(usuarioSesion.getNombreRol())) { %>
+                            <th style="width:15%;">Acciones</th>
+                                <% } %>
                         </tr>
                     </thead>
                     <tbody>
                         <% int i = 1;
-                        for (Incidente inc : lista) {%>
+                            for (Incidente inc : lista) {%>
                         <tr>
                             <td><%= i++%></td>
                             <td><%= inc.getNombreTipoIncidente()%></td>
-                            <td><%= inc.getFechaHoraIncidente()%></td>
+                            <td>
+                                <%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(inc.getFechaHoraIncidente())%>
+                            </td>
+
                             <td class="text-start"><%= inc.getDescripcion()%></td>
+
+                            <% if ("Administrador".equalsIgnoreCase(usuarioSesion.getNombreRol())) {%>
+                            <td>
+                                <button class="btn-eliminar" 
+                                        data-id="<%= inc.getIdIncidente()%>"
+                                        onclick="confirmDelete(this)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                            <% } %>
                         </tr>
                         <% } %>
                     </tbody>
@@ -205,6 +236,26 @@
         </div>
 
         <script>
+            // ✅ Confirmar eliminación
+            function confirmDelete(element) {
+                const id = element.getAttribute("data-id");
+                Swal.fire({
+                    title: '¿Eliminar este incidente?',
+                    text: 'El registro será marcado como inactivo.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<%=request.getContextPath()%>/ControladorIncidente?accion=eliminar&id=' + id;
+                    }
+                });
+            }
+
+            // ✅ Mostrar mensaje al crear incidente
             document.addEventListener("DOMContentLoaded", function () {
                 const urlParams = new URLSearchParams(window.location.search);
                 if (urlParams.get("success") === "true") {
@@ -215,9 +266,15 @@
                         confirmButtonColor: '#dc3545',
                         confirmButtonText: 'Aceptar'
                     });
+                } else if (urlParams.get("deleted") === "true") {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Incidente eliminado',
+                        text: 'El incidente ha sido eliminado correctamente.',
+                        confirmButtonColor: '#dc3545'
+                    });
                 }
             });
         </script>
-
     </body>
 </html>

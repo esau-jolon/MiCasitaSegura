@@ -236,6 +236,11 @@
                 color: white;
             }
 
+            .btn-delete {
+                background: linear-gradient(135deg, #6b7280, #374151);
+                color: white;
+            }
+
             .btn-action:hover { transform: scale(1.05); }
 
             /* --- Deshabilitado --- */
@@ -311,7 +316,7 @@
                                     <td>#<%= p.getIdPago()%></td>
                                     <td><%= p.getNombreUsuario()%></td>
                                     <td><%= p.getNombreTipoPago()%></td>
-                                    <td><%= p.getFechaPago()%></td>
+                                    <td><%= new java.text.SimpleDateFormat("dd/MM/yyyy").format(p.getFechaPago()) %></td>
                                     <td><%= (p.getMesPagado() != null && p.getAnioPagado() != null) ? p.getMesPagado() + "/" + p.getAnioPagado() : "-"%></td>
                                     <td>Q <%= p.getMonto()%></td>
                                     <td>Q <%= p.getMora()%></td>
@@ -329,12 +334,13 @@
                                                title="<%= deshabilitar ? "No se puede editar un pago realizado" : "" %>">
                                                 <i class="bi bi-pencil-square"></i> Editar
                                             </a>
-                                            <a href="${pageContext.request.contextPath}/ControladorPago?accion=cancelar&id=<%= p.getIdPago()%>"
-                                               class="btn-action btn-cancel <%= deshabilitar ? "disabled-action" : "" %>"
-                                               <%= deshabilitar ? "" : "onclick=\"return confirm('¿Cancelar este pago? Total: Q" + p.getTotal() + "');\"" %>
-                                               title="<%= deshabilitar ? "No se puede cancelar un pago realizado" : "" %>">
-                                                <i class="bi bi-x-circle"></i> Cancelar
-                                            </a>
+                                    
+                                            <!-- ✅ Nuevo botón Eliminar -->
+                                            <button type="button"
+                                                    class="btn-action btn-delete"
+                                                    onclick="confirmarEliminacion(<%= p.getIdPago() %>, <%= p.getTotal() %>)">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -355,25 +361,23 @@
         </div>
 
         <script>
-            // Ripple effect on buttons
-            document.addEventListener('DOMContentLoaded', () => {
-                const buttons = document.querySelectorAll('.btn-add, .btn-action');
-                buttons.forEach(btn => {
-                    btn.addEventListener('click', e => {
-                        const circle = document.createElement('span');
-                        const diameter = Math.max(btn.clientWidth, btn.clientHeight);
-                        const radius = diameter / 2;
-                        circle.style.width = circle.style.height = `${diameter}px`;
-                        circle.style.left = `${e.clientX - btn.offsetLeft - radius}px`;
-                        circle.style.top = `${e.clientY - btn.offsetTop - radius}px`;
-                        circle.classList.add('ripple');
-                        const ripple = btn.getElementsByClassName('ripple')[0];
-                        if (ripple)
-                            ripple.remove();
-                        btn.appendChild(circle);
-                    });
+            // ✅ SweetAlert2 Confirmación de eliminación lógica
+            function confirmarEliminacion(idPago, total) {
+                Swal.fire({
+                    title: '¿Deseas eliminar este pago?',
+                    text: "Total: Q" + total.toFixed(2),
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<%=request.getContextPath()%>/ControladorPago?accion=eliminar&id=' + idPago;
+                    }
                 });
-            });
+            }
         </script>
     </body>
 </html>

@@ -45,17 +45,42 @@ public class ControladorIncidente extends HttpServlet {
             return;
         }
 
-        // 🔹 Mostrar lista de incidentes del residente
-        if ("listar".equalsIgnoreCase(accion)) {
-            List<Incidente> incidentes = incidenteDAO.listarPorResidente(usuarioSesion.getIdUsuario());
-            request.setAttribute("listaIncidentes", incidentes);
-            acceso = listarVista;
+        switch (accion != null ? accion : "") {
+            // 🔹 Mostrar lista de incidentes del residente
+            case "listar":
+                List<Incidente> incidentes = incidenteDAO.listarPorResidente(usuarioSesion.getIdUsuario());
+                request.setAttribute("listaIncidentes", incidentes);
+                acceso = listarVista;
+                break;
 
             // 🔹 Mostrar formulario para nuevo incidente
-        } else if ("nuevo".equalsIgnoreCase(accion)) {
-            List<TipoIncidente> tipos = tipoDAO.listar();
-            request.setAttribute("tiposIncidente", tipos);
-            acceso = nuevoVista;
+            case "nuevo":
+                List<TipoIncidente> tipos = tipoDAO.listar();
+                request.setAttribute("tiposIncidente", tipos);
+                acceso = nuevoVista;
+                break;
+
+            // 🔹 Eliminar incidente (borrado lógico)
+            case "eliminar":
+                try {
+                    int idIncidente = Integer.parseInt(request.getParameter("id"));
+                    boolean eliminado = incidenteDAO.eliminarLogico(idIncidente, usuarioSesion.getIdUsuario());
+                    if (eliminado) {
+                        response.sendRedirect("ControladorIncidente?accion=listar&deleted=true");
+                        return;
+                    } else {
+                        response.sendRedirect("ControladorIncidente?accion=listar&errorDelete=true");
+                        return;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    response.sendRedirect("ControladorIncidente?accion=listar&errorDelete=true");
+                    return;
+                }
+
+            default:
+                acceso = listarVista;
+                break;
         }
 
         RequestDispatcher vista = request.getRequestDispatcher(acceso);
@@ -112,7 +137,7 @@ public class ControladorIncidente extends HttpServlet {
 
                     String asunto = "Reporte de incidente";
 
-                    // 💌 Cuerpo en formato HTML (bonito y con saltos de línea)
+                    // 💌 Cuerpo del correo
                     String cuerpo = ""
                             + "<p>Se le informa que el residente <b>" + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() + "</b>,<br>"
                             + "que vive en casa #" + (usuarioSesion.getNumeroCasa() != null ? usuarioSesion.getNumeroCasa() : "N/A")
@@ -145,7 +170,7 @@ public class ControladorIncidente extends HttpServlet {
                         }
                     }).start();
 
-                    // ✅ Redirigir rápido sin esperar los correos
+                    // ✅ Redirigir sin esperar envío de correos
                     response.sendRedirect("ControladorIncidente?accion=listar&success=true");
                     return;
 
@@ -163,5 +188,4 @@ public class ControladorIncidente extends HttpServlet {
             }
         }
     }
-
 }

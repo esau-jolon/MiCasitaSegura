@@ -7,23 +7,25 @@ public class Pagos {
     private int idPago;
     private int idUsuario;
     private int idTipoPago;
-    private int idEstadoPago; // 🔹 Nuevo campo FK hacia EstadosPago
-
+    private int idEstadoPago;
     private Date fechaPago;
     private double monto;
     private double mora;
     private double total;
     private String observaciones;
 
-    private Integer mesPagado;   // 🔹 Puede ser null (solo para mantenimiento)
-    private Integer anioPagado;  // 🔹 Puede ser null
+    private Integer mesPagado;
+    private Integer anioPagado;
 
-    // 🔹 Campos adicionales para mostrar datos relacionados (no se guardan en la tabla directamente)
+    private boolean activo; // ✅ Nuevo campo de borrado lógico
+
+    // 🔹 Campos adicionales (no persistentes directamente)
     private String nombreUsuario;
     private String nombreTipoPago;
-    private String nombreEstadoPago; // 🔹 descripción del estado (Pendiente, Realizado, etc.)
+    private String nombreEstadoPago;
 
     public Pagos() {
+        this.activo = true; // por defecto activo
     }
 
     // ======= Getters y Setters =======
@@ -115,6 +117,14 @@ public class Pagos {
         this.anioPagado = anioPagado;
     }
 
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
     public String getNombreUsuario() {
         return nombreUsuario;
     }
@@ -139,7 +149,6 @@ public class Pagos {
         this.nombreEstadoPago = nombreEstadoPago;
     }
 
-    // ======= Método auxiliar opcional =======
     @Override
     public String toString() {
         return "Pagos{"
@@ -154,9 +163,10 @@ public class Pagos {
                 + ", observaciones='" + observaciones + '\''
                 + ", mesPagado=" + mesPagado
                 + ", anioPagado=" + anioPagado
+                + ", activo=" + activo
                 + ", nombreUsuario='" + nombreUsuario + '\''
                 + ", nombreTipoPago='" + nombreTipoPago + '\''
-                + ", descripcionEstadoPago='" + nombreEstadoPago + '\''
+                + ", nombreEstadoPago='" + nombreEstadoPago + '\''
                 + '}';
     }
 }
