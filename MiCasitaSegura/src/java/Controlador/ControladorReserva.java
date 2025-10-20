@@ -15,6 +15,7 @@ import ModeloDAO.UsuarioDAO;
 import java.io.IOException;
 import java.sql.Date;
 import java.sql.Time;
+import java.time.LocalDate; 
 import java.util.List;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
@@ -180,7 +181,7 @@ public class ControladorReserva extends HttpServlet {
                     String horaFinStr = request.getParameter("horaFin");
                     String observaciones = request.getParameter("observaciones");
 
-                    // RN3: Validar campos obligatorios
+            
                     if (fechaStr == null || fechaStr.isEmpty()
                             || horaInicioStr == null || horaInicioStr.isEmpty()
                             || horaFinStr == null || horaFinStr.isEmpty()
@@ -196,6 +197,25 @@ public class ControladorReserva extends HttpServlet {
                     Date fecha = Date.valueOf(fechaStr);
                     Time horaInicio = Time.valueOf(horaInicioStr + ":00");
                     Time horaFin = Time.valueOf(horaFinStr + ":00");
+
+         
+                    LocalDate hoy = LocalDate.now();
+                    if (fecha.toLocalDate().isBefore(hoy)) {
+                        request.setAttribute("error", "No se pueden realizar reservas en fechas anteriores a la actual.");
+                        request.setAttribute("listaAreas", areasDAO.listarActivas());
+                        RequestDispatcher rd = request.getRequestDispatcher(ADDEDIT_VISTA);
+                        rd.forward(request, response);
+                        return;
+                    }
+
+           
+                    if (!horaInicio.before(horaFin)) {
+                        request.setAttribute("error", "La hora de inicio debe ser menor que la hora de finalización.");
+                        request.setAttribute("listaAreas", areasDAO.listarActivas());
+                        RequestDispatcher rd = request.getRequestDispatcher(ADDEDIT_VISTA);
+                        rd.forward(request, response);
+                        return;
+                    }
 
                     // 🔹 Validación FA05: verificar si ya existe una reserva en ese horario
                     boolean existeConflicto = reservasDAO.existeReservaEnHorario(idArea, fecha, horaInicio, horaFin);
