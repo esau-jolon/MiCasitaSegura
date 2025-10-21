@@ -1,13 +1,12 @@
-<!-- main.jsp -->
+<%@ page import="Modelo.Usuarios" %>
 <!DOCTYPE html>
 <html>
     <head>
         <title>Mi Casita Segura</title>
-        <!-- Bootstrap local -->
+
         <link rel="stylesheet" href="<%=request.getContextPath()%>/css/bootstrap.min.css"/>
         <link rel="stylesheet" href="<%=request.getContextPath()%>/Scripts/bootstrap-icons.min.css"/>
 
-        <!-- Estilos personalizados -->
         <style>
             body {
                 margin: 0;
@@ -15,9 +14,8 @@
                 background: #f0f2f5;
             }
 
-            /* Sidebar */
             .sidebar {
-                width: 80px; 
+                width: 80px;
                 height: 100vh;
                 position: fixed;
                 top: 0;
@@ -30,9 +28,7 @@
                 z-index: 1000;
             }
 
-            .sidebar:hover {
-                width: 280px; 
-            }
+            .sidebar:hover { width: 280px; }
 
             .sidebar .logo {
                 display: flex;
@@ -47,7 +43,7 @@
             }
 
             .sidebar .logo i {
-                font-size: 2.5rem; 
+                font-size: 2.5rem;
                 margin: 0 auto;
             }
 
@@ -56,10 +52,6 @@
                 visibility: hidden;
                 transition: opacity 0.3s ease;
                 font-size: 1.2rem;
-            }
-
-            .sidebar:hover .logo i {
-                margin: 0;
             }
 
             .sidebar:hover .logo span {
@@ -79,13 +71,13 @@
             .sidebar ul li a {
                 color: #fff;
                 text-decoration: none;
-                padding: 15px 20px; /* menos ancho */
+                padding: 15px 20px;
                 display: flex;
                 align-items: center;
-                gap: 15px; /* menos espacio entre icono y texto */
+                gap: 15px;
                 border-radius: 12px;
                 transition: background 0.3s;
-                font-size: 1.1rem; /* más pequeño */
+                font-size: 1.1rem;
                 font-weight: 600;
             }
 
@@ -104,18 +96,8 @@
                 visibility: visible;
             }
 
-            .sidebar ul li a i {
-                font-size: 1.7rem; /* iconos un poco más pequeños */
-                transition: font-size 0.3s ease;
-            }
-
-            .sidebar:hover ul li a i {
-                font-size: 2rem; 
-            }
-
-            /* Contenido */
             .content {
-                margin-left: 80px; 
+                margin-left: 80px;
                 padding: 30px;
                 transition: margin-left 0.3s ease;
             }
@@ -124,7 +106,6 @@
                 margin-left: 280px;
             }
 
-            /* Header usuario */
             .user-header {
                 width: 100%;
                 background: linear-gradient(180deg, #0d6efd, #0a58ca);
@@ -145,9 +126,8 @@
                 color: #ffd700;
             }
 
-            /* iframe */
             iframe {
-                width: 95%; 
+                width: 95%;
                 height: 80vh;
                 border: none;
                 border-radius: 15px;
@@ -164,6 +144,12 @@
         </style>
     </head>
     <body>
+
+        <%
+            Usuarios usuario = (Usuarios) session.getAttribute("usuario");
+            String rol = (usuario != null && usuario.getNombreRol() != null) ? usuario.getNombreRol() : "";
+        %>
+
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">
@@ -172,53 +158,83 @@
             </div>
 
             <ul>
+                <!--  Directorio (todos los roles) -->
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorDirectorio?accion=listar" target="contentFrame">
                         <i class="bi bi-journal-bookmark"></i><span> DIRECTORIO</span>
                     </a>
                 </li>
+
+                <!--  Mantenimiento de usuarios (solo Administrador) -->
+                <% if ("Administrador".equalsIgnoreCase(rol)) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorUsuario?accion=listar" target="contentFrame">
                         <i class="bi bi-people"></i><span> MANTENIMIENTO DE USUARIOS</span>
                     </a>
                 </li>
+                <% } %>
+
+                <!--  Registrar visitante (Administrador, Residente, Guardia) -->
+                <% if ("Administrador".equalsIgnoreCase(rol)
+                        || "Residente".equalsIgnoreCase(rol)
+                        || "Guardia".equalsIgnoreCase(rol)) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorVisita?accion=listar" target="contentFrame">
                         <i class="bi bi-door-open"></i><span> REGISTRAR VISITANTE</span>
                     </a>
                 </li>
+                <% } %>
 
-
+                <!--  Comunicación interna (todos los roles menos null) -->
+                <% if (!rol.isEmpty()) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/vistas/Comunicacion/MenuComunicacion.jsp" target="contentFrame">
                         <i class="bi bi-chat-dots"></i><span> COMUNICACIÓN INTERNA</span>
                     </a>
                 </li>
+                <% } %>
 
+                <!-- Reportes de mantenimiento (Administrador y Residente) -->
+                <% if ("Administrador".equalsIgnoreCase(rol)
+                        || "Residente".equalsIgnoreCase(rol)) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorReporteMantenimiento?accion=listar" target="contentFrame">
                         <i class="bi bi-tools"></i><span> REPORTES DE MANTENIMIENTO</span>
                     </a>
-
                 </li>
+                <% } %>
 
+                <!--  Reservas de áreas comunes (Administrador y Residente) -->
+                <% if ("Administrador".equalsIgnoreCase(rol)
+                        || "Residente".equalsIgnoreCase(rol)) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorReserva?accion=listar" target="contentFrame">
                         <i class="bi bi-calendar-week"></i><span> RESERVAS DE ÁREAS COMUNES</span>
                     </a>
                 </li>
+                <% } %>
+
+                <!--  Paquetería (Administrador y Residente) -->
+                <% if ("Administrador".equalsIgnoreCase(rol)
+                        ) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorPaqueteria?accion=listar" target="contentFrame">
                         <i class="bi bi-box-seam"></i><span> REGISTRAR PAQUETERÍA</span>
                     </a>
                 </li>
+                <% } %>
 
-
+                <!--  Pagos (Administrador y Residente) -->
+                <% if ("Administrador".equalsIgnoreCase(rol)
+                        || "Residente".equalsIgnoreCase(rol)) { %>
                 <li>
                     <a href="<%=request.getContextPath()%>/ControladorPago?accion=listar" target="contentFrame">
                         <i class="bi bi-cash-coin"></i><span> GESTIONAR PAGOS</span>
                     </a>
                 </li>
+                <% } %>
+
+                <!--  Cerrar sesión (todos los roles) -->
                 <li>
                     <a href="<%=request.getContextPath()%>/LogoutServlet">
                         <i class="bi bi-box-arrow-right"></i><span> CERRAR SESIÓN</span>
@@ -229,18 +245,14 @@
 
         <!-- Contenido -->
         <div class="content">
-            <!-- Header usuario fuera de la sidebar -->
             <div class="user-header">
-                <%
-                    Modelo.Usuarios usuario = (Modelo.Usuarios) session.getAttribute("usuario");
-                    if (usuario != null) {
-                %>
-                <i class="bi bi-person-circle"></i>
-                <span>
-                    Bienvenido, <%= usuario.getNombre()%> <%= usuario.getApellidos()%> 
-                    (<%= usuario.getNombreRol() != null ? usuario.getNombreRol() : "Sin rol"%>)
-                </span>
-                <% }%>
+                <% if (usuario != null) { %>
+                    <i class="bi bi-person-circle"></i>
+                    <span>
+                        Bienvenido, <%= usuario.getNombre()%> <%= usuario.getApellidos()%>
+                        (<%= usuario.getNombreRol() != null ? usuario.getNombreRol() : "Sin rol"%>)
+                    </span>
+                <% } %>
             </div>
 
             <iframe name="contentFrame"></iframe>

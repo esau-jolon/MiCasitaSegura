@@ -595,11 +595,27 @@
                                     <div class="user-email"><%= u.getCorreo()%></div>
                                 </td>
                                 <td>
+                                    <%
+                                        String rolNombre = "Sin rol";
+                                        switch (u.getRolId()) {
+                                            case 1:
+                                                rolNombre = "Residente";
+                                                break;
+                                            case 2:
+                                                rolNombre = "Guardia";
+                                                break;
+                                            case 3:
+                                                rolNombre = "Administrador";
+                                                break;
+                                        }
+                                    %>
                                     <span class="role-badge">
                                         <i class="bi bi-shield-lock-fill"></i>
-                                        Rol <%= u.getRolId()%>
+                                        <%= rolNombre%>
                                     </span>
                                 </td>
+
+
                                 <td>
                                     <span class="status-badge <%= u.isEstado() ? "status-active" : "status-inactive"%>">
                                         <i class="bi <%= u.isEstado() ? "bi-check-circle-fill" : "bi-x-circle-fill"%>"></i>
