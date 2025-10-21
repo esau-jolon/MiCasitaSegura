@@ -56,7 +56,6 @@ public class ControladorConversacion extends HttpServlet {
                     request.setAttribute("agentes", agentes);
                     acceso = crear;
                 } else {
-                    // Si no es residente, no puede crear conversaciones
                     request.setAttribute("mensajeError", "Solo los residentes pueden crear conversaciones.");
                     acceso = listar;
                 }
@@ -100,34 +99,34 @@ public class ControladorConversacion extends HttpServlet {
                     int idAgente = Integer.parseInt(request.getParameter("idAgente"));
                     int idResidente = usuarioSesion.getIdUsuario();
 
-                    // ✅ Validar FA4 - Conversación ya existente
+                    // ✅ Validar si ya existe una conversación entre ambos
                     boolean existe = conversacionDAO.existeConversacion(idResidente, idAgente);
 
                     if (existe) {
-                        // Mostrar mensaje de error y regresar a formulario
                         request.setAttribute("mensajeError", "Ya existe una conversación con el usuario seleccionado.");
 
-                        // Volver a cargar la lista de agentes
+                        // Volver a cargar lista de agentes
                         List<Usuarios> agentes = usuarioDAO.listarGuardias();
                         request.setAttribute("agentes", agentes);
 
-                        // Reenviar a la vista de creación
                         RequestDispatcher rd = request.getRequestDispatcher(crear);
                         rd.forward(request, response);
                         return;
                     }
 
-                    // Crear nueva conversación si no existe
+                    // 🔹 Crear nueva conversación
                     Conversacion nueva = new Conversacion();
                     nueva.setIdResidente(idResidente);
                     nueva.setIdAgente(idAgente);
-                    nueva.setEstado("Activa");
+                    nueva.setEstado(true); // ahora boolean
+                    nueva.setCreadoPor(idResidente); // auditoría
 
-                    boolean creada = conversacionDAO.crearConversacion(nueva, idResidente);
+                    boolean creada = conversacionDAO.crearConversacion(nueva);
 
                     if (creada) {
+                        // Registrar acción opcional si lo manejas en tabla auditoría
                         usuarioDAO.registrarAccion(idResidente,
-                                "Creó conversación con agente ID " + idAgente);
+                                "Creó una conversación con el agente ID " + idAgente);
                         response.sendRedirect("ControladorConversacion?accion=listar");
                     } else {
                         request.setAttribute("mensajeError", "No se pudo crear la conversación.");

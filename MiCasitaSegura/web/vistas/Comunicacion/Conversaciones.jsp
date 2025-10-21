@@ -179,9 +179,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="chat-meta">
-                        <span class="badge bg-primary"><%= c.getEstado()%></span>
-                    </div>
+           
                 </li>
                 <% } %>
             </ul>

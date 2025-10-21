@@ -3,13 +3,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Reservacion/Index.jsp</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/ReservasDAO.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/Paqueteria.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/PaqueteriaDAO.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/Visitas.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/VisitaDAO.java</file>
             <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/Conversacion.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorConversacion.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/ReporteMantenimiento/Index.jsp</file>
             <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/ModeloDAO/ConversacionDAO.java</file>
-            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorReserva.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/web/vistas/Comunicacion/Conversaciones.jsp</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Controlador/ControladorReporteMantenimiento.java</file>
+            <file>file:/D:/Documentos/Tareas%20Semestre%204/Programación%202/PROYECTO%20FINAL/MiCasitaSegura/MiCasitaSegura/src/java/Modelo/CodigosQR.java</file>
         </group>
     </open-files>
 </project-private>

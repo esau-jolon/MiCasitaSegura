@@ -8,14 +8,14 @@ public class Conversacion {
     private int idResidente;
     private int idAgente;
     private Timestamp fechaCreacion;
-    private String estado;
+    private boolean estado; // ✅ Ahora tipo boolean
 
     // 🔹 Auditoría
     private Integer creadoPor;
     private Integer modificadoPor;
     private Timestamp fechaModificacion;
 
-    // 🔹 Nuevos campos (nombres de residente y agente)
+    // 🔹 Nombres relacionados
     private String nombreResidente;
     private String apellidoResidente;
     private String nombreAgente;
@@ -25,13 +25,13 @@ public class Conversacion {
     public Conversacion() {
     }
 
-    public Conversacion(int idResidente, int idAgente, String estado) {
+    public Conversacion(int idResidente, int idAgente, boolean estado) {
         this.idResidente = idResidente;
         this.idAgente = idAgente;
         this.estado = estado;
     }
 
-    // 🔹 Getters y Setters principales
+    // 🔹 Getters y Setters
     public int getIdConversacion() {
         return idConversacion;
     }
@@ -64,11 +64,11 @@ public class Conversacion {
         this.fechaCreacion = fechaCreacion;
     }
 
-    public String getEstado() {
+    public boolean isEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
+    public void setEstado(boolean estado) {
         this.estado = estado;
     }
 
@@ -96,7 +96,6 @@ public class Conversacion {
         this.fechaModificacion = fechaModificacion;
     }
 
-    // 🔹 Nuevos getters y setters para nombres
     public String getNombreResidente() {
         return nombreResidente;
     }
@@ -129,7 +128,7 @@ public class Conversacion {
         this.apellidoAgente = apellidoAgente;
     }
 
-    // 🔹 Métodos auxiliares (útiles para mostrar en JSP)
+    // 🔹 Métodos auxiliares (para JSP)
     public String getNombreCompletoResidente() {
         String nombre = (nombreResidente != null ? nombreResidente : "");
         String apellido = (apellidoResidente != null ? apellidoResidente : "");

@@ -7,21 +7,23 @@ import java.util.*;
 
 public class ConversacionDAO {
 
-    // 🔹 Crear una nueva conversación
-    public boolean crearConversacion(Conversacion c, int usuarioId) {
-        String sql = "INSERT INTO Conversacion (idResidente, idAgente, estado) VALUES (?, ?, ?)";
+    // 🔹 Crear una nueva conversación con auditoría
+    public boolean crearConversacion(Conversacion c) {
+        String sql = "INSERT INTO Conversacion "
+                + "(idResidente, idAgente, fechaCreacion, estado, creadoPor) "
+                + "VALUES (?, ?, NOW(), ?, ?)";
+
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, c.getIdResidente());
             ps.setInt(2, c.getIdAgente());
-            ps.setString(3, c.getEstado());
-            int filas = ps.executeUpdate();
+            ps.setBoolean(3, c.isEstado());
+            ps.setObject(4, c.getCreadoPor());
 
-            if (filas > 0) {
-                registrarAccion(usuarioId, "Creó conversación con agente ID " + c.getIdAgente());
-                return true;
-            }
+            int filas = ps.executeUpdate();
+            return filas > 0;
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -30,9 +32,9 @@ public class ConversacionDAO {
 
     // 🔹 Verificar si ya existe una conversación entre residente y agente
     public boolean existeConversacion(int idResidente, int idAgente) {
-        String sql = "SELECT COUNT(*) FROM Conversacion WHERE idResidente = ? AND idAgente = ?";
+        String sql = "SELECT COUNT(*) FROM Conversacion WHERE idResidente = ? AND idAgente = ? AND estado = TRUE";
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idResidente);
             ps.setInt(2, idAgente);
@@ -46,12 +48,13 @@ public class ConversacionDAO {
         return false;
     }
 
-    // 🔹 Obtener conversación por ID (sin join, solo base)
+    // 🔹 Obtener conversación por ID
     public Conversacion obtenerPorId(int idConversacion) {
         Conversacion c = null;
         String sql = "SELECT * FROM Conversacion WHERE idConversacion = ?";
+
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idConversacion);
             try (ResultSet rs = ps.executeQuery()) {
@@ -61,29 +64,28 @@ public class ConversacionDAO {
                     c.setIdResidente(rs.getInt("idResidente"));
                     c.setIdAgente(rs.getInt("idAgente"));
                     c.setFechaCreacion(rs.getTimestamp("fechaCreacion"));
-                    c.setEstado(rs.getString("estado"));
+                    c.setEstado(rs.getBoolean("estado"));
+                    c.setCreadoPor((Integer) rs.getObject("creadoPor"));
+                    c.setModificadoPor((Integer) rs.getObject("modificadoPor"));
+                    c.setFechaModificacion(rs.getTimestamp("fechaModificacion"));
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         return c;
     }
 
-    // 🔹 Listar conversaciones por usuario (con nombres del residente y agente)
+    // 🔹 Listar conversaciones por usuario (con nombres de residente y agente)
     public List<Conversacion> listarPorUsuario(int idUsuario) {
         List<Conversacion> lista = new ArrayList<>();
 
         String sql = "SELECT "
-                + "c.idConversacion, "
-                + "c.idResidente, "
-                + "r.nombre AS nombreResidente, "
-                + "r.apellidos AS apellidoResidente, "
-                + "c.idAgente, "
-                + "g.nombre AS nombreAgente, "
-                + "g.apellidos AS apellidoAgente, "
-                + "c.fechaCreacion, "
-                + "c.estado "
+                + "c.idConversacion, c.idResidente, "
+                + "r.nombre AS nombreResidente, r.apellidos AS apellidoResidente, "
+                + "c.idAgente, g.nombre AS nombreAgente, g.apellidos AS apellidoAgente, "
+                + "c.fechaCreacion, c.estado, c.creadoPor, c.modificadoPor, c.fechaModificacion "
                 + "FROM Conversacion c "
                 + "LEFT JOIN Usuarios r ON c.idResidente = r.id_usuario "
                 + "LEFT JOIN Usuarios g ON c.idAgente = g.id_usuario "
@@ -91,7 +93,7 @@ public class ConversacionDAO {
                 + "ORDER BY c.fechaCreacion DESC";
 
         try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+                PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idUsuario);
             ps.setInt(2, idUsuario);
@@ -107,7 +109,10 @@ public class ConversacionDAO {
                     c.setNombreAgente(rs.getString("nombreAgente"));
                     c.setApellidoAgente(rs.getString("apellidoAgente"));
                     c.setFechaCreacion(rs.getTimestamp("fechaCreacion"));
-                    c.setEstado(rs.getString("estado"));
+                    c.setEstado(rs.getBoolean("estado"));
+                    c.setCreadoPor((Integer) rs.getObject("creadoPor"));
+                    c.setModificadoPor((Integer) rs.getObject("modificadoPor"));
+                    c.setFechaModificacion(rs.getTimestamp("fechaModificacion"));
                     lista.add(c);
                 }
             }
@@ -120,18 +125,41 @@ public class ConversacionDAO {
         return lista;
     }
 
-    // 🔹 Registrar acción en la auditoría
-    private void registrarAccion(int usuarioId, String accion) {
-        String sql = "INSERT INTO auditoria (usuario_id, accion) VALUES (?, ?)";
-        try (Connection con = Conexion.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+    // 🔹 Actualizar conversación (por ejemplo, cerrar o modificar agente)
+    public boolean actualizarConversacion(Conversacion c) {
+        String sql = "UPDATE Conversacion "
+                + "SET idAgente = ?, estado = ?, modificadoPor = ?, fechaModificacion = NOW() "
+                + "WHERE idConversacion = ?";
 
-            ps.setInt(1, usuarioId);
-            ps.setString(2, accion);
-            ps.executeUpdate();
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, c.getIdAgente());
+            ps.setBoolean(2, c.isEstado());
+            ps.setObject(3, c.getModificadoPor());
+            ps.setInt(4, c.getIdConversacion());
+
+            return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    // 🔹 Eliminar lógicamente una conversación
+    public boolean eliminarConversacion(int idConversacion, int usuarioId) {
+        String sql = "UPDATE Conversacion SET estado = FALSE, modificadoPor = ?, fechaModificacion = NOW() WHERE idConversacion = ?";
+        try (Connection con = Conexion.getConnection();
+                PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, usuarioId);
+            ps.setInt(2, idConversacion);
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

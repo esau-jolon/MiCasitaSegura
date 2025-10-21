@@ -192,7 +192,12 @@
                                 <td><%= i++%></td>
                                 <td><%= r.getNombreTipoInconveniente() != null ? r.getNombreTipoInconveniente() : "—"%></td>
                                 <td><%= r.getDescripcion() != null ? r.getDescripcion() : "Sin descripción"%></td>
-                                <td><%= r.getFechaHoraIncidente() != null ? r.getFechaHoraIncidente() : "—"%></td>
+                                <td>
+                                    <%= r.getFechaHoraIncidente() != null
+                                            ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(r.getFechaHoraIncidente())
+                                            : "—"%>
+                                </td>
+
                                 <td>
                                     <span class="status-enviado">
                                         <i class="bi bi-check-circle-fill"></i> Enviado
@@ -200,7 +205,7 @@
                                 </td>
                             </tr>
                             <%  }
-                    } else { %>
+                            } else { %>
                             <tr>
                                 <td colspan="5" class="empty-state">
                                     <div class="empty-icon"><i class="bi bi-clipboard-x"></i></div>

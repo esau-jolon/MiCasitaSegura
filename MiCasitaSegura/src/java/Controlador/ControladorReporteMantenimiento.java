@@ -160,22 +160,59 @@ public class ControladorReporteMantenimiento extends HttpServlet {
                                 .findFirst()
                                 .orElse(null);
 
-                        String asunto = "Nuevo reporte de mantenimiento";
-                        String cuerpo = "El residente " + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos()
-                                + " ha ingresado un reporte de mantenimiento.\n\n"
-                                + "📋 Detalle del reporte:\n"
-                                + "• Tipo de inconveniente: " + (tipo != null ? tipo.getNombre() : "Desconocido") + "\n"
-                                + "• Descripción: " + descripcion + "\n"
-                                + "• Fecha y hora del incidente: " + fechaHoraStr.replace('T', ' ') + "\n\n"
-                                + "Por favor, tomar las acciones correspondientes.";
+                        String asunto = "🔧 Nuevo Reporte de Mantenimiento Recibido";
 
-                        for (Usuarios a : admins) {
-                            EmailSender.enviarConAdjunto(a.getCorreo(), asunto, cuerpo, null);
+                        for (Usuarios admin : admins) {
 
+                            StringBuilder htmlMantenimiento = new StringBuilder();
+                            htmlMantenimiento.append("<html><body style='font-family:Arial,sans-serif;background-color:#f6f8fb;padding:20px;'>")
+                                    .append("<div style='max-width:600px;margin:auto;background:white;border-radius:10px;padding:25px;box-shadow:0 2px 6px rgba(0,0,0,0.1);'>")
+                                    .append("<h2 style='color:#2C3E50;text-align:center;'>🔧 Nuevo Reporte de Mantenimiento</h2>")
+                                    .append("<p>Estimado equipo de mantenimiento,<br>")
+                                    .append("Se ha generado un nuevo reporte en el sistema <b>Mi Casita Segura</b> por parte del residente:</p>")
+                                    // Tabla con los datos principales
+                                    .append("<table style='width:100%;border-collapse:collapse;margin-top:10px;font-size:14px;'>")
+                                    .append("<tr><td style='padding:6px 0;'><b>👤 Residente:</b></td><td>")
+                                    .append(usuarioSesion.getNombre()).append(" ").append(usuarioSesion.getApellidos())
+                                    .append("</td></tr>")
+                                    .append("<tr><td style='padding:6px 0;'><b>📅 Fecha y hora del incidente:</b></td><td>")
+                                    .append(fechaHoraStr.replace('T', ' '))
+                                    .append("</td></tr>")
+                                    .append("<tr><td style='padding:6px 0;'><b>🏠 Residencia:</b></td><td>")
+                                    .append(usuarioSesion.getNumeroCasa() != null ? usuarioSesion.getCodigoLote() : "No registrada")
+                                    .append("</td></tr>")
+                                    .append("<tr><td style='padding:6px 0;'><b>📋 Tipo de inconveniente:</b></td><td>")
+                                    .append(tipo != null ? tipo.getNombre() : "Desconocido")
+                                    .append("</td></tr>")
+                                    .append("<tr><td style='padding:6px 0;'><b>📝 Descripción:</b></td><td>")
+                                    .append((descripcion != null && !descripcion.isEmpty()) ? descripcion : "Sin descripción proporcionada")
+                                    .append("</td></tr>")
+                                    .append("</table>")
+                                    // Texto de cierre
+                                    .append("<p style='margin-top:15px;font-size:14px;'>")
+                                    .append("🔔 Se recomienda revisar el reporte y programar la atención correspondiente a la brevedad.<br>")
+                                    .append("Puede consultar los detalles directamente desde el panel de <b>Reportes de Mantenimiento</b> del sistema.")
+                                    .append("</p>")
+                                    // Firma del correo
+                                    .append("<div style='text-align:center;margin-top:25px;'>")
+                                    .append("<p><b>Atentamente,<br>📲 Sistema Mi Casita Segura</b></p>")
+                                    .append("<p style='font-size:13px;color:#555;'>Mensaje generado automáticamente. Por favor, no responder directamente a este correo.</p>")
+                                    .append("</div></div></body></html>");
+
+                            // Envío del correo HTML
+                            EmailSender.enviarConAdjunto(
+                                    admin.getCorreo(),
+                                    asunto,
+                                    htmlMantenimiento.toString(),
+                                    null
+                            );
+
+                            // Registro de notificación interna
                             Notificacion n = new Notificacion();
-                            n.setIdGuardia(a.getIdUsuario());
+                            n.setIdGuardia(admin.getIdUsuario());
                             n.setAsunto(asunto);
-                            n.setCuerpo(cuerpo);
+                            n.setCuerpo("Se ha registrado un nuevo reporte de mantenimiento por parte de "
+                                    + usuarioSesion.getNombre() + " " + usuarioSesion.getApellidos() + ".");
                             n.setCreadoPor(usuarioSesion.getIdUsuario());
                             notificacionDAO.registrar(n);
                         }
